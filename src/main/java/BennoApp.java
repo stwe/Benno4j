@@ -10,7 +10,6 @@ import java.io.IOException;
 public class BennoApp extends SgOglApplication {
 
     private BshFile bshFile;
-    private BshFile menuBshFile;
     private TileRenderer renderer;
 
     //-------------------------------------------------
@@ -30,21 +29,21 @@ public class BennoApp extends SgOglApplication {
 
         var paletteFile = new PaletteFile(filesystem.getOtherBshFilePath(BennoFiles.OtherBshFile.PALETTE));
 
-        /*
-        var bshPath= filesystem.getZoomableBshFilePath(Zoom.ZoomId.GFX, Zoom.ZoomableBshFile.STADTFLD);
-        if (bshPath.isPresent()) {
-            bshFile = new BshFile(bshPath.get(), paletteFile.getPalette());
-        }
-        */
-
         //renderer = new TileRenderer(getEngine());
 
-        menuBshFile = new BshFile(
+        /*
+        bshFile = new BshFile(
                 filesystem.getInterfaceBshFilePath(BennoFiles.InterfaceBshFile.EDITOR),
                 paletteFile.getPalette(),
-                false
+                true
                 );
+        */
 
+        bshFile = new BshFile(
+                filesystem.getZoomableBshFilePath(Zoom.ZoomId.MGFX, BennoFiles.ZoomableBshFile.SHIP).get(),
+                paletteFile.getPalette(),
+                true
+        );
     }
 
     @Override

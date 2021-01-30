@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Objects;
 
 import static de.sg.ogl.Log.LOGGER;
@@ -50,6 +51,7 @@ public class BshFile extends BinaryFile {
 
     private final ArrayList<Integer> offsets = new ArrayList<>();
     private final ArrayList<BshTexture> bshTextures = new ArrayList<>();
+    private final HashSet<Integer> possibleInvalidOffsets = new HashSet<>();
 
     private int maxX = -999;
     private int maxY = -999;
@@ -110,6 +112,7 @@ public class BshFile extends BinaryFile {
         LOGGER.debug("Start reading BSH data from Chunks...");
 
         readOffsets();
+        validateOffsets();
         decodeTextures();
         createGlTextures();
         setMaxValues();
@@ -152,34 +155,42 @@ public class BshFile extends BinaryFile {
         LOGGER.debug("Detected {} texture offsets.", offsets.size());
     }
 
+    private void validateOffsets() {
+        for (int i = 0; i < offsets.size(); i++) {
+            if (i + 1 < offsets.size()) {
+                var offset = offsets.get(i);
+                var nextOffset = offsets.get(i + 1);
+                if (nextOffset - offset == 20) {
+                    possibleInvalidOffsets.add(offset);
+                }
+            }
+        }
+
+        if (!possibleInvalidOffsets.isEmpty()) {
+            LOGGER.warn("Detected {} possible invalid texture offsets.", possibleInvalidOffsets.size());
+        }
+    }
+
     //-------------------------------------------------
     // Texture
     //-------------------------------------------------
 
     private void decodeTextures() throws IOException {
-        var i = 0;
         for (var offset : offsets) {
-            LOGGER.debug("read bsh texture nr.: {}", i + 1);
+            if (!possibleInvalidOffsets.contains(offset)) {
+                chunk0.getData().position(offset);
 
-            chunk0.getData().position(offset);
-            LOGGER.debug("offset: {}", offset);
+                var textureHeader = readTextureHeader(offset);
 
-            i++;
-            TextureHeader textureHeader;
-            if (i < offsets.size()) {
-                // pass next offset to check the length
-                textureHeader =  readTextureHeader(offset, offsets.get(i));
-            } else {
-                // last offset
-                textureHeader =  readTextureHeader(offset, offset);
-            }
-
-            if (textureHeader.type == 13) {
-                decodeTexture13(textureHeader);
-            } else {
-                decodeTexture(textureHeader);
+                if (textureHeader.type == 13) {
+                    decodeTexture13(textureHeader);
+                } else {
+                    decodeTexture(textureHeader);
+                }
             }
         }
+
+        LOGGER.debug("A total of {} bsh textures were created.", bshTextures.size());
     }
 
     private void decodeTexture13(TextureHeader textureHeader) throws IOException {
@@ -297,44 +308,20 @@ public class BshFile extends BinaryFile {
         }
     }
 
-    private TextureHeader readTextureHeader(int offset, int nextOffset) {
+    private TextureHeader readTextureHeader(int offset) {
         // with && height
         var width = chunk0.getData().getInt();
         var height = chunk0.getData().getInt();
 
-        LOGGER.debug("width: {}", width);
-        LOGGER.debug("height: {}", height);
-
         if (width <= 0 || height <= 0) {
             throw new BennoRuntimeException("Invalid width or height.");
-            /*
-            chunk0.getData().position(nextOffset);
-            width = chunk0.getData().getInt();
-            height = chunk0.getData().getInt();
-
-            LOGGER.debug("width: {}", width);
-            LOGGER.debug("height: {}", height);
-
-            var type = chunk0.getData().getInt();
-            LOGGER.debug("type: {}", type);
-
-            var length = chunk0.getData().getInt();
-
-            return new TextureHeader(new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB), type, nextOffset);
-            */
         }
 
         // type
         var type = chunk0.getData().getInt();
-        LOGGER.debug("type: {}", type);
 
         // length
         var length = chunk0.getData().getInt();
-        if (offset + length == nextOffset || offset == nextOffset) {
-            LOGGER.debug("length: {}", length);
-        } else {
-            throw new BennoRuntimeException("Invalid length.");
-        }
 
         return new TextureHeader(new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB), type, offset);
     }
