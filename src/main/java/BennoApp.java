@@ -31,19 +31,19 @@ public class BennoApp extends SgOglApplication {
 
         //renderer = new TileRenderer(getEngine());
 
-        /*
         bshFile = new BshFile(
                 filesystem.getInterfaceBshFilePath(BennoFiles.InterfaceBshFile.EDITOR),
                 paletteFile.getPalette(),
                 true
                 );
-        */
 
+        /*
         bshFile = new BshFile(
                 filesystem.getZoomableBshFilePath(Zoom.ZoomId.MGFX, BennoFiles.ZoomableBshFile.SHIP).get(),
                 paletteFile.getPalette(),
                 true
         );
+        */
     }
 
     @Override
