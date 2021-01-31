@@ -25,7 +25,7 @@ public class BennoApp extends SgOglApplication {
 
     @Override
     public void init() throws Exception {
-        var filesystem = new BennoFiles("/home/steffen/Anno");
+        var filesystem = new BennoFiles("E:\\Anno");
 
         var paletteFile = new PaletteFile(filesystem.getOtherBshFilePath(BennoFiles.OtherBshFile.PALETTE));
 
@@ -34,7 +34,7 @@ public class BennoApp extends SgOglApplication {
         bshFile = new BshFile(
                 filesystem.getInterfaceBshFilePath(BennoFiles.InterfaceBshFile.EDITOR),
                 paletteFile.getPalette(),
-                true
+                false
                 );
 
         /*

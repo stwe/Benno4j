@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static de.sg.ogl.Log.LOGGER;
@@ -135,8 +136,7 @@ public class BennoFiles {
     //-------------------------------------------------
 
     private void findZoomableBshFiles(Zoom.ZoomId zoomId) throws IOException {
-        var zoomString = "/" + zoomId.toString().toLowerCase();
-        var paths = listZoomableBshFiles(zoomString);
+        var paths = listZoomableBshFiles(Paths.get(zoomId.toString()));
 
         if (paths.isEmpty()) {
             throw new BennoRuntimeException("No " + zoomId.toString() + " BSH files found at " + rootPath + ".");
@@ -197,7 +197,7 @@ public class BennoFiles {
     // Helper
     //-------------------------------------------------
 
-    private List<Path> listZoomableBshFiles(String zoom) throws IOException {
+    private List<Path> listZoomableBshFiles(Path zoom) throws IOException {
         List<Path> result;
 
         try (var walk = Files.walk(rootPath)) {
@@ -211,8 +211,20 @@ public class BennoFiles {
         return result;
     }
 
-    private static boolean checkZoomPath(Path path, String zoom) {
-        return path.toString().toLowerCase().contains(zoom);
+    private static boolean checkZoomPath(Path path, Path zoom) {
+        if (path.toString().toLowerCase().contains(zoom.toString().toLowerCase())) {
+            return isContain(path.toString().toLowerCase(), zoom.toString().toLowerCase());
+        }
+
+        return false;
+    }
+
+    private static boolean isContain(String source, String subItem){
+        String str = "\\b" + subItem + "\\b";
+        var pattern = Pattern.compile(str);
+        var matcherSource = pattern.matcher(source);
+
+        return matcherSource.find();
     }
 
     private List<Path> findInterfaceBshFile(InterfaceBshFile bshFile) throws IOException {

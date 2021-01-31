@@ -13,12 +13,4 @@
         <maven.compiler.target>11</maven.compiler.target>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.github.stwe</groupId>
-            <artifactId>sgogl-java</artifactId>
-            <version>0.1.0</version>
-        </dependency>
-    </dependencies>
-
 </project>
