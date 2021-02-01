@@ -1,15 +1,20 @@
+import de.sg.benno.data.DataFiles;
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.file.BshFile;
 import de.sg.benno.file.PaletteFile;
 import de.sg.benno.renderer.TileRenderer;
 import de.sg.benno.renderer.Zoom;
+import de.sg.ogl.Color;
+import de.sg.ogl.OpenGL;
 import de.sg.ogl.SgOglApplication;
+import org.joml.Vector2f;
 
 import java.io.IOException;
 
 public class BennoApp extends SgOglApplication {
 
     private BshFile bshFile;
+    private DataFiles dataFiles;
     private TileRenderer renderer;
 
     //-------------------------------------------------
@@ -29,13 +34,17 @@ public class BennoApp extends SgOglApplication {
 
         var paletteFile = new PaletteFile(filesystem.getOtherBshFilePath(BennoFiles.OtherBshFile.PALETTE));
 
-        //renderer = new TileRenderer(getEngine());
+        renderer = new TileRenderer(getEngine());
+
+        dataFiles = new DataFiles();
 
         bshFile = new BshFile(
-                filesystem.getInterfaceBshFilePath(BennoFiles.InterfaceBshFile.EDITOR),
+                filesystem.getInterfaceBshFilePath(BennoFiles.InterfaceBshFile.START),
                 paletteFile.getPalette(),
-                false
+                true
                 );
+
+        var i = 0;
 
         /*
         bshFile = new BshFile(
@@ -58,7 +67,26 @@ public class BennoApp extends SgOglApplication {
 
     @Override
     public void render() {
-        //renderer.render(bshFile.getBshTextures().get(100));
+        OpenGL.setClearColor(Color.CORNFLOWER_BLUE);
+        OpenGL.clear();
+
+        // hintergrund
+        renderer.render(bshFile.getBshTextures().get(0), new Vector2f(0.0f, 0.0f));
+
+        // singleplayer
+        renderer.render(bshFile.getBshTextures().get(2), new Vector2f(113.0f, 382.0f));
+
+        // multiplayer
+        renderer.render(bshFile.getBshTextures().get(3), new Vector2f(113.0f, 434.0f));
+
+        // options
+        renderer.render(bshFile.getBshTextures().get(4), new Vector2f(113.0f, 488.0f));
+
+        // credits
+        renderer.render(bshFile.getBshTextures().get(5), new Vector2f(113.0f, 540.0f));
+
+        // intro
+        renderer.render(bshFile.getBshTextures().get(6), new Vector2f(113.0f, 597.0f));
     }
 
     @Override
@@ -68,7 +96,7 @@ public class BennoApp extends SgOglApplication {
 
     @Override
     public void cleanUp() {
-        //bshFile.cleanUp();
-        //renderer.cleanUp();
+        bshFile.cleanUp();
+        renderer.cleanUp();
     }
 }
