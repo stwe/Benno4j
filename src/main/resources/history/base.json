@@ -71,7 +71,7 @@
        },
        {
         "name": "Gfxnr",
-        "valueInt": 12
+        "valueInt": 14
        },
        {
         "name": "Kind",
@@ -133,7 +133,7 @@
        },
        {
         "name": "Pressoff",
-        "valueInt": 5
+        "valueInt": 6
        },
        {
         "name": "Pos",
@@ -143,7 +143,7 @@
            "valueInt": 113
           },
           {
-           "valueInt": 382
+           "valueInt": 362
           }
          ]
         }
@@ -187,7 +187,7 @@
        },
        {
         "name": "Pressoff",
-        "valueInt": 5
+        "valueInt": 6
        },
        {
         "name": "Pos",
@@ -197,7 +197,7 @@
            "valueInt": 113
           },
           {
-           "valueInt": 434
+           "valueInt": 415
           }
          ]
         }
@@ -241,7 +241,7 @@
        },
        {
         "name": "Pressoff",
-        "valueInt": 5
+        "valueInt": 6
        },
        {
         "name": "Pos",
@@ -251,7 +251,7 @@
            "valueInt": 113
           },
           {
-           "valueInt": 488
+           "valueInt": 469
           }
          ]
         }
@@ -264,7 +264,7 @@
            "valueInt": 332
           },
           {
-           "valueInt": 53
+           "valueInt": 54
           }
          ]
         }
@@ -295,7 +295,7 @@
        },
        {
         "name": "Pressoff",
-        "valueInt": 5
+        "valueInt": 6
        },
        {
         "name": "Pos",
@@ -305,7 +305,7 @@
            "valueInt": 113
           },
           {
-           "valueInt": 540
+           "valueInt": 523
           }
          ]
         }
@@ -318,7 +318,7 @@
            "valueInt": 332
           },
           {
-           "valueInt": 58
+           "valueInt": 51
           }
          ]
         }
@@ -349,7 +349,7 @@
        },
        {
         "name": "Pressoff",
-        "valueInt": 5
+        "valueInt": 6
        },
        {
         "name": "Pos",
@@ -359,7 +359,7 @@
            "valueInt": 113
           },
           {
-           "valueInt": 597
+           "valueInt": 574
           }
          ]
         }
@@ -372,7 +372,61 @@
            "valueInt": 332
           },
           {
-           "valueInt": 71
+           "valueInt": 56
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "objects": []
+    },
+    {
+     "name": "7",
+     "variables": {
+      "variable": [
+       {
+        "name": "Id",
+        "valueInt": 30007
+       },
+       {
+        "name": "Blocknr",
+        "valueInt": 1
+       },
+       {
+        "name": "Gfxnr",
+        "valueInt": 7
+       },
+       {
+        "name": "Kind",
+        "valueString": "GAD_GFX"
+       },
+       {
+        "name": "Pressoff",
+        "valueInt": 6
+       },
+       {
+        "name": "Pos",
+        "valueArray": {
+         "value": [
+          {
+           "valueInt": 113
+          },
+          {
+           "valueInt": 630
+          }
+         ]
+        }
+       },
+       {
+        "name": "Size",
+        "valueArray": {
+         "value": [
+          {
+           "valueInt": 332
+          },
+          {
+           "valueInt": 70
           }
          ]
         }
