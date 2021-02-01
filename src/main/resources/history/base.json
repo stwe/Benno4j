@@ -1,0 +1,387 @@
+{
+ "object": [
+  {
+   "name": "GADGET",
+   "objects": [
+    {
+     "name": "0",
+     "variables": {
+      "variable": [
+       {
+        "name": "Id",
+        "valueInt": 30101
+       },
+       {
+        "name": "Blocknr",
+        "valueInt": 1
+       },
+       {
+        "name": "Gfxnr",
+        "valueInt": 0
+       },
+       {
+        "name": "Kind",
+        "valueString": "GAD_GFX"
+       },
+       {
+        "name": "Noselflg",
+        "valueInt": 1
+       },
+       {
+        "name": "Pos",
+        "valueArray": {
+         "value": [
+          {
+           "valueInt": 0
+          },
+          {
+           "valueInt": 0
+          }
+         ]
+        }
+       },
+       {
+        "name": "Size",
+        "valueArray": {
+         "value": [
+          {
+           "valueInt": 1
+          },
+          {
+           "valueInt": 1
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "objects": []
+    },
+    {
+     "name": "1",
+     "variables": {
+      "variable": [
+       {
+        "name": "Id",
+        "valueInt": 30101
+       },
+       {
+        "name": "Blocknr",
+        "valueInt": 1
+       },
+       {
+        "name": "Gfxnr",
+        "valueInt": 12
+       },
+       {
+        "name": "Kind",
+        "valueString": "GAD_GFX"
+       },
+       {
+        "name": "Noselflg",
+        "valueInt": 1
+       },
+       {
+        "name": "Pos",
+        "valueArray": {
+         "value": [
+          {
+           "valueInt": 500
+          },
+          {
+           "valueInt": 359
+          }
+         ]
+        }
+       },
+       {
+        "name": "Size",
+        "valueArray": {
+         "value": [
+          {
+           "valueInt": 1
+          },
+          {
+           "valueInt": 1
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "objects": []
+    },
+    {
+     "name": "2",
+     "variables": {
+      "variable": [
+       {
+        "name": "Id",
+        "valueInt": 30002
+       },
+       {
+        "name": "Blocknr",
+        "valueInt": 1
+       },
+       {
+        "name": "Gfxnr",
+        "valueInt": 2
+       },
+       {
+        "name": "Kind",
+        "valueString": "GAD_GFX"
+       },
+       {
+        "name": "Pressoff",
+        "valueInt": 5
+       },
+       {
+        "name": "Pos",
+        "valueArray": {
+         "value": [
+          {
+           "valueInt": 113
+          },
+          {
+           "valueInt": 382
+          }
+         ]
+        }
+       },
+       {
+        "name": "Size",
+        "valueArray": {
+         "value": [
+          {
+           "valueInt": 332
+          },
+          {
+           "valueInt": 53
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "objects": []
+    },
+    {
+     "name": "3",
+     "variables": {
+      "variable": [
+       {
+        "name": "Id",
+        "valueInt": 30003
+       },
+       {
+        "name": "Blocknr",
+        "valueInt": 1
+       },
+       {
+        "name": "Gfxnr",
+        "valueInt": 3
+       },
+       {
+        "name": "Kind",
+        "valueString": "GAD_GFX"
+       },
+       {
+        "name": "Pressoff",
+        "valueInt": 5
+       },
+       {
+        "name": "Pos",
+        "valueArray": {
+         "value": [
+          {
+           "valueInt": 113
+          },
+          {
+           "valueInt": 434
+          }
+         ]
+        }
+       },
+       {
+        "name": "Size",
+        "valueArray": {
+         "value": [
+          {
+           "valueInt": 332
+          },
+          {
+           "valueInt": 54
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "objects": []
+    },
+    {
+     "name": "4",
+     "variables": {
+      "variable": [
+       {
+        "name": "Id",
+        "valueInt": 30004
+       },
+       {
+        "name": "Blocknr",
+        "valueInt": 1
+       },
+       {
+        "name": "Gfxnr",
+        "valueInt": 4
+       },
+       {
+        "name": "Kind",
+        "valueString": "GAD_GFX"
+       },
+       {
+        "name": "Pressoff",
+        "valueInt": 5
+       },
+       {
+        "name": "Pos",
+        "valueArray": {
+         "value": [
+          {
+           "valueInt": 113
+          },
+          {
+           "valueInt": 488
+          }
+         ]
+        }
+       },
+       {
+        "name": "Size",
+        "valueArray": {
+         "value": [
+          {
+           "valueInt": 332
+          },
+          {
+           "valueInt": 53
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "objects": []
+    },
+    {
+     "name": "5",
+     "variables": {
+      "variable": [
+       {
+        "name": "Id",
+        "valueInt": 30005
+       },
+       {
+        "name": "Blocknr",
+        "valueInt": 1
+       },
+       {
+        "name": "Gfxnr",
+        "valueInt": 5
+       },
+       {
+        "name": "Kind",
+        "valueString": "GAD_GFX"
+       },
+       {
+        "name": "Pressoff",
+        "valueInt": 5
+       },
+       {
+        "name": "Pos",
+        "valueArray": {
+         "value": [
+          {
+           "valueInt": 113
+          },
+          {
+           "valueInt": 540
+          }
+         ]
+        }
+       },
+       {
+        "name": "Size",
+        "valueArray": {
+         "value": [
+          {
+           "valueInt": 332
+          },
+          {
+           "valueInt": 58
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "objects": []
+    },
+    {
+     "name": "6",
+     "variables": {
+      "variable": [
+       {
+        "name": "Id",
+        "valueInt": 30006
+       },
+       {
+        "name": "Blocknr",
+        "valueInt": 1
+       },
+       {
+        "name": "Gfxnr",
+        "valueInt": 6
+       },
+       {
+        "name": "Kind",
+        "valueString": "GAD_GFX"
+       },
+       {
+        "name": "Pressoff",
+        "valueInt": 5
+       },
+       {
+        "name": "Pos",
+        "valueArray": {
+         "value": [
+          {
+           "valueInt": 113
+          },
+          {
+           "valueInt": 597
+          }
+         ]
+        }
+       },
+       {
+        "name": "Size",
+        "valueArray": {
+         "value": [
+          {
+           "valueInt": 332
+          },
+          {
+           "valueInt": 71
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "objects": []
+    }
+   ]
+  }
+ ]
+}

@@ -34,16 +34,12 @@ public class TileRenderer {
         this.initVao();
     }
 
-    public void render(BshTexture texture) {
-        OpenGL.setClearColor(Color.CORNFLOWER_BLUE);
-        OpenGL.clear();
-
+    public void render(BshTexture texture, Vector2f position) {
         OpenGL.enableAlphaBlending();
         shader.bind();
         Texture.bindForReading(texture.getTextureId(), GL_TEXTURE0);
 
         var size = new Vector2f(texture.getBufferedImage().getWidth(), texture.getBufferedImage().getHeight());
-        var position = new Vector2f(5.0f, 5.0f);
 
         Matrix4f modelMatrix = new Matrix4f();
         modelMatrix
