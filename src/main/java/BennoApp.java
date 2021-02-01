@@ -74,19 +74,22 @@ public class BennoApp extends SgOglApplication {
         renderer.render(bshFile.getBshTextures().get(0), new Vector2f(0.0f, 0.0f));
 
         // singleplayer
-        renderer.render(bshFile.getBshTextures().get(2), new Vector2f(113.0f, 382.0f));
+        renderer.render(bshFile.getBshTextures().get(2), new Vector2f(113.0f, 362.0f));
 
         // multiplayer
-        renderer.render(bshFile.getBshTextures().get(3), new Vector2f(113.0f, 434.0f));
+        renderer.render(bshFile.getBshTextures().get(3), new Vector2f(113.0f, 415.0f));
 
         // options
-        renderer.render(bshFile.getBshTextures().get(4), new Vector2f(113.0f, 488.0f));
+        renderer.render(bshFile.getBshTextures().get(4), new Vector2f(113.0f, 469.0f));
 
         // credits
-        renderer.render(bshFile.getBshTextures().get(5), new Vector2f(113.0f, 540.0f));
+        renderer.render(bshFile.getBshTextures().get(5), new Vector2f(113.0f, 523.0f));
 
         // intro
-        renderer.render(bshFile.getBshTextures().get(6), new Vector2f(113.0f, 597.0f));
+        renderer.render(bshFile.getBshTextures().get(6), new Vector2f(113.0f, 574.0f));
+
+        // exit
+        renderer.render(bshFile.getBshTextures().get(7), new Vector2f(113.0f, 630.0f));
     }
 
     @Override
