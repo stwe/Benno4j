@@ -125,17 +125,11 @@ public class BshFile extends BinaryFile {
     //-------------------------------------------------
 
     public void cleanUp() {
-        LOGGER.debug("Clean up OpenGL textures.");
+        LOGGER.debug("Clean up {} OpenGL textures.", bshTextures.size());
 
-        var i = 0;
-        for (var texture : bshTextures) {
-            if (texture.getTextureId() > 0) {
-                glDeleteTextures(texture.getTextureId());
-                i++;
-            }
+        for (var bshTexture : bshTextures) {
+            bshTexture.getTexture().cleanUp();
         }
-
-        LOGGER.debug("{} OpenGL textures was deleted.", i);
     }
 
     //-------------------------------------------------
@@ -286,11 +280,13 @@ public class BshFile extends BinaryFile {
         for (var bshTexture : bshTextures) {
             var dbb = (DataBufferInt) bshTexture.getBufferedImage().getRaster().getDataBuffer();
 
-            var id = Texture.generateNewTextureId();
-            Texture.bind(id);
+            var texture = new Texture();
+            Texture.bind(texture.getId());
             Texture.useNoFilter();
 
-            bshTexture.setTextureId(id);
+            bshTexture.setTexture(texture);
+            bshTexture.getTexture().setWidth(bshTexture.getBufferedImage().getWidth());
+            bshTexture.getTexture().setHeight(bshTexture.getBufferedImage().getHeight());
 
             glTexImage2D(
                     GL_TEXTURE_2D,

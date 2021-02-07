@@ -37,7 +37,7 @@ public class TileRenderer {
     public void render(BshTexture texture, Vector2f position) {
         OpenGL.enableAlphaBlending();
         shader.bind();
-        Texture.bindForReading(texture.getTextureId(), GL_TEXTURE0);
+        Texture.bindForReading(texture.getTexture().getId(), GL_TEXTURE0);
 
         var size = new Vector2f(texture.getBufferedImage().getWidth(), texture.getBufferedImage().getHeight());
 
