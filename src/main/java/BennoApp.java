@@ -1,20 +1,19 @@
-import de.sg.benno.data.DataFiles;
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.file.BshFile;
 import de.sg.benno.file.PaletteFile;
-import de.sg.benno.renderer.TileRenderer;
 import de.sg.ogl.Color;
 import de.sg.ogl.OpenGL;
 import de.sg.ogl.SgOglApplication;
+import de.sg.ogl.gui.Anchor;
+import de.sg.ogl.gui.Gui;
 import org.joml.Vector2f;
 
 import java.io.IOException;
 
 public class BennoApp extends SgOglApplication {
 
-    private TileRenderer renderer;
-    private DataFiles dataFiles;
     private BshFile bshFile;
+    private Gui gui;
 
     //-------------------------------------------------
     // Ctors.
@@ -30,21 +29,40 @@ public class BennoApp extends SgOglApplication {
     @Override
     public void init() throws Exception {
         var filesystem = new BennoFiles("E:\\Anno");
-
         var paletteFile = new PaletteFile(filesystem.getOtherBshFilePath(BennoFiles.OtherBshFile.PALETTE));
 
-        renderer = new TileRenderer(getEngine());
-        dataFiles = new DataFiles();
         bshFile = new BshFile(
                 filesystem.getInterfaceBshFilePath(BennoFiles.InterfaceBshFile.START),
                 paletteFile.getPalette(),
                 true
                 );
+
+        gui = new Gui(getEngine());
+
+        var panel0 = gui.addPanel(
+                Anchor.TOP_LEFT,
+                new Vector2f(0.0f, 0.0f),
+                bshFile.getBshTextures().get(0).getTexture().getWidth(),
+                bshFile.getBshTextures().get(0).getTexture().getHeight(),
+                Color.WHITE,
+                bshFile.getBshTextures().get(0).getTexture()
+        );
+
+        var button0 = panel0.addButton(
+                Anchor.TOP_RIGHT,
+                new Vector2f(0.0f, 0.0f),
+                bshFile.getBshTextures().get(2).getTexture().getWidth(),
+                bshFile.getBshTextures().get(2).getTexture().getHeight(),
+                Color.WHITE,
+                bshFile.getBshTextures().get(2).getTexture()
+        );
+
+        var i = 0;
     }
 
     @Override
     public void input() {
-
+        gui.input();
     }
 
     @Override
@@ -57,6 +75,9 @@ public class BennoApp extends SgOglApplication {
         OpenGL.setClearColor(Color.CORNFLOWER_BLUE);
         OpenGL.clear();
 
+        gui.render();
+
+        /*
         // background
         renderer.render(bshFile.getBshTextures().get(0), new Vector2f(0.0f, 0.0f));
 
@@ -80,6 +101,7 @@ public class BennoApp extends SgOglApplication {
 
         // exit
         renderer.render(bshFile.getBshTextures().get(7), new Vector2f(113.0f, 630.0f));
+        */
     }
 
     @Override
@@ -89,7 +111,7 @@ public class BennoApp extends SgOglApplication {
 
     @Override
     public void cleanUp() {
+        gui.cleanUp();
         bshFile.cleanUp();
-        renderer.cleanUp();
     }
 }
