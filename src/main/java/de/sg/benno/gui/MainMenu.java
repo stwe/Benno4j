@@ -1,3 +1,11 @@
+/*
+ * This file is part of the Benno4j project.
+ *
+ * Copyright (c) 2021. stwe <https://github.com/stwe/Benno4j>
+ *
+ * License: GPLv2
+ */
+
 package de.sg.benno.gui;
 
 import de.sg.benno.file.BshFile;
@@ -10,6 +18,10 @@ import de.sg.ogl.gui.GuiButton;
 import de.sg.ogl.gui.event.GuiButtonAdapter;
 import de.sg.ogl.gui.event.GuiButtonEvent;
 import org.joml.Vector2f;
+
+import java.util.Objects;
+
+import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 
 public class MainMenu {
 
@@ -33,15 +45,15 @@ public class MainMenu {
     private final SgOglEngine engine;
     private final BshFile startBshFile;
 
-    private Gui mainMenu;
+    private Gui mainMenuGui;
 
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
     public MainMenu(SgOglEngine engine, BshFile startBshFile) throws Exception {
-        this.engine = engine;
-        this.startBshFile = startBshFile;
+        this.engine = Objects.requireNonNull(engine, "engine must not be null");
+        this.startBshFile = Objects.requireNonNull(startBshFile, "startBshFile must not be null");;
 
         create();
     }
@@ -50,8 +62,8 @@ public class MainMenu {
     // Getter
     //-------------------------------------------------
 
-    public Gui getMainMenu() {
-        return mainMenu;
+    public Gui getMainMenuGui() {
+        return mainMenuGui;
     }
 
     //-------------------------------------------------
@@ -59,7 +71,7 @@ public class MainMenu {
     //-------------------------------------------------
 
     private void create() throws Exception {
-        mainMenu = new Gui(engine);
+        mainMenuGui = new Gui(engine);
 
         var backgroundTexture = startBshFile.getBshTextures().get(BACKGROUND).getTexture();
         var shipTexture = startBshFile.getBshTextures().get(SHIP).getTexture();
@@ -78,7 +90,7 @@ public class MainMenu {
         var introSelectTexture = startBshFile.getBshTextures().get(INTRO_SELECT).getTexture();
         var exitSelectTexture = startBshFile.getBshTextures().get(EXIT_SELECT).getTexture();
 
-        var backgroundPanel = mainMenu.addPanel(
+        var backgroundPanel = mainMenuGui.addPanel(
                 Anchor.TOP_LEFT,
                 new Vector2f(0.0f, 0.0f),
                 backgroundTexture.getWidth(),
@@ -87,7 +99,7 @@ public class MainMenu {
                 backgroundTexture
         );
 
-        var shipPanel = mainMenu.addPanel(
+        var shipPanel = mainMenuGui.addPanel(
                 Anchor.TOP_LEFT,
                 new Vector2f(500.0f, 359.0f),
                 shipTexture.getWidth(),
@@ -254,7 +266,7 @@ public class MainMenu {
         exitButton.addListener(new GuiButtonAdapter() {
             @Override
             public void onClick(GuiButtonEvent event) {
-                Log.LOGGER.debug("On Click ExitButton");
+                glfwSetWindowShouldClose(engine.getWindow().getWindowHandle(), true);
             }
 
             @Override
