@@ -1,17 +1,25 @@
+/*
+ * This file is part of the Benno4j project.
+ *
+ * Copyright (c) 2021. stwe <https://github.com/stwe/Benno4j>
+ *
+ * License: GPLv2
+ */
+
 import de.sg.benno.file.BennoFiles;
-import de.sg.benno.file.BshFile;
 import de.sg.benno.file.PaletteFile;
-import de.sg.benno.gui.MainMenu;
+import de.sg.benno.state.Context;
+import de.sg.benno.state.MainMenuState;
 import de.sg.ogl.Color;
 import de.sg.ogl.OpenGL;
 import de.sg.ogl.SgOglApplication;
+import de.sg.ogl.state.StateMachine;
 
 import java.io.IOException;
 
 public class BennoApp extends SgOglApplication {
 
-    private BshFile startBshFile;
-    private MainMenu mainMenu;
+    private StateMachine stateMachine;
 
     //-------------------------------------------------
     // Ctors.
@@ -26,26 +34,26 @@ public class BennoApp extends SgOglApplication {
 
     @Override
     public void init() throws Exception {
-        var filesystem = new BennoFiles("E:\\Anno");
-        var paletteFile = new PaletteFile(filesystem.getOtherBshFilePath(BennoFiles.OtherBshFile.PALETTE));
+        Context stateContext = new Context();
+        stateContext.engine = getEngine();
+        stateContext.filesystem = new BennoFiles("E:\\Anno");
+        stateContext.paletteFile = new PaletteFile(stateContext.filesystem.getOtherBshFilePath(BennoFiles.OtherBshFile.PALETTE));
 
-        startBshFile = new BshFile(
-                filesystem.getInterfaceBshFilePath(BennoFiles.InterfaceBshFile.START),
-                paletteFile.getPalette(),
-                false
-                );
-
-        mainMenu = new MainMenu(getEngine(), startBshFile);
+        stateMachine = new StateMachine(stateContext);
+        stateMachine.add("main_menu", new MainMenuState(stateMachine));
+        stateMachine.change("main_menu");
     }
 
     @Override
     public void input() {
-        mainMenu.getMainMenu().input();
+        // the current state input method
+        stateMachine.input();
     }
 
     @Override
     public void update(float dt) {
-
+        // update current state
+        stateMachine.update(dt);
     }
 
     @Override
@@ -53,7 +61,8 @@ public class BennoApp extends SgOglApplication {
         OpenGL.setClearColor(Color.CORNFLOWER_BLUE);
         OpenGL.clear();
 
-        mainMenu.getMainMenu().render();
+        // render current state
+        stateMachine.render();
     }
 
     @Override
@@ -63,7 +72,7 @@ public class BennoApp extends SgOglApplication {
 
     @Override
     public void cleanUp() {
-        mainMenu.getMainMenu().cleanUp();
-        startBshFile.cleanUp();
+        // clean up current state
+        stateMachine.cleanUp();
     }
 }
