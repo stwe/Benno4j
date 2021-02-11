@@ -14,7 +14,6 @@ import de.sg.ogl.SgOglEngine;
 import de.sg.ogl.state.StateContext;
 
 public class Context implements StateContext {
-
     public SgOglEngine engine;
     public BennoFiles filesystem;
     public PaletteFile paletteFile;

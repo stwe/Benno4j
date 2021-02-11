@@ -89,10 +89,6 @@ public class BennoFiles {
     // Getter
     //-------------------------------------------------
 
-    public HashMap<Zoom.ZoomId, List<Path>> getZoomableBshFilePaths() {
-        return zoomableBshFilePaths;
-    }
-
     public Optional<Path> getZoomableBshFilePath(Zoom.ZoomId zoomId, ZoomableBshFile bshFile) {
         for (var val : zoomableBshFilePaths.get(zoomId)) {
             if (val.toString().toLowerCase().contains(bshFile.fileName)) {
@@ -103,16 +99,8 @@ public class BennoFiles {
         return Optional.empty();
     }
 
-    public HashMap<InterfaceBshFile, Path> getInterfaceBshFilePaths() {
-        return interfaceBshFilePaths;
-    }
-
     public Path getInterfaceBshFilePath(InterfaceBshFile bshFile) {
         return interfaceBshFilePaths.get(bshFile);
-    }
-
-    public HashMap<OtherBshFile, Path> getOtherBshFilePaths() {
-        return otherBshFilePaths;
     }
 
     public Path getOtherBshFilePath(OtherBshFile bshFile) {
@@ -133,8 +121,7 @@ public class BennoFiles {
         checkForZoomableBshFiles();
 
         // Interface graphics and other files (palette file)
-        findInterfaceBshFiles();
-        findOtherBshFiles();
+        findToolGfxBshFiles();
 
         LOGGER.debug("Successfully initialized filesystem.");
     }
@@ -153,57 +140,55 @@ public class BennoFiles {
         zoomableBshFilePaths.put(zoomId, paths);
     }
 
-    private void findInterfaceBshFiles() throws IOException {
+    private void findToolGfxBshFiles() throws IOException {
         for (var bshFile : InterfaceBshFile.values()) {
-            var paths = findInterfaceBshFile(bshFile);
-
+            var paths = listToolGfxBshFile(bshFile.fileName);
             if (paths.isEmpty()) {
-                throw new BennoRuntimeException("Interface BSH file " + bshFile.fileName + " found at " + rootPath + ".");
+                throw new BennoRuntimeException("The BSH file " + bshFile.fileName + " could not found at " + rootPath + ".");
             }
 
-            LOGGER.debug("Found " + bshFile.fileName + " at " + paths.get(0) + ".");
+            LOGGER.debug("Found BSH file {} at {}.", bshFile.fileName, paths.get(0));
 
             interfaceBshFilePaths.put(bshFile, paths.get(0));
         }
-    }
 
-    private void findOtherBshFiles() throws IOException {
         for (var bshFile : OtherBshFile.values()) {
-            var paths = findOtherBshFile(bshFile);
-
+            var paths = listToolGfxBshFile(bshFile.fileName);
             if (paths.isEmpty()) {
-                throw new BennoRuntimeException("Other BSH file " + bshFile.fileName + " found at " + rootPath + ".");
+                throw new BennoRuntimeException("The BSH file " + bshFile.fileName + " could not found at " + rootPath + ".");
             }
 
-            LOGGER.debug("Found " + bshFile.fileName + " at " + paths.get(0) + ".");
+            LOGGER.debug("Found BSH file {} at {}.", bshFile.fileName, paths.get(0));
 
             otherBshFilePaths.put(bshFile, paths.get(0));
         }
     }
 
     //-------------------------------------------------
-    // Check
+    // Helper
     //-------------------------------------------------
 
     private void checkForZoomableBshFiles() {
         for (var zoomId : Zoom.ZoomId.values()) {
             for (var bshFile : ZoomableBshFile.values()) {
                 var result = false;
+                String path = "";
                 for (var val : zoomableBshFilePaths.get(zoomId)) {
                     if (val.toString().toLowerCase().contains(bshFile.fileName)) {
                         result = true;
+                        path = val.toString();
                         break;
                     }
                 }
 
-                LOGGER.info("Does the file {}/{} exist? [{}]", zoomId, bshFile.fileName, result ? "yes" : "no");
+                if (!result) {
+                    throw new BennoRuntimeException("The BSH file " + bshFile.fileName + " could not found at " + rootPath + ".");
+                }
+
+                LOGGER.info("Found BSH file {}/{} at {}.", zoomId, bshFile.fileName, path);
             }
         }
     }
-
-    //-------------------------------------------------
-    // Helper
-    //-------------------------------------------------
 
     private List<Path> listZoomableBshFiles(Path zoom) throws IOException {
         List<Path> result;
@@ -235,27 +220,13 @@ public class BennoFiles {
         return matcherSource.find();
     }
 
-    private List<Path> findInterfaceBshFile(InterfaceBshFile bshFile) throws IOException {
+    private List<Path> listToolGfxBshFile(String fileName) throws IOException {
         List<Path> result;
 
         try (var walk = Files.walk(rootPath, 2)) {
             result = walk
                     .filter(Files::isRegularFile)
-                    .filter(p -> p.getFileName().toString().toLowerCase().contains(bshFile.fileName))
-                    .filter(p -> p.getParent().toString().toLowerCase().contains("toolgfx"))
-                    .collect(Collectors.toList());
-        }
-
-        return result;
-    }
-
-    private List<Path> findOtherBshFile(OtherBshFile bshFile) throws IOException {
-        List<Path> result;
-
-        try (var walk = Files.walk(rootPath)) {
-            result = walk
-                    .filter(Files::isRegularFile)
-                    .filter(p -> p.getFileName().toString().toLowerCase().contains(bshFile.fileName))
+                    .filter(p -> p.getFileName().toString().toLowerCase().contains(fileName))
                     .filter(p -> p.getParent().toString().toLowerCase().contains("toolgfx"))
                     .collect(Collectors.toList());
         }
