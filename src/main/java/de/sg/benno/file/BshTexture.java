@@ -22,7 +22,7 @@ public class BshTexture {
     // Ctors.
     //-------------------------------------------------
 
-    public BshTexture(BufferedImage bufferedImage) {
+    BshTexture(BufferedImage bufferedImage) {
         this.bufferedImage = Objects.requireNonNull(bufferedImage, "bufferedImage must not be null");
     }
 
@@ -42,7 +42,7 @@ public class BshTexture {
     // Setter
     //-------------------------------------------------
 
-    public void setTexture(Texture texture) {
+    void setTexture(Texture texture) {
         this.texture = texture;
     }
 }
