@@ -17,7 +17,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -25,7 +24,11 @@ import static de.sg.ogl.Log.LOGGER;
 
 public class BennoFiles {
 
-    public enum ZoomableBshFile {
+    private interface FileName {
+        String getFileName();
+    }
+
+    public enum ZoomableBshFileName implements FileName {
         EFFEKTE("effekte.bsh"),
         FISCHE("fische.bsh"),
         GAUKLER("gaukler.bsh"),
@@ -38,40 +41,57 @@ public class BennoFiles {
         TIERE("tiere.bsh"),
         TRAEGER("traeger.bsh");
 
-        public final String fileName;
+        private final String fileName;
 
-        ZoomableBshFile(String fileName) {
+        ZoomableBshFileName(String fileName) {
             this.fileName = fileName;
+        }
+
+        @Override
+        public String getFileName() {
+            return fileName;
         }
     }
 
-    public enum InterfaceBshFile {
+    public enum InterfaceBshFileName implements FileName {
         BAUHAUS("bauhaus.bsh"),
         START("start.bsh"),
         EDITOR("editor.bsh");
 
-        public final String fileName;
+        private final String fileName;
 
-        InterfaceBshFile(String fileName) {
+        InterfaceBshFileName(String fileName) {
             this.fileName = fileName;
+        }
+
+        @Override
+        public String getFileName() {
+            return fileName;
         }
     }
 
-    public enum OtherBshFile {
+    public enum OtherFileName implements FileName {
         PALETTE("stadtfld.col");
 
-        public final String fileName;
+        private final String fileName;
 
-        OtherBshFile(String fileName) {
+        OtherFileName(String fileName) {
             this.fileName = fileName;
+        }
+
+        @Override
+        public String getFileName() {
+            return fileName;
         }
     }
 
     private final Path rootPath;
 
     private final HashMap<Zoom.ZoomId, List<Path>> zoomableBshFilePaths = new HashMap<>();
-    private final HashMap<InterfaceBshFile, Path> interfaceBshFilePaths = new HashMap<>();
-    private final HashMap<OtherBshFile, Path> otherBshFilePaths = new HashMap<>();
+    private final HashMap<FileName, Path> filePaths = new HashMap<>();
+
+    private PaletteFile paletteFile;
+    private final HashMap<FileName, BshFile> bshFiles = new HashMap<>();
 
     //-------------------------------------------------
     // Ctors.
@@ -80,38 +100,44 @@ public class BennoFiles {
     public BennoFiles(String path) throws IOException {
         LOGGER.debug("Creates BennoFiles object.");
 
-        rootPath = Paths.get(path);
+        this.rootPath = Paths.get(path);
 
-        init();
+        initPaths();
+        preloadFiles();
     }
 
     //-------------------------------------------------
     // Getter
     //-------------------------------------------------
 
-    public Optional<Path> getZoomableBshFilePath(Zoom.ZoomId zoomId, ZoomableBshFile bshFile) {
+    public Path getZoomableBshFilePath(Zoom.ZoomId zoomId, ZoomableBshFileName bshFileName) {
         for (var val : zoomableBshFilePaths.get(zoomId)) {
-            if (val.toString().toLowerCase().contains(bshFile.fileName)) {
-                return Optional.of(val);
+            if (val.toString().toLowerCase().contains(bshFileName.fileName)) {
+                return val;
             }
         }
 
-        return Optional.empty();
+        throw new BennoRuntimeException("The BSH file " + bshFileName.getFileName() + " could not found at " + rootPath + ".");
     }
 
-    public Path getInterfaceBshFilePath(InterfaceBshFile bshFile) {
-        return interfaceBshFilePaths.get(bshFile);
+    public Path getFilePath(FileName fileName) {
+        return filePaths.get(fileName);
     }
 
-    public Path getOtherBshFilePath(OtherBshFile bshFile) {
-        return otherBshFilePaths.get(bshFile);
+    public PaletteFile getPaletteFile() {
+        return paletteFile;
+    }
+
+    public BshFile getBshFile(FileName fileName) {
+        // todo: load if not exist
+        return bshFiles.get(fileName);
     }
 
     //-------------------------------------------------
     // Init
     //-------------------------------------------------
 
-    private void init() throws IOException {
+    private void initPaths() throws IOException {
         LOGGER.debug("Starts initializing filesystem from path {}...", rootPath);
 
         // Zoom graphics in GFX, MGFX, SGFX
@@ -120,10 +146,23 @@ public class BennoFiles {
         findZoomableBshFiles(Zoom.ZoomId.GFX);
         checkForZoomableBshFiles();
 
-        // Interface graphics and other files (palette file)
-        findToolGfxBshFiles();
+        // Interface graphics and other files (e.g. palette file)
+        findToolGfxFiles();
 
         LOGGER.debug("Successfully initialized filesystem.");
+    }
+
+    private void preloadFiles() throws IOException {
+        // palette file
+        paletteFile = new PaletteFile(filePaths.get(OtherFileName.PALETTE));
+
+        // start.bsh
+        var startBshFile = new BshFile(
+                filePaths.get(BennoFiles.InterfaceBshFileName.START),
+                paletteFile.getPalette()
+        );
+
+        bshFiles.put(BennoFiles.InterfaceBshFileName.START, startBshFile);
     }
 
     //-------------------------------------------------
@@ -140,28 +179,26 @@ public class BennoFiles {
         zoomableBshFilePaths.put(zoomId, paths);
     }
 
-    private void findToolGfxBshFiles() throws IOException {
-        for (var bshFile : InterfaceBshFile.values()) {
-            var paths = listToolGfxBshFile(bshFile.fileName);
-            if (paths.isEmpty()) {
-                throw new BennoRuntimeException("The BSH file " + bshFile.fileName + " could not found at " + rootPath + ".");
-            }
-
-            LOGGER.debug("Found BSH file {} at {}.", bshFile.fileName, paths.get(0));
-
-            interfaceBshFilePaths.put(bshFile, paths.get(0));
+    private void findToolGfxFiles() throws IOException {
+        for (var bshFile : InterfaceBshFileName.values()) {
+            var paths = listToolGfxFile(bshFile.fileName);
+            addFilePath(paths, bshFile);
         }
 
-        for (var bshFile : OtherBshFile.values()) {
-            var paths = listToolGfxBshFile(bshFile.fileName);
-            if (paths.isEmpty()) {
-                throw new BennoRuntimeException("The BSH file " + bshFile.fileName + " could not found at " + rootPath + ".");
-            }
-
-            LOGGER.debug("Found BSH file {} at {}.", bshFile.fileName, paths.get(0));
-
-            otherBshFilePaths.put(bshFile, paths.get(0));
+        for (var otherFile : OtherFileName.values()) {
+            var paths = listToolGfxFile(otherFile.fileName);
+            addFilePath(paths, otherFile);
         }
+    }
+
+    private void addFilePath(List<Path> pathList, FileName fileName) {
+        if (pathList.isEmpty()) {
+            throw new BennoRuntimeException("The file " + fileName.getFileName() + " could not found at " + rootPath + ".");
+        }
+
+        LOGGER.debug("Found file {} at {}.", fileName.getFileName(), pathList.get(0));
+
+        filePaths.put(fileName, pathList.get(0));
     }
 
     //-------------------------------------------------
@@ -170,7 +207,7 @@ public class BennoFiles {
 
     private void checkForZoomableBshFiles() {
         for (var zoomId : Zoom.ZoomId.values()) {
-            for (var bshFile : ZoomableBshFile.values()) {
+            for (var bshFile : ZoomableBshFileName.values()) {
                 var result = false;
                 String path = "";
                 for (var val : zoomableBshFilePaths.get(zoomId)) {
@@ -220,7 +257,7 @@ public class BennoFiles {
         return matcherSource.find();
     }
 
-    private List<Path> listToolGfxBshFile(String fileName) throws IOException {
+    private List<Path> listToolGfxFile(String fileName) throws IOException {
         List<Path> result;
 
         try (var walk = Files.walk(rootPath, 2)) {

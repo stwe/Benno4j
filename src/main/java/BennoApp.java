@@ -7,7 +7,6 @@
  */
 
 import de.sg.benno.file.BennoFiles;
-import de.sg.benno.file.PaletteFile;
 import de.sg.benno.state.Context;
 import de.sg.benno.state.MainMenuState;
 import de.sg.ogl.Color;
@@ -37,7 +36,6 @@ public class BennoApp extends SgOglApplication {
         Context stateContext = new Context();
         stateContext.engine = getEngine();
         stateContext.filesystem = new BennoFiles("E:\\Anno");
-        stateContext.paletteFile = new PaletteFile(stateContext.filesystem.getOtherBshFilePath(BennoFiles.OtherBshFile.PALETTE));
 
         stateMachine = new StateMachine(stateContext);
         stateMachine.add("main_menu", new MainMenuState(stateMachine));
