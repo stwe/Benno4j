@@ -9,7 +9,6 @@
 package de.sg.benno.state;
 
 import de.sg.benno.file.BennoFiles;
-import de.sg.benno.file.BshFile;
 import de.sg.benno.gui.MainMenu;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
@@ -33,13 +32,11 @@ public class MainMenuState extends ApplicationState {
     @Override
     public void init() throws Exception {
         var context = (Context)getStateMachine().getStateContext();
-        var startBshFile = new BshFile(
-                context.filesystem.getInterfaceBshFilePath(BennoFiles.InterfaceBshFile.START),
-                context.paletteFile.getPalette(),
-                false
-        );
 
-        mainMenu = new MainMenu(context.engine, startBshFile);
+        mainMenu = new MainMenu(
+                context.engine,
+                context.filesystem.getBshFile(BennoFiles.InterfaceBshFileName.START)
+        );
     }
 
     @Override
