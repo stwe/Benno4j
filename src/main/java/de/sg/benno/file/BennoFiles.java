@@ -11,10 +11,12 @@ package de.sg.benno.file;
 import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.renderer.Zoom;
 
+import javax.swing.filechooser.FileSystemView;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -87,8 +89,12 @@ public class BennoFiles {
         }
     }
 
-    private final Path rootPath;
+    private static final String SAVEGAME_PATH = "\\Anno 1602 History Edition\\Savegame";
 
+    private final Path rootPath;
+    private final Path savegamePath;
+
+    private final ArrayList<Path> savegameFilePaths = new ArrayList<>();
     private final HashMap<Zoom.ZoomId, List<Path>> zoomableBshFilePaths = new HashMap<>();
     private final HashMap<FileName, Path> filePaths = new HashMap<>();
 
@@ -103,6 +109,11 @@ public class BennoFiles {
         LOGGER.debug("Creates BennoFiles object.");
 
         this.rootPath = Paths.get(Objects.requireNonNull(path, "path must not be null"));
+        var home = FileSystemView.getFileSystemView().getDefaultDirectory().getPath();
+        this.savegamePath = Path.of(home + SAVEGAME_PATH);
+
+        LOGGER.debug("Home directory found at {}.", home);
+        LOGGER.debug("Search savegames at {}.", this.savegamePath);
 
         initPaths();
         preloadFiles();
@@ -157,6 +168,9 @@ public class BennoFiles {
     private void initPaths() throws IOException {
         LOGGER.debug("Starts initializing filesystem from path {}...", rootPath);
 
+        // Savegames
+        findSavegameFiles();
+
         // Zoom graphics in GFX, MGFX, SGFX
         findZoomableBshFiles(Zoom.ZoomId.SGFX);
         findZoomableBshFiles(Zoom.ZoomId.MGFX);
@@ -198,6 +212,13 @@ public class BennoFiles {
     //-------------------------------------------------
     // Find files
     //-------------------------------------------------
+
+    private void findSavegameFiles() throws IOException {
+        for (var path : listSavegameFiles()) {
+            LOGGER.debug("Found savegame file at {}.", path);
+            savegameFilePaths.add(path);
+        }
+    }
 
     private void findZoomableBshFiles(Zoom.ZoomId zoomId) throws IOException {
         var paths = listZoomableBshFiles(Paths.get(zoomId.toString()));
@@ -255,6 +276,19 @@ public class BennoFiles {
                 LOGGER.info("Found BSH file {}/{} at {}.", zoomId, bshFile.fileName, path);
             }
         }
+    }
+
+    private List<Path> listSavegameFiles() throws IOException {
+        List<Path> result;
+
+        try (var walk = Files.walk(savegamePath, 1)) {
+            result = walk
+                    .filter(Files::isRegularFile)
+                    .filter(p -> p.getFileName().toString().toLowerCase().endsWith(".gam"))
+                    .collect(Collectors.toList());
+        }
+
+        return result;
     }
 
     private List<Path> listZoomableBshFiles(Path zoom) throws IOException {
