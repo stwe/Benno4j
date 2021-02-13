@@ -8,6 +8,7 @@
 
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.state.Context;
+import de.sg.benno.state.GameMenuState;
 import de.sg.benno.state.MainMenuState;
 import de.sg.ogl.Color;
 import de.sg.ogl.OpenGL;
@@ -47,6 +48,7 @@ public class BennoApp extends SgOglApplication {
 
         this.stateMachine = new StateMachine(stateContext);
         this.stateMachine.add("main_menu", new MainMenuState(stateMachine));
+        this.stateMachine.add("game_menu", new GameMenuState(stateMachine));
         this.stateMachine.change("main_menu");
 
         LOGGER.debug("BennoApp successfully initialized.");

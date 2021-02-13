@@ -17,6 +17,7 @@ import de.sg.ogl.gui.Gui;
 import de.sg.ogl.gui.GuiButton;
 import de.sg.ogl.gui.event.GuiButtonAdapter;
 import de.sg.ogl.gui.event.GuiButtonEvent;
+import de.sg.ogl.state.StateMachine;
 import org.joml.Vector2f;
 
 import java.util.Objects;
@@ -45,6 +46,7 @@ public class MainMenu {
 
     private final SgOglEngine engine;
     private final BshFile startBshFile;
+    private final StateMachine stateMachine;
 
     private Gui mainMenuGui;
 
@@ -52,11 +54,12 @@ public class MainMenu {
     // Ctors.
     //-------------------------------------------------
 
-    public MainMenu(SgOglEngine engine, BshFile startBshFile) throws Exception {
+    public MainMenu(SgOglEngine engine, BshFile startBshFile, StateMachine stateMachine) throws Exception {
         LOGGER.debug("Creates MainMenu object.");
 
         this.engine = Objects.requireNonNull(engine, "engine must not be null");
-        this.startBshFile = Objects.requireNonNull(startBshFile, "startBshFile must not be null");;
+        this.startBshFile = Objects.requireNonNull(startBshFile, "startBshFile must not be null");
+        this.stateMachine = Objects.requireNonNull(stateMachine, "stateMachine must not be null");
 
         create();
     }
@@ -122,11 +125,15 @@ public class MainMenu {
                 singleplayerTexture
         );
 
-        // singleplayer button listener
         singleplayerButton.addListener(new GuiButtonAdapter() {
             @Override
             public void onClick(GuiButtonEvent event) {
-                Log.LOGGER.debug("On Click SinglePlayerButton");
+                // todo
+                try {
+                    loadGameMenu();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
@@ -151,11 +158,10 @@ public class MainMenu {
                 multiplayerTexture
         );
 
-        // multiplayer button listener
         multiplayerButton.addListener(new GuiButtonAdapter() {
             @Override
             public void onClick(GuiButtonEvent event) {
-                Log.LOGGER.debug("On Click MultiPlayerButton");
+                Log.LOGGER.debug("click MultiPlayerButton");
             }
 
             @Override
@@ -180,11 +186,10 @@ public class MainMenu {
                 optionsTexture
         );
 
-        // options button listener
         optionsButton.addListener(new GuiButtonAdapter() {
             @Override
             public void onClick(GuiButtonEvent event) {
-                Log.LOGGER.debug("On Click OptionsButton");
+                Log.LOGGER.debug("click OptionsButton");
             }
 
             @Override
@@ -209,11 +214,10 @@ public class MainMenu {
                 creditsTexture
         );
 
-        // credits button listener
         creditsButton.addListener(new GuiButtonAdapter() {
             @Override
             public void onClick(GuiButtonEvent event) {
-                Log.LOGGER.debug("On Click CreditsButton");
+                Log.LOGGER.debug("click CreditsButton");
             }
 
             @Override
@@ -238,11 +242,10 @@ public class MainMenu {
                 introTexture
         );
 
-        // intro button listener
         introButton.addListener(new GuiButtonAdapter() {
             @Override
             public void onClick(GuiButtonEvent event) {
-                Log.LOGGER.debug("On Click IntroButton");
+                Log.LOGGER.debug("click IntroButton");
             }
 
             @Override
@@ -267,7 +270,6 @@ public class MainMenu {
                 exitTexture
         );
 
-        // exit button listener
         exitButton.addListener(new GuiButtonAdapter() {
             @Override
             public void onClick(GuiButtonEvent event) {
@@ -286,5 +288,13 @@ public class MainMenu {
                 source.setTexture(exitTexture);
             }
         });
+    }
+
+    //-------------------------------------------------
+    // Change States
+    //-------------------------------------------------
+
+    private void loadGameMenu() throws Exception {
+        stateMachine.change("game_menu");
     }
 }

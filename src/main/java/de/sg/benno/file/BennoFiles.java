@@ -177,7 +177,7 @@ public class BennoFiles {
 
         // preload start.bsh
         //loadBshFile(InterfaceBshFileName.BAUHAUS);
-        //loadBshFile(InterfaceBshFileName.EDITOR); //950
+        //loadBshFile(InterfaceBshFileName.EDITOR); // 950
         loadBshFile(InterfaceBshFileName.START);
         //loadBshFile(InterfaceBshFileName.TOOLS); // 670
 

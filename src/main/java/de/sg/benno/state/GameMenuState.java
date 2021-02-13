@@ -9,24 +9,24 @@
 package de.sg.benno.state;
 
 import de.sg.benno.file.BennoFiles;
-import de.sg.benno.gui.MainMenu;
+import de.sg.benno.gui.GameMenu;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
 
 import static de.sg.ogl.Log.LOGGER;
 
-public class MainMenuState extends ApplicationState {
+public class GameMenuState extends ApplicationState {
 
-    private MainMenu mainMenu;
+    private GameMenu gameMenu;
 
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
-    public MainMenuState(StateMachine stateMachine) {
+    public GameMenuState(StateMachine stateMachine) {
         super(stateMachine);
 
-        LOGGER.debug("Creates MainMenuState object.");
+        LOGGER.debug("Creates GameMenuState object.");
     }
 
     //-------------------------------------------------
@@ -37,7 +37,7 @@ public class MainMenuState extends ApplicationState {
     public void init() throws Exception {
         var context = (Context)getStateMachine().getStateContext();
 
-        mainMenu = new MainMenu(
+        gameMenu = new GameMenu(
                 context.engine,
                 context.filesystem.getBshFile(BennoFiles.InterfaceBshFileName.START),
                 this.getStateMachine()
@@ -46,7 +46,7 @@ public class MainMenuState extends ApplicationState {
 
     @Override
     public void input() {
-        mainMenu.getMainMenuGui().input();
+        gameMenu.getGameMenuGui().input();
     }
 
     @Override
@@ -56,11 +56,11 @@ public class MainMenuState extends ApplicationState {
 
     @Override
     public void render() {
-        mainMenu.getMainMenuGui().render();
+        gameMenu.getGameMenuGui().render();
     }
 
     @Override
     public void cleanUp() {
-        mainMenu.getMainMenuGui().cleanUp();
+        gameMenu.getGameMenuGui().cleanUp();
     }
 }
