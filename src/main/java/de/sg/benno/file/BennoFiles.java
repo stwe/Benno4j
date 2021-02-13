@@ -57,7 +57,8 @@ public class BennoFiles {
     public enum InterfaceBshFileName implements FileName {
         BAUHAUS("bauhaus.bsh"),
         START("start.bsh"),
-        EDITOR("editor.bsh");
+        EDITOR("editor.bsh"),
+        TOOLS("tools.bsh");
 
         private final String fileName;
 
@@ -175,16 +176,23 @@ public class BennoFiles {
         paletteFile = new PaletteFile(filePaths.get(OtherFileName.PALETTE));
 
         // preload start.bsh
-        loadBshFile(BennoFiles.InterfaceBshFileName.START);
+        //loadBshFile(InterfaceBshFileName.BAUHAUS);
+        //loadBshFile(InterfaceBshFileName.EDITOR); //950
+        loadBshFile(InterfaceBshFileName.START);
+        //loadBshFile(InterfaceBshFileName.TOOLS); // 670
 
         LOGGER.debug("Successfully loaded files.");
     }
 
-    private void loadBshFile(FileName fileName) throws IOException {
+    private void loadBshFile(FileName fileName, boolean saveAsPng) throws IOException {
         bshFiles.put(
                 fileName,
-                new BshFile(filePaths.get(fileName), paletteFile.getPalette())
+                new BshFile(filePaths.get(fileName), paletteFile.getPalette(), saveAsPng)
         );
+    }
+
+    private void loadBshFile(FileName fileName) throws IOException {
+        loadBshFile(fileName, false);
     }
 
     //-------------------------------------------------
