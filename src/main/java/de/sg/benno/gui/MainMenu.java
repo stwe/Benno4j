@@ -21,6 +21,7 @@ import org.joml.Vector2f;
 
 import java.util.Objects;
 
+import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 
 public class MainMenu {
@@ -52,6 +53,8 @@ public class MainMenu {
     //-------------------------------------------------
 
     public MainMenu(SgOglEngine engine, BshFile startBshFile) throws Exception {
+        LOGGER.debug("Creates MainMenu object.");
+
         this.engine = Objects.requireNonNull(engine, "engine must not be null");
         this.startBshFile = Objects.requireNonNull(startBshFile, "startBshFile must not be null");;
 
@@ -71,6 +74,8 @@ public class MainMenu {
     //-------------------------------------------------
 
     private void create() throws Exception {
+        LOGGER.debug("Creates Main Menu Gui.");
+
         mainMenuGui = new Gui(engine);
 
         var backgroundTexture = startBshFile.getBshTextures().get(BACKGROUND).getTexture();

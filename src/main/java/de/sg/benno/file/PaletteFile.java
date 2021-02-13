@@ -29,7 +29,7 @@ public class PaletteFile extends BinaryFile {
     // Ctors.
     //-------------------------------------------------
 
-    public PaletteFile(Path path) throws IOException {
+    PaletteFile(Path path) throws IOException {
         super(Objects.requireNonNull(path, "path must not be null"));
 
         LOGGER.debug("Creates PaletteFile object from file {}.", path);

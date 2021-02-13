@@ -16,8 +16,11 @@ import de.sg.ogl.state.StateMachine;
 
 import java.io.IOException;
 
+import static de.sg.ogl.Log.LOGGER;
+
 public class BennoApp extends SgOglApplication {
 
+    private BennoFiles bennoFiles;
     private StateMachine stateMachine;
 
     //-------------------------------------------------
@@ -25,6 +28,7 @@ public class BennoApp extends SgOglApplication {
     //-------------------------------------------------
 
     public BennoApp() throws IOException, IllegalAccessException {
+        LOGGER.debug("Creates BennoApp object.");
     }
 
     //-------------------------------------------------
@@ -33,13 +37,19 @@ public class BennoApp extends SgOglApplication {
 
     @Override
     public void init() throws Exception {
+        LOGGER.debug("Starts initializing BennoApp ...");
+
+        this.bennoFiles = new BennoFiles("E:\\Anno");
+
         Context stateContext = new Context();
         stateContext.engine = getEngine();
-        stateContext.filesystem = new BennoFiles("E:\\Anno");
+        stateContext.filesystem = this.bennoFiles;
 
-        stateMachine = new StateMachine(stateContext);
-        stateMachine.add("main_menu", new MainMenuState(stateMachine));
-        stateMachine.change("main_menu");
+        this.stateMachine = new StateMachine(stateContext);
+        this.stateMachine.add("main_menu", new MainMenuState(stateMachine));
+        this.stateMachine.change("main_menu");
+
+        LOGGER.debug("BennoApp successfully initialized.");
     }
 
     @Override
@@ -70,6 +80,8 @@ public class BennoApp extends SgOglApplication {
 
     @Override
     public void cleanUp() {
+        bennoFiles.cleanUp();
+
         // clean up current state
         stateMachine.cleanUp();
     }

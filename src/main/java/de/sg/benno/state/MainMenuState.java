@@ -13,6 +13,8 @@ import de.sg.benno.gui.MainMenu;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
 
+import static de.sg.ogl.Log.LOGGER;
+
 public class MainMenuState extends ApplicationState {
 
     private MainMenu mainMenu;
@@ -23,6 +25,8 @@ public class MainMenuState extends ApplicationState {
 
     public MainMenuState(StateMachine stateMachine) {
         super(stateMachine);
+
+        LOGGER.debug("Creates MainMenuState object.");
     }
 
     //-------------------------------------------------
