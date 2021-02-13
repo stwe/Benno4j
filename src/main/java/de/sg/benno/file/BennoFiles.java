@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -100,7 +101,7 @@ public class BennoFiles {
     public BennoFiles(String path) throws IOException {
         LOGGER.debug("Creates BennoFiles object.");
 
-        this.rootPath = Paths.get(path);
+        this.rootPath = Paths.get(Objects.requireNonNull(path, "path must not be null"));
 
         initPaths();
         preloadFiles();
@@ -128,9 +129,24 @@ public class BennoFiles {
         return paletteFile;
     }
 
-    public BshFile getBshFile(FileName fileName) {
-        // todo: load if not exist
+    public BshFile getBshFile(FileName fileName) throws IOException {
+        if (!bshFiles.containsKey(fileName)) {
+            loadBshFile(fileName);
+        }
+
         return bshFiles.get(fileName);
+    }
+
+    //-------------------------------------------------
+    // Clean up
+    //-------------------------------------------------
+
+    public void cleanUp() {
+        LOGGER.debug("Clean up BennoFiles.");
+
+        for (var bshFile : bshFiles.values()) {
+            bshFile.cleanUp();
+        }
     }
 
     //-------------------------------------------------
@@ -153,16 +169,22 @@ public class BennoFiles {
     }
 
     private void preloadFiles() throws IOException {
-        // palette file
+        LOGGER.debug("Starts preloading some files ...");
+
+        // preload palette file (stadtfld.col)
         paletteFile = new PaletteFile(filePaths.get(OtherFileName.PALETTE));
 
-        // start.bsh
-        var startBshFile = new BshFile(
-                filePaths.get(BennoFiles.InterfaceBshFileName.START),
-                paletteFile.getPalette()
-        );
+        // preload start.bsh
+        loadBshFile(BennoFiles.InterfaceBshFileName.START);
 
-        bshFiles.put(BennoFiles.InterfaceBshFileName.START, startBshFile);
+        LOGGER.debug("Successfully loaded files.");
+    }
+
+    private void loadBshFile(FileName fileName) throws IOException {
+        bshFiles.put(
+                fileName,
+                new BshFile(filePaths.get(fileName), paletteFile.getPalette())
+        );
     }
 
     //-------------------------------------------------

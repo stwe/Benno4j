@@ -70,7 +70,7 @@ public class BshFile extends BinaryFile {
     // Ctors.
     //-------------------------------------------------
 
-    public BshFile(Path path, int[] palette, boolean saveAsPng) throws IOException {
+    BshFile(Path path, int[] palette, boolean saveAsPng) throws IOException {
         super(Objects.requireNonNull(path, "path must not be null"));
 
         LOGGER.debug("Creates BshFile object from file {}.", path);
@@ -91,7 +91,7 @@ public class BshFile extends BinaryFile {
         readDataFromChunks();
     }
 
-    public BshFile(Path path, int[] palette) throws IOException {
+    BshFile(Path path, int[] palette) throws IOException {
         this(path, palette, false);
     }
 
