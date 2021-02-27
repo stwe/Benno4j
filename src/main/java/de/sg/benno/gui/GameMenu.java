@@ -16,11 +16,15 @@ import de.sg.ogl.gui.Gui;
 import de.sg.ogl.gui.event.GuiEvent;
 import de.sg.ogl.gui.event.GuiListener;
 import de.sg.ogl.gui.widget.GuiButton;
+import de.sg.ogl.gui.widget.GuiLabel;
+import de.sg.ogl.gui.widget.GuiListBox;
 import de.sg.ogl.gui.widget.GuiPanel;
 import de.sg.ogl.state.StateMachine;
 import de.sg.ogl.text.TextRenderer;
 import org.joml.Vector2f;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Objects;
 
 import static de.sg.ogl.Log.LOGGER;
@@ -42,8 +46,13 @@ public class GameMenu {
     private static final int CONTINUE_GAME_SELECT = 21;
     private static final int MAIN_MENU_SELECT = 22;
 
+    private static final int UP = 41;
+    private static final int DOWN = 42;
+
     private final SgOglEngine engine;
     private final BshFile startBshFile;
+    private final ArrayList<String> savegameFilePathLabels;
+    private final ArrayList<Path> savegameFilePathValues;
     private final StateMachine stateMachine;
     private final TextRenderer textRenderer;
 
@@ -53,11 +62,19 @@ public class GameMenu {
     // Ctors.
     //-------------------------------------------------
 
-    public GameMenu(SgOglEngine engine, BshFile startBshFile, StateMachine stateMachine) throws Exception {
+    public GameMenu(
+            SgOglEngine engine,
+            BshFile startBshFile,
+            ArrayList<String> savegameFilePathLables,
+            ArrayList<Path> savegameFilePathValues,
+            StateMachine stateMachine
+    ) throws Exception {
         LOGGER.debug("Creates GameMenu object.");
 
         this.engine = Objects.requireNonNull(engine, "engine must not be null");
         this.startBshFile = Objects.requireNonNull(startBshFile, "startBshFile must not be null");
+        this.savegameFilePathLabels = Objects.requireNonNull(savegameFilePathLables, "savegameFilePathLabels must not be null");
+        this.savegameFilePathValues = Objects.requireNonNull(savegameFilePathValues, "savegameFilePathValues must not be null");
         this.stateMachine = Objects.requireNonNull(stateMachine, "stateMachine must not be null");
         this.textRenderer = new TextRenderer(this.engine, new java.awt.Font(MONOSPACED, PLAIN, 10));
 
@@ -94,6 +111,9 @@ public class GameMenu {
         var continueGameTextureSelect = startBshFile.getBshTextures().get(CONTINUE_GAME_SELECT).getTexture();
         var mainMenuTextureSelect = startBshFile.getBshTextures().get(MAIN_MENU_SELECT).getTexture();
 
+        var upTexture = startBshFile.getBshTextures().get(UP).getTexture();
+        var downTexture = startBshFile.getBshTextures().get(DOWN).getTexture();
+
         // panels
 
         var bgPanel = new GuiPanel(
@@ -103,15 +123,38 @@ public class GameMenu {
                 backgroundTexture
         );
 
-        var listPanel = new GuiPanel(
+        var listBox = new GuiListBox<Path>(
                 new Vector2f(500.0f, 359.0f),
                 (float)listTexture.getWidth(),
                 (float)listTexture.getHeight(),
-                listTexture
+                listTexture,
+                upTexture,
+                downTexture,
+                savegameFilePathLabels,
+                savegameFilePathValues,
+                new TextRenderer(engine, new java.awt.Font(MONOSPACED, PLAIN, 14))
         );
 
         gameMenuGui.getMainPanel().add(bgPanel);
-        gameMenuGui.getMainPanel().add(listPanel);
+        gameMenuGui.getMainPanel().add(listBox);
+
+        for (var label : listBox.getGuiLabels()) {
+            label.addListener(new GuiListener<>() {
+                @Override
+                public void onClick(GuiEvent<GuiLabel<Path>> event) {
+                    var guiLabel = (GuiLabel<Path>) event.getSource();
+                    loadSavegame(guiLabel.getValue());
+                }
+
+                @Override
+                public void onHover(GuiEvent<GuiLabel<Path>> event) {
+                }
+
+                @Override
+                public void onRelease(GuiEvent<GuiLabel<Path>> event) {
+                }
+            });
+        }
 
         // new game button
 
@@ -249,6 +292,10 @@ public class GameMenu {
     //-------------------------------------------------
     // Change States
     //-------------------------------------------------
+
+    private void loadSavegame(Path path) {
+        LOGGER.debug("Load savegame from path {}", path);
+    }
 
     private void loadMainMenu() throws Exception {
         stateMachine.change("main_menu");

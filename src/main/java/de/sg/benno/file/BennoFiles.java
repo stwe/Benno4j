@@ -123,6 +123,10 @@ public class BennoFiles {
     // Getter
     //-------------------------------------------------
 
+    public ArrayList<Path> getSavegameFilePaths() {
+        return savegameFilePaths;
+    }
+
     public Path getZoomableBshFilePath(Zoom.ZoomId zoomId, ZoomableBshFileName bshFileName) {
         for (var val : zoomableBshFilePaths.get(zoomId)) {
             if (val.toString().toLowerCase().contains(bshFileName.fileName)) {
