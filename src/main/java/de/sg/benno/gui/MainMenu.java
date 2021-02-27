@@ -9,14 +9,13 @@
 package de.sg.benno.gui;
 
 import de.sg.benno.file.BshFile;
-import de.sg.ogl.Color;
 import de.sg.ogl.Log;
 import de.sg.ogl.SgOglEngine;
-import de.sg.ogl.gui.Anchor;
 import de.sg.ogl.gui.Gui;
-import de.sg.ogl.gui.GuiButton;
-import de.sg.ogl.gui.event.GuiButtonAdapter;
-import de.sg.ogl.gui.event.GuiButtonEvent;
+import de.sg.ogl.gui.event.GuiEvent;
+import de.sg.ogl.gui.event.GuiListener;
+import de.sg.ogl.gui.widget.GuiButton;
+import de.sg.ogl.gui.widget.GuiPanel;
 import de.sg.ogl.state.StateMachine;
 import org.joml.Vector2f;
 
@@ -98,36 +97,39 @@ public class MainMenu {
         var introSelectTexture = startBshFile.getBshTextures().get(INTRO_SELECT).getTexture();
         var exitSelectTexture = startBshFile.getBshTextures().get(EXIT_SELECT).getTexture();
 
-        var backgroundPanel = mainMenuGui.addPanel(
-                Anchor.TOP_LEFT,
+        // panels
+
+        var bgPanel = new GuiPanel(
                 new Vector2f(0.0f, 0.0f),
-                backgroundTexture.getWidth(),
-                backgroundTexture.getHeight(),
-                Color.WHITE,
+                (float)backgroundTexture.getWidth(),
+                (float)backgroundTexture.getHeight(),
                 backgroundTexture
         );
 
-        var shipPanel = mainMenuGui.addPanel(
-                Anchor.TOP_LEFT,
+        var shipPanel = new GuiPanel(
                 new Vector2f(500.0f, 359.0f),
-                shipTexture.getWidth(),
-                shipTexture.getHeight(),
-                Color.WHITE,
+                (float)shipTexture.getWidth(),
+                (float)shipTexture.getHeight(),
                 shipTexture
         );
 
-        var singleplayerButton = backgroundPanel.addButton(
-                Anchor.TOP_LEFT,
+        mainMenuGui.getMainPanel().add(bgPanel);
+        mainMenuGui.getMainPanel().add(shipPanel);
+
+        // singleplayer button
+
+        var spBtn = new GuiButton(
                 new Vector2f(113.0f, 362.0f),
-                singleplayerTexture.getWidth(),
-                singleplayerTexture.getHeight(),
-                Color.WHITE,
+                (float)singleplayerTexture.getWidth(),
+                (float)singleplayerTexture.getHeight(),
                 singleplayerTexture
         );
 
-        singleplayerButton.addListener(new GuiButtonAdapter() {
+        bgPanel.add(spBtn);
+
+        spBtn.addListener(new GuiListener<>() {
             @Override
-            public void onClick(GuiButtonEvent event) {
+            public void onClick(GuiEvent<GuiButton> event) {
                 // todo
                 try {
                     loadGameMenu();
@@ -137,153 +139,163 @@ public class MainMenu {
             }
 
             @Override
-            public void onHover(GuiButtonEvent event) {
+            public void onHover(GuiEvent<GuiButton> event) {
                 var source = (GuiButton)event.getSource();
                 source.setTexture(singleplayerSelectTexture);
             }
 
             @Override
-            public void onRelease(GuiButtonEvent event) {
+            public void onRelease(GuiEvent<GuiButton> event) {
                 var source = (GuiButton)event.getSource();
                 source.setTexture(singleplayerTexture);
             }
         });
 
-        var multiplayerButton = backgroundPanel.addButton(
-                Anchor.TOP_LEFT,
+        // multiplayer button
+
+        var mpBtn = new GuiButton(
                 new Vector2f(113.0f, 415.0f),
-                multiplayerTexture.getWidth(),
-                multiplayerTexture.getHeight(),
-                Color.WHITE,
+                (float)multiplayerTexture.getWidth(),
+                (float)multiplayerTexture.getHeight(),
                 multiplayerTexture
         );
 
-        multiplayerButton.addListener(new GuiButtonAdapter() {
+        bgPanel.add(mpBtn);
+
+        mpBtn.addListener(new GuiListener<>() {
             @Override
-            public void onClick(GuiButtonEvent event) {
+            public void onClick(GuiEvent<GuiButton> event) {
                 Log.LOGGER.debug("click MultiPlayerButton");
             }
 
             @Override
-            public void onHover(GuiButtonEvent event) {
+            public void onHover(GuiEvent<GuiButton> event) {
                 var source = (GuiButton)event.getSource();
                 source.setTexture(multiplayerSelectTexture);
             }
 
             @Override
-            public void onRelease(GuiButtonEvent event) {
+            public void onRelease(GuiEvent<GuiButton> event) {
                 var source = (GuiButton)event.getSource();
                 source.setTexture(multiplayerTexture);
             }
         });
 
-        var optionsButton = backgroundPanel.addButton(
-                Anchor.TOP_LEFT,
+        // options button
+
+        var optionsBtn = new GuiButton(
                 new Vector2f(113.0f, 469.0f),
-                optionsTexture.getWidth(),
-                optionsTexture.getHeight(),
-                Color.WHITE,
+                (float)optionsTexture.getWidth(),
+                (float)optionsTexture.getHeight(),
                 optionsTexture
         );
 
-        optionsButton.addListener(new GuiButtonAdapter() {
+        bgPanel.add(optionsBtn);
+
+        optionsBtn.addListener(new GuiListener<>() {
             @Override
-            public void onClick(GuiButtonEvent event) {
+            public void onClick(GuiEvent<GuiButton> event) {
                 Log.LOGGER.debug("click OptionsButton");
             }
 
             @Override
-            public void onHover(GuiButtonEvent event) {
+            public void onHover(GuiEvent<GuiButton> event) {
                 var source = (GuiButton)event.getSource();
                 source.setTexture(optionsSelectTexture);
             }
 
             @Override
-            public void onRelease(GuiButtonEvent event) {
+            public void onRelease(GuiEvent<GuiButton> event) {
                 var source = (GuiButton)event.getSource();
                 source.setTexture(optionsTexture);
             }
         });
 
-        var creditsButton = backgroundPanel.addButton(
-                Anchor.TOP_LEFT,
+        // credits button
+
+        var creditsBtn = new GuiButton(
                 new Vector2f(113.0f, 523.0f),
-                creditsTexture.getWidth(),
-                creditsTexture.getHeight(),
-                Color.WHITE,
+                (float)creditsTexture.getWidth(),
+                (float)creditsTexture.getHeight(),
                 creditsTexture
         );
 
-        creditsButton.addListener(new GuiButtonAdapter() {
+        bgPanel.add(creditsBtn);
+
+        creditsBtn.addListener(new GuiListener<>() {
             @Override
-            public void onClick(GuiButtonEvent event) {
+            public void onClick(GuiEvent<GuiButton> event) {
                 Log.LOGGER.debug("click CreditsButton");
             }
 
             @Override
-            public void onHover(GuiButtonEvent event) {
+            public void onHover(GuiEvent<GuiButton> event) {
                 var source = (GuiButton)event.getSource();
                 source.setTexture(creditsSelectTexture);
             }
 
             @Override
-            public void onRelease(GuiButtonEvent event) {
+            public void onRelease(GuiEvent<GuiButton> event) {
                 var source = (GuiButton)event.getSource();
                 source.setTexture(creditsTexture);
             }
         });
 
-        var introButton = backgroundPanel.addButton(
-                Anchor.TOP_LEFT,
+        // intro button
+
+        var introBtn = new GuiButton(
                 new Vector2f(113.0f, 574.0f),
-                introTexture.getWidth(),
-                introTexture.getHeight(),
-                Color.WHITE,
+                (float)introTexture.getWidth(),
+                (float)introTexture.getHeight(),
                 introTexture
         );
 
-        introButton.addListener(new GuiButtonAdapter() {
+        bgPanel.add(introBtn);
+
+        introBtn.addListener(new GuiListener<>() {
             @Override
-            public void onClick(GuiButtonEvent event) {
+            public void onClick(GuiEvent<GuiButton> event) {
                 Log.LOGGER.debug("click IntroButton");
             }
 
             @Override
-            public void onHover(GuiButtonEvent event) {
+            public void onHover(GuiEvent<GuiButton> event) {
                 var source = (GuiButton)event.getSource();
                 source.setTexture(introSelectTexture);
             }
 
             @Override
-            public void onRelease(GuiButtonEvent event) {
+            public void onRelease(GuiEvent<GuiButton> event) {
                 var source = (GuiButton)event.getSource();
                 source.setTexture(introTexture);
             }
         });
 
-        var exitButton = backgroundPanel.addButton(
-                Anchor.TOP_LEFT,
+        // exit button
+
+        var exitBtn = new GuiButton(
                 new Vector2f(113.0f, 630.0f),
-                exitTexture.getWidth(),
-                exitTexture.getHeight(),
-                Color.WHITE,
+                (float)exitTexture.getWidth(),
+                (float)exitTexture.getHeight(),
                 exitTexture
         );
 
-        exitButton.addListener(new GuiButtonAdapter() {
+        bgPanel.add(exitBtn);
+
+        exitBtn.addListener(new GuiListener<>() {
             @Override
-            public void onClick(GuiButtonEvent event) {
+            public void onClick(GuiEvent<GuiButton> event) {
                 glfwSetWindowShouldClose(engine.getWindow().getWindowHandle(), true);
             }
 
             @Override
-            public void onHover(GuiButtonEvent event) {
+            public void onHover(GuiEvent<GuiButton> event) {
                 var source = (GuiButton)event.getSource();
                 source.setTexture(exitSelectTexture);
             }
 
             @Override
-            public void onRelease(GuiButtonEvent event) {
+            public void onRelease(GuiEvent<GuiButton> event) {
                 var source = (GuiButton)event.getSource();
                 source.setTexture(exitTexture);
             }
