@@ -13,6 +13,9 @@ import de.sg.benno.gui.GameMenu;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
+
 import static de.sg.ogl.Log.LOGGER;
 
 public class GameMenuState extends ApplicationState {
@@ -40,6 +43,8 @@ public class GameMenuState extends ApplicationState {
         gameMenu = new GameMenu(
                 context.engine,
                 context.filesystem.getBshFile(BennoFiles.InterfaceBshFileName.START),
+                createLabels(context.filesystem.getSavegameFilePaths()),
+                context.filesystem.getSavegameFilePaths(),
                 this.getStateMachine()
         );
     }
@@ -62,5 +67,18 @@ public class GameMenuState extends ApplicationState {
     @Override
     public void cleanUp() {
         gameMenu.getGameMenuGui().cleanUp();
+    }
+
+    //-------------------------------------------------
+    // Helper
+    //-------------------------------------------------
+
+    private ArrayList<String> createLabels(ArrayList<Path> values) {
+        var labels = new ArrayList<String>();
+        for (var value : values) {
+            labels.add(value.getFileName().toString());
+        }
+
+        return labels;
     }
 }
