@@ -8,6 +8,7 @@
 
 package de.sg.benno.file;
 
+import de.sg.benno.BennoConfig;
 import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.renderer.Zoom;
 
@@ -90,22 +91,17 @@ public class BennoFiles {
     }
 
     /**
-     * The subdirectory to the savegames on a Win10 system.
-     */
-    private static final String SAVEGAME_PATH = "\\Anno 1602 History Edition\\Savegame";
-
-    /**
      * The game's root directory.
      */
     private final Path rootPath;
 
     /**
-     * The path to the savegames.
+     * The savegame's root directory.
      */
     private final Path savegamePath;
 
     /**
-     * A list with all paths to the savegames.
+     * A list with all paths to the savegame files.
      */
     private final ArrayList<Path> savegameFilePaths = new ArrayList<>();
 
@@ -138,7 +134,7 @@ public class BennoFiles {
 
         this.rootPath = Paths.get(Objects.requireNonNull(path, "path must not be null"));
         var home = FileSystemView.getFileSystemView().getDefaultDirectory().getPath();
-        this.savegamePath = Path.of(home + SAVEGAME_PATH);
+        this.savegamePath = Path.of(home + BennoConfig.SAVEGAME_PATH);
 
         LOGGER.debug("Home directory found at {}.", home);
         LOGGER.debug("Search savegames at {}.", this.savegamePath);
@@ -240,6 +236,13 @@ public class BennoFiles {
         LOGGER.debug("Successfully loaded files.");
     }
 
+    /**
+     * Loads a BSH file and creates all textures.
+     *
+     * @param fileName The path to the BSH file.
+     * @param saveAsPng Is true if the textures should also be saved as Png.
+     * @throws IOException If an I/O error is thrown.
+     */
     private void loadBshFile(FileName fileName, boolean saveAsPng) throws IOException {
         bshFiles.put(
                 fileName,
@@ -247,6 +250,12 @@ public class BennoFiles {
         );
     }
 
+    /**
+     * Loads a BSH file and creates all textures.
+     *
+     * @param fileName The path to the BSH file.
+     * @throws IOException If an I/O error is thrown.
+     */
     private void loadBshFile(FileName fileName) throws IOException {
         loadBshFile(fileName, false);
     }
@@ -256,7 +265,7 @@ public class BennoFiles {
     //-------------------------------------------------
 
     /**
-     * Searches for all savegames and saves them in a list.
+     * searches for all savegame files and saves the paths found in a list.
      *
      * @throws IOException If an I/O error is thrown.
      */
@@ -268,7 +277,7 @@ public class BennoFiles {
     }
 
     /**
-     * Searches for zoomable BSH files and saves them in a list.
+     * Searches for all zoomable BSH files and saves the paths in a list.
      *
      * @param zoomId A Zoom-Id (SGFX, MGFX, GFX).
      * @throws IOException If an I/O error is thrown.
@@ -301,7 +310,7 @@ public class BennoFiles {
     }
 
     /**
-     * Checks whether the specified file was found and saves the first entry found.
+     * Checks whether the given file was found and saves the first entry found.
      *
      * @param pathList A list of the paths found.
      * @param fileName The name of the file to check and add.
@@ -348,7 +357,7 @@ public class BennoFiles {
     /**
      * Searches for savegames.
      *
-     * @return A list with all paths to the savegames.
+     * @return A list with all paths to the savegame files.
      * @throws IOException If an I/O error is thrown.
      */
     private List<Path> listSavegameFiles() throws IOException {
