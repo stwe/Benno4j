@@ -9,7 +9,6 @@
 package de.sg.benno.gui;
 
 import de.sg.benno.file.BshFile;
-import de.sg.ogl.Color;
 import de.sg.ogl.Log;
 import de.sg.ogl.SgOglEngine;
 import de.sg.ogl.gui.Gui;
@@ -54,7 +53,6 @@ public class GameMenu {
     private final ArrayList<String> savegameFilePathLabels;
     private final ArrayList<Path> savegameFilePathValues;
     private final StateMachine stateMachine;
-    private final TextRenderer textRenderer;
 
     private Gui gameMenuGui;
 
@@ -76,7 +74,6 @@ public class GameMenu {
         this.savegameFilePathLabels = Objects.requireNonNull(savegameFilePathLables, "savegameFilePathLabels must not be null");
         this.savegameFilePathValues = Objects.requireNonNull(savegameFilePathValues, "savegameFilePathValues must not be null");
         this.stateMachine = Objects.requireNonNull(stateMachine, "stateMachine must not be null");
-        this.textRenderer = new TextRenderer(this.engine, new java.awt.Font(MONOSPACED, PLAIN, 10));
 
         create();
     }
@@ -143,7 +140,12 @@ public class GameMenu {
                 @Override
                 public void onClick(GuiEvent<GuiLabel<Path>> event) {
                     var guiLabel = (GuiLabel<Path>) event.getSource();
-                    loadSavegame(guiLabel.getValue());
+                    // todo
+                    try {
+                        loadSavegame(guiLabel.getValue());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 @Override
@@ -201,13 +203,6 @@ public class GameMenu {
             @Override
             public void onClick(GuiEvent<GuiButton> event) {
                 Log.LOGGER.debug("click LoadGameButton");
-                // todo
-                // todo: panel mit scrollbarem Text
-                textRenderer.render(
-                        "Lorem ipsum dolor sit amet",
-                        510.0f, 365.0f,
-                        Color.RED
-                );
             }
 
             @Override
@@ -293,8 +288,8 @@ public class GameMenu {
     // Change States
     //-------------------------------------------------
 
-    private void loadSavegame(Path path) {
-        LOGGER.debug("Load savegame from path {}", path);
+    private void loadSavegame(Path path) throws Exception {
+        stateMachine.change("game", path);
     }
 
     private void loadMainMenu() throws Exception {

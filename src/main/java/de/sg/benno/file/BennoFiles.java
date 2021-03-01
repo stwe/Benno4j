@@ -89,16 +89,44 @@ public class BennoFiles {
         }
     }
 
+    /**
+     * The subdirectory to the savegames on a Win10 system.
+     */
     private static final String SAVEGAME_PATH = "\\Anno 1602 History Edition\\Savegame";
 
+    /**
+     * The game's root directory.
+     */
     private final Path rootPath;
+
+    /**
+     * The path to the savegames.
+     */
     private final Path savegamePath;
 
+    /**
+     * A list with all paths to the savegames.
+     */
     private final ArrayList<Path> savegameFilePaths = new ArrayList<>();
+
+    /**
+     * A list with all paths to BSH files that are available in different zoom levels.
+     */
     private final HashMap<Zoom.ZoomId, List<Path>> zoomableBshFilePaths = new HashMap<>();
+
+    /**
+     * A list with the remaining paths, for example to the file with the color palette or files needed for the menus.
+     */
     private final HashMap<FileName, Path> filePaths = new HashMap<>();
 
+    /**
+     * The pre-loaded file with the color palette.
+     */
     private PaletteFile paletteFile;
+
+    /**
+     * A list of already loaded BSH files.
+     */
     private final HashMap<FileName, BshFile> bshFiles = new HashMap<>();
 
     //-------------------------------------------------
@@ -169,6 +197,11 @@ public class BennoFiles {
     // Init
     //-------------------------------------------------
 
+    /**
+     * Searches for files and saves the paths found.
+     *
+     * @throws IOException If an I/O error is thrown.
+     */
     private void initPaths() throws IOException {
         LOGGER.debug("Starts initializing filesystem from path {}...", rootPath);
 
@@ -187,6 +220,11 @@ public class BennoFiles {
         LOGGER.debug("Successfully initialized filesystem.");
     }
 
+    /**
+     * Use the found paths to preload files.
+     *
+     * @throws IOException If an I/O error is thrown.
+     */
     private void preloadFiles() throws IOException {
         LOGGER.debug("Starts preloading some files ...");
 
@@ -217,6 +255,11 @@ public class BennoFiles {
     // Find files
     //-------------------------------------------------
 
+    /**
+     * Searches for all savegames and saves them in a list.
+     *
+     * @throws IOException If an I/O error is thrown.
+     */
     private void findSavegameFiles() throws IOException {
         for (var path : listSavegameFiles()) {
             LOGGER.debug("Found savegame file at {}.", path);
@@ -224,6 +267,12 @@ public class BennoFiles {
         }
     }
 
+    /**
+     * Searches for zoomable BSH files and saves them in a list.
+     *
+     * @param zoomId A Zoom-Id (SGFX, MGFX, GFX).
+     * @throws IOException If an I/O error is thrown.
+     */
     private void findZoomableBshFiles(Zoom.ZoomId zoomId) throws IOException {
         var paths = listZoomableBshFiles(Paths.get(zoomId.toString()));
 
@@ -234,6 +283,11 @@ public class BennoFiles {
         zoomableBshFilePaths.put(zoomId, paths);
     }
 
+    /**
+     * Searches in the ToolGfx directory for files needed by menues or to load the color palette.
+     *
+     * @throws IOException If an I/O error is thrown.
+     */
     private void findToolGfxFiles() throws IOException {
         for (var bshFile : InterfaceBshFileName.values()) {
             var paths = listToolGfxFile(bshFile.fileName);
@@ -246,6 +300,12 @@ public class BennoFiles {
         }
     }
 
+    /**
+     * Checks whether the specified file was found and saves the first entry found.
+     *
+     * @param pathList A list of the paths found.
+     * @param fileName The name of the file to check and add.
+     */
     private void addFilePath(List<Path> pathList, FileName fileName) {
         if (pathList.isEmpty()) {
             throw new BennoRuntimeException("The file " + fileName.getFileName() + " could not found at " + rootPath + ".");
@@ -260,6 +320,9 @@ public class BennoFiles {
     // Helper
     //-------------------------------------------------
 
+    /**
+     * Checks whether all zoomable BSH files were found.
+     */
     private void checkForZoomableBshFiles() {
         for (var zoomId : Zoom.ZoomId.values()) {
             for (var bshFile : ZoomableBshFileName.values()) {
@@ -282,6 +345,12 @@ public class BennoFiles {
         }
     }
 
+    /**
+     * Searches for savegames.
+     *
+     * @return A list with all paths to the savegames.
+     * @throws IOException If an I/O error is thrown.
+     */
     private List<Path> listSavegameFiles() throws IOException {
         List<Path> result;
 
@@ -295,6 +364,13 @@ public class BennoFiles {
         return result;
     }
 
+    /**
+     * Searches for zoomable BSH files.
+     *
+     * @param zoom The path to the Zoom-Id.
+     * @return A list with all paths.
+     * @throws IOException If an I/O error is thrown.
+     */
     private List<Path> listZoomableBshFiles(Path zoom) throws IOException {
         List<Path> result;
 
@@ -325,6 +401,13 @@ public class BennoFiles {
         return matcherSource.find();
     }
 
+    /**
+     * Looks for a file in the ToolGfx directory.
+     *
+     * @param fileName The name of the file to be searched for.
+     * @return A list with all paths.
+     * @throws IOException If an I/O error is thrown.
+     */
     private List<Path> listToolGfxFile(String fileName) throws IOException {
         List<Path> result;
 

@@ -8,25 +8,20 @@
 
 package de.sg.benno.state;
 
-import de.sg.benno.file.BennoFiles;
-import de.sg.benno.gui.MainMenu;
+import de.sg.benno.BennoRuntimeException;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
 
-import static de.sg.ogl.Log.LOGGER;
+import java.nio.file.Path;
 
-public class MainMenuState extends ApplicationState {
-
-    private MainMenu mainMenu;
+public class GameState extends ApplicationState {
 
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
-    public MainMenuState(StateMachine stateMachine) {
+    public GameState(StateMachine stateMachine) {
         super(stateMachine);
-
-        LOGGER.debug("Creates MainMenuState object.");
     }
 
     //-------------------------------------------------
@@ -35,32 +30,44 @@ public class MainMenuState extends ApplicationState {
 
     @Override
     public void init(Object... params) throws Exception {
-        var context = (Context)getStateMachine().getStateContext();
+        if (params.length != 1) {
+            throw new BennoRuntimeException("Wrong total number of params.");
+        }
 
-        mainMenu = new MainMenu(
-                context.engine,
-                context.filesystem.getBshFile(BennoFiles.InterfaceBshFileName.START),
-                this.getStateMachine()
-        );
+        var path = params[0];
+
+        if (path instanceof Path) {
+            loadSavegame((Path)path);
+        } else {
+            throw new BennoRuntimeException("Invalid parameter type.");
+        }
     }
 
     @Override
     public void input() {
-        mainMenu.getMainMenuGui().input();
+
     }
 
     @Override
-    public void update(float dt) {
+    public void update(float v) {
 
     }
 
     @Override
     public void render() {
-        mainMenu.getMainMenuGui().render();
+
     }
 
     @Override
     public void cleanUp() {
-        mainMenu.getMainMenuGui().cleanUp();
+
+    }
+
+    //-------------------------------------------------
+    // Helper
+    //-------------------------------------------------
+
+    private void loadSavegame(Path path) {
+
     }
 }
