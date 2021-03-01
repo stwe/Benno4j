@@ -6,14 +6,13 @@
  * License: GPLv2
  */
 
+import de.sg.benno.BennoConfig;
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.state.Context;
 import de.sg.benno.state.GameMenuState;
 import de.sg.benno.state.GameState;
 import de.sg.benno.state.MainMenuState;
-import de.sg.ogl.Color;
-import de.sg.ogl.OpenGL;
-import de.sg.ogl.SgOglApplication;
+import de.sg.ogl.*;
 import de.sg.ogl.state.StateMachine;
 
 import java.io.IOException;
@@ -31,6 +30,11 @@ public class BennoApp extends SgOglApplication {
 
     public BennoApp() throws IOException, IllegalAccessException {
         LOGGER.debug("Creates BennoApp object.");
+
+        ConfigLoader.load(BennoConfig.class, "/benno.properties");
+        LOGGER.debug("Benno configuration loaded successfully.");
+        LOGGER.debug("Title: {}", BennoConfig.ROOT_PATH);
+        LOGGER.debug("Width: {}", BennoConfig.SAVEGAME_PATH);
     }
 
     //-------------------------------------------------
@@ -41,7 +45,7 @@ public class BennoApp extends SgOglApplication {
     public void init() throws Exception {
         LOGGER.debug("Starts initializing BennoApp ...");
 
-        this.bennoFiles = new BennoFiles("E:\\Anno");
+        this.bennoFiles = new BennoFiles(BennoConfig.ROOT_PATH);
 
         Context stateContext = new Context();
         stateContext.engine = getEngine();
