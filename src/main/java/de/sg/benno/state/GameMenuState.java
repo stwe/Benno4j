@@ -37,7 +37,7 @@ public class GameMenuState extends ApplicationState {
     //-------------------------------------------------
 
     @Override
-    public void init() throws Exception {
+    public void init(Object... params) throws Exception {
         var context = (Context)getStateMachine().getStateContext();
 
         gameMenu = new GameMenu(
