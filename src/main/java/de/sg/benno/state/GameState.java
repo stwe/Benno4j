@@ -9,12 +9,20 @@
 package de.sg.benno.state;
 
 import de.sg.benno.BennoRuntimeException;
+import de.sg.benno.data.DataFiles;
+import de.sg.benno.file.GamFile;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
+import static de.sg.ogl.Log.LOGGER;
+
 public class GameState extends ApplicationState {
+
+    private DataFiles dataFiles;
+    private GamFile gamFile;
 
     //-------------------------------------------------
     // Ctors.
@@ -22,6 +30,8 @@ public class GameState extends ApplicationState {
 
     public GameState(StateMachine stateMachine) {
         super(stateMachine);
+
+        LOGGER.debug("Creates GameState object.");
     }
 
     //-------------------------------------------------
@@ -33,6 +43,8 @@ public class GameState extends ApplicationState {
         if (params.length != 1) {
             throw new BennoRuntimeException("Wrong total number of params.");
         }
+
+        dataFiles = new DataFiles();
 
         var path = params[0];
 
@@ -60,14 +72,14 @@ public class GameState extends ApplicationState {
 
     @Override
     public void cleanUp() {
-
+        LOGGER.debug("Start clean up for the GameState.");
     }
 
     //-------------------------------------------------
     // Helper
     //-------------------------------------------------
 
-    private void loadSavegame(Path path) {
-
+    private void loadSavegame(Path path) throws IOException {
+        gamFile = new GamFile(path);
     }
 }

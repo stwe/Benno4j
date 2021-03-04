@@ -33,8 +33,8 @@ public class BennoApp extends SgOglApplication {
 
         ConfigLoader.load(BennoConfig.class, "/benno.properties");
         LOGGER.debug("Benno configuration loaded successfully.");
-        LOGGER.debug("Title: {}", BennoConfig.ROOT_PATH);
-        LOGGER.debug("Width: {}", BennoConfig.SAVEGAME_PATH);
+        LOGGER.debug("Root path: {}", BennoConfig.ROOT_PATH);
+        LOGGER.debug("Savegame path: {}", BennoConfig.SAVEGAME_PATH);
     }
 
     //-------------------------------------------------
