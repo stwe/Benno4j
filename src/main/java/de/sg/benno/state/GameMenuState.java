@@ -66,6 +66,8 @@ public class GameMenuState extends ApplicationState {
 
     @Override
     public void cleanUp() {
+        LOGGER.debug("Start clean up for the GameMenuState.");
+
         gameMenu.getGameMenuGui().cleanUp();
     }
 

@@ -61,6 +61,8 @@ public class MainMenuState extends ApplicationState {
 
     @Override
     public void cleanUp() {
+        LOGGER.debug("Start clean up for the MainMenuState.");
+
         mainMenu.getMainMenuGui().cleanUp();
     }
 }

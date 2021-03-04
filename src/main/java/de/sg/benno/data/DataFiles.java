@@ -17,9 +17,11 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Objects;
 
+import static de.sg.ogl.Log.LOGGER;
+
 public class DataFiles {
 
-    private static final String HOUSES_JSON = "history/houses.json";
+    private static final String BUILDINGS_JSON = "history/buildings.json";
     private static final String BASE_JSON = "history/base.json";
 
     private final HashMap<Integer, Building> buildings = new HashMap<>();
@@ -30,7 +32,9 @@ public class DataFiles {
     //-------------------------------------------------
 
     public DataFiles() throws IOException {
-        readBuildings(getRootNodeData(HOUSES_JSON));
+        LOGGER.debug("Creates DataFiles object.");
+
+        readBuildings(getRootNodeData(BUILDINGS_JSON));
         readBaseWidgets(getRootNodeData(BASE_JSON));
     }
 
@@ -52,6 +56,8 @@ public class DataFiles {
 
     private void readBuildings(JsonNode rootNode) {
         Objects.requireNonNull(rootNode, "rootNode must not be null");
+
+        LOGGER.debug("Start reading the building data from file {} ...", BUILDINGS_JSON);
 
         var nodes = rootNode.get("object").get(2).get("objects");
 
@@ -101,10 +107,14 @@ public class DataFiles {
                 buildings.put(building.id, building);
             }
         }
+
+        LOGGER.debug("Building data read successfully. {} entries were found.", buildings.size());
     }
 
     private void readBaseWidgets(JsonNode rootNode) {
         Objects.requireNonNull(rootNode, "rootNode must not be null");
+
+        LOGGER.debug("Start reading the MainMenu data from file {} ...", BASE_JSON);
 
         var objectNodeArray = rootNode.get("object");
         if (objectNodeArray.isArray()) {
@@ -156,6 +166,8 @@ public class DataFiles {
                 }
             }
         }
+
+        LOGGER.debug("MainMenu data read successfully. {} entries were found.", widgets.size());
     }
 
     //-------------------------------------------------
