@@ -8,12 +8,25 @@
 
 package de.sg.benno.chunk;
 
+/**
+ * Common stuff for all Islands.
+ */
 public class Island {
 
-    //-------------------------------------------------
-    // Common stuff for all Islands
-    //-------------------------------------------------
-
+    /**
+     * Maps the 8-byte C structure TERZBERG.
+     * <pre>
+     * typedef struct {
+     *     uint8_t ware;
+     *     uint8_t posx;
+     *     uint8_t posy;
+     *     uint8_t playerflags;
+     *     uint8_t kind;
+     *     uint8_t leer1;
+     *     uint16_t lager;
+     * } TERZBERG;
+     * </pre>
+     */
     public static class OreMountainData {
 
         /**
@@ -52,6 +65,9 @@ public class Island {
         public int stock;
     }
 
+    /**
+     * Represents the fertility of an island.
+     */
     public enum Fertility {
         RANDOM(0x0000) {
             @Override
@@ -166,6 +182,9 @@ public class Island {
         }
     }
 
+    /**
+     * Represents the size of an island.
+     */
     public enum IslandSize {
         LITTLE {
             @Override
@@ -199,6 +218,9 @@ public class Island {
         }
     }
 
+    /**
+     * Represents the climate of an island.
+     */
     public enum IslandClimate {
         NORTH {
             @Override

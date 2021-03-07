@@ -8,14 +8,63 @@
 
 package de.sg.benno.chunk;
 
-import java.util.Objects;
+import de.sg.benno.data.Building;
+
+import java.util.*;
 
 import static de.sg.benno.Util.*;
 import static de.sg.ogl.Log.LOGGER;
 
+/**
+ * Represents an Island5. An Island5 includes one or more {@link IslandHouse} chunks.
+ * Maps the 116-byte C structure TINSELSAVE and represents an Island5 object.
+ * <pre>
+ * typedef struct {
+ *     uint8_t islandNumber;
+ *     uint8_t width;
+ *     uint8_t height;
+ *     uint8_t strtduerrflg : 1;
+ *     uint8_t nofixflg : 1;
+ *     uint8_t vulkanflg : 1;
+ *     uint16_t posx;
+ *     uint16_t posy;
+ *     uint16_t hirschreviercnt;
+ *     uint16_t speedcnt;
+ *     uint8_t stadtplayernr[11];
+ *     uint8_t vulkancnt;
+ *     uint8_t schatzflg;
+ *     uint8_t rohstanz;
+ *     uint8_t eisencnt;
+ *     uint8_t playerflags;
+ *     OreMountainData eisenberg[4];
+ *     OreMountainData vulkanberg[4];
+ *     Fertility fertility;
+ *     uint16_t fileNumber;
+ *     IslandSize size;
+ *     IslandClimate climate;
+ *     IslandModified modifiedFlag;
+ *     uint8_t duerrproz;
+ *     uint8_t rotier;
+ *     uint32_t seeplayerflags;
+ *     uint32_t duerrcnt;
+ *     uint32_t leer3;
+ * } TINSELSAVE;
+ * </pre>
+ */
 public class Island5 {
 
+    //-------------------------------------------------
+    // Constants
+    //-------------------------------------------------
+
+    /**
+     * The size of the original C structure TINSELSAVE in bytes.
+     */
     private static final int CHUNK_SIZE_IN_BYTES = 116;
+
+    //-------------------------------------------------
+    // TINSELSAVE
+    //-------------------------------------------------
 
     public int islandNumber;
     public int width;
@@ -59,19 +108,99 @@ public class Island5 {
     public int empty;
 
     //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
+
+    /**
+     * The buildings list.
+     */
+    private final HashMap<Integer, Building> buildings;
+
+    private final ArrayList<IslandHouse> islandHouseList = new ArrayList<>();
+    private final ArrayList<IslandHouse> finalIslandHouseList = new ArrayList<>();
+
+    private IslandHouse topLayer;
+    private IslandHouse bottomLayer;
+
+    //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
-    public Island5(Chunk chunk) {
+    /**
+     * Constructs a new {@link Island5} object.
+     *
+     * @param chunk {@link Chunk}
+     * @param buildings The buildings list.
+     */
+    public Island5(Chunk chunk, HashMap<Integer, Building> buildings) {
         LOGGER.debug("Creates Island5 object.");
 
+        this.buildings = Objects.requireNonNull(buildings, "buildings must not be null");
+
         readData(Objects.requireNonNull(chunk, "chunk must not be null"));
+    }
+
+    //-------------------------------------------------
+    // Getter
+    //-------------------------------------------------
+
+    /**
+     * Get {@link #buildings}.
+     *
+     * @return {@link #buildings}
+     */
+    public HashMap<Integer, Building> getBuildings() {
+        return buildings;
+    }
+
+    //-------------------------------------------------
+    // Setter
+    //-------------------------------------------------
+
+    /**
+     * Add an {@link IslandHouse} to the {@link #islandHouseList}.
+     *
+     * @param islandHouse {@link IslandHouse}
+     */
+    public void addIslandHouse(IslandHouse islandHouse) {
+        islandHouseList.add(islandHouse);
+    }
+
+    //-------------------------------------------------
+    // Init
+    //-------------------------------------------------
+
+    /**
+     * Determines the top and bottom layer.
+     */
+    public void initLayer() {
+        if (islandHouseList.isEmpty()) {
+            throw new RuntimeException("No IslandHouse data found.");
+        }
+
+        // todo: hardcoded for the current savegame
+
+        // the island is modified, first chunk is bottom
+        finalIslandHouseList.add(islandHouseList.get(0));
+
+        // a possible second chunk is top
+        if (islandHouseList.size() == 2) {
+            finalIslandHouseList.add(islandHouseList.get(1));
+        }
+
+        bottomLayer = finalIslandHouseList.get(0);
+        topLayer = finalIslandHouseList.get(1);
     }
 
     //-------------------------------------------------
     // Read
     //-------------------------------------------------
 
+    /**
+     * Reads the {@link Island5} data from a given {@link Chunk}.
+     *
+     * @param chunk {@link Chunk}
+     */
     private void readData(Chunk chunk) {
         LOGGER.debug("Start reading the Island5 data...");
 
