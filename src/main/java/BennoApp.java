@@ -49,7 +49,7 @@ public class BennoApp extends SgOglApplication {
 
         Context stateContext = new Context();
         stateContext.engine = getEngine();
-        stateContext.filesystem = this.bennoFiles;
+        stateContext.bennoFiles = this.bennoFiles;
 
         this.stateMachine = new StateMachine(stateContext);
         this.stateMachine.add("main_menu", new MainMenuState(stateMachine));

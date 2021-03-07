@@ -9,7 +9,6 @@
 package de.sg.benno.state;
 
 import de.sg.benno.BennoRuntimeException;
-import de.sg.benno.data.DataFiles;
 import de.sg.benno.file.GamFile;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
@@ -21,7 +20,6 @@ import static de.sg.ogl.Log.LOGGER;
 
 public class GameState extends ApplicationState {
 
-    private DataFiles dataFiles;
     private GamFile gamFile;
 
     //-------------------------------------------------
@@ -43,8 +41,6 @@ public class GameState extends ApplicationState {
         if (params.length != 1) {
             throw new BennoRuntimeException("Wrong total number of params.");
         }
-
-        dataFiles = new DataFiles();
 
         var path = params[0];
 
@@ -80,6 +76,7 @@ public class GameState extends ApplicationState {
     //-------------------------------------------------
 
     private void loadSavegame(Path path) throws IOException {
-        gamFile = new GamFile(path);
+        var context = (Context)getStateMachine().getStateContext();
+        gamFile = new GamFile(path, context.bennoFiles.getDataFiles().getBuildings());
     }
 }

@@ -10,6 +10,7 @@ package de.sg.benno.file;
 
 import de.sg.benno.BennoConfig;
 import de.sg.benno.BennoRuntimeException;
+import de.sg.benno.data.DataFiles;
 import de.sg.benno.renderer.Zoom;
 
 import javax.swing.filechooser.FileSystemView;
@@ -125,6 +126,8 @@ public class BennoFiles {
      */
     private final HashMap<FileName, BshFile> bshFiles = new HashMap<>();
 
+    private DataFiles dataFiles;
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -141,6 +144,8 @@ public class BennoFiles {
 
         initPaths();
         preloadFiles();
+
+        dataFiles = new DataFiles();
     }
 
     //-------------------------------------------------
@@ -175,6 +180,10 @@ public class BennoFiles {
         }
 
         return bshFiles.get(fileName);
+    }
+
+    public DataFiles getDataFiles() {
+        return dataFiles;
     }
 
     //-------------------------------------------------
