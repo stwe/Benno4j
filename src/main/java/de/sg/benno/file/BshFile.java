@@ -31,6 +31,10 @@ import static org.lwjgl.opengl.GL11.GL_RGBA8;
 import static org.lwjgl.opengl.GL12.GL_BGRA;
 import static org.lwjgl.opengl.GL12.GL_UNSIGNED_INT_8_8_8_8_REV;
 
+/**
+ * Represents a BshFile.
+ * The class loads a BSH file.
+ */
 public class BshFile extends BinaryFile {
 
     private static class TextureHeader {
@@ -45,31 +49,92 @@ public class BshFile extends BinaryFile {
         }
     }
 
+    //-------------------------------------------------
+    // Constants
+    //-------------------------------------------------
+
+    /**
+     * The number of expected {@link de.sg.benno.chunk.Chunk} objects in the file.
+     */
     private static final int NUMBER_OF_CHUNKS = 1;
+
+    /**
+     * The Id of the {@link de.sg.benno.chunk.Chunk}.
+     */
     private static final String CHUNK_ID = "BSH";
 
+    /**
+     * If the next byte is 0xFF the image has reached it’s end.
+     */
     private static final int END_MARKER = 255;
+
+    /**
+     * If the next byte is 0xFE the current pixel line has reached it’s end.
+     */
     private static final int END_OF_ROW = 254;
 
+    /**
+     * The directory in which the Png files are saved.
+     */
     private static final String OUTPUT_DIR = "out";
 
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
+
+    /**
+     * The color values from the <i>stadtfld.col</i> file.
+     * These are loaded with {@link PaletteFile}.
+     */
     private final int[] palette;
 
+    /**
+     * If the variable is true, all images are saved as a Png in {@link #OUTPUT_DIR}.
+     */
     private final boolean saveAsPng;
 
+    /**
+     * The offsets to the BSH images.
+     */
     private final ArrayList<Integer> offsets = new ArrayList<>();
-    private final ArrayList<BshTexture> bshTextures = new ArrayList<>();
+
+    /**
+     * The possible invalid offsets to the BSH images.
+     */
     private final HashSet<Integer> possibleInvalidOffsets = new HashSet<>();
 
+    /**
+     * A list with {@link BshTexture} objects.
+     */
+    private final ArrayList<BshTexture> bshTextures = new ArrayList<>();
+
+    /**
+     * The texture min width in {@link #bshTextures}.
+     */
     private int maxX = -999;
+
+    /**
+     * The texture min height in {@link #bshTextures}.
+     */
     private int maxY = -999;
 
+    /**
+     * Shortcut to the first {@link Chunk}.
+     */
     private final Chunk chunk0;
 
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
+    /**
+     * Constructs a new {@link BshFile} object.
+     *
+     * @param path The {@link Path} to the BSH file.
+     * @param palette The color values from the <i>stadtfld.col</i> file.
+     * @param saveAsPng If the variable is true, all images are saved as a Png in {@link #OUTPUT_DIR}.
+     * @throws IOException If an I/O error is thrown.
+     */
     BshFile(Path path, int[] palette, boolean saveAsPng) throws IOException {
         super(Objects.requireNonNull(path, "path must not be null"));
 
@@ -91,6 +156,13 @@ public class BshFile extends BinaryFile {
         readDataFromChunks();
     }
 
+    /**
+     * Constructs a new {@link BshFile} object.
+     *
+     * @param path The {@link Path} to the BSH file.
+     * @param palette The color values from the <i>stadtfld.col</i> file.
+     * @throws IOException If an I/O error is thrown.
+     */
     BshFile(Path path, int[] palette) throws IOException {
         this(path, palette, false);
     }
@@ -99,14 +171,29 @@ public class BshFile extends BinaryFile {
     // Getter
     //-------------------------------------------------
 
+    /**
+     * Get {@link #bshTextures}.
+     *
+     * @return {@link #bshTextures}
+     */
     public ArrayList<BshTexture> getBshTextures() {
         return bshTextures;
     }
 
+    /**
+     * Get {@link #maxX}.
+     *
+     * @return {@link #maxX}
+     */
     public int getMaxX() {
         return maxX;
     }
 
+    /**
+     * Get {@link #maxY}.
+     *
+     * @return {@link #maxY}
+     */
     public int getMaxY() {
         return maxY;
     }
@@ -132,6 +219,9 @@ public class BshFile extends BinaryFile {
     // Clean up
     //-------------------------------------------------
 
+    /**
+     * Clean up {@link #bshTextures}.
+     */
     public void cleanUp() {
         LOGGER.debug("Clean up {} OpenGL textures.", bshTextures.size());
 
@@ -144,6 +234,9 @@ public class BshFile extends BinaryFile {
     // Offsets
     //-------------------------------------------------
 
+    /**
+     * Reads and saves all offsets of the BSH images.
+     */
     private void readOffsets() {
         // get offset of the first texture
         var texturesStartOffset = chunk0.getData().getInt();
@@ -157,6 +250,10 @@ public class BshFile extends BinaryFile {
         LOGGER.debug("Detected {} texture offsets.", offsets.size());
     }
 
+    /**
+     * Stores presumably invalid offsets.
+     * The offset is probably invalid if the difference between two offsets is 20 bytes.
+     */
     private void validateOffsets() {
         for (int i = 0; i < offsets.size(); i++) {
             if (i + 1 < offsets.size()) {
