@@ -10,7 +10,22 @@ package de.sg.benno.file;
 
 import java.io.IOException;
 
+/**
+ * Interface for loading BinaryFiles.
+ */
 public interface BinaryFileInterface {
+
+    /**
+     * Opens and reads the file. {@link de.sg.benno.chunk.Chunk} objects are created from the content.
+     *
+     * @throws IOException If an I/O error is thrown.
+     */
     void readChunksFromFile() throws IOException;
+
+    /**
+     * Reads the data from the {@link de.sg.benno.chunk.Chunk} objects.
+     *
+     * @throws IOException If an I/O error is thrown.
+     */
     void readDataFromChunks() throws IOException;
 }

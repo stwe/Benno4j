@@ -39,10 +39,11 @@ public class GameMenuState extends ApplicationState {
     @Override
     public void init(Object... params) throws Exception {
         var context = (Context)getStateMachine().getStateContext();
+        var startBshFilePath = context.bennoFiles.getFilePath(BennoFiles.FileName.START_BSH);
 
         gameMenu = new GameMenu(
                 context.engine,
-                context.bennoFiles.getBshFile(BennoFiles.InterfaceBshFileName.START),
+                context.bennoFiles.getPreloadedBshFile(startBshFilePath),
                 createLabels(context.bennoFiles.getSavegameFilePaths()),
                 context.bennoFiles.getSavegameFilePaths(),
                 this.getStateMachine()

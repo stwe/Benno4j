@@ -36,10 +36,11 @@ public class MainMenuState extends ApplicationState {
     @Override
     public void init(Object... params) throws Exception {
         var context = (Context)getStateMachine().getStateContext();
+        var startBshFilePath = context.bennoFiles.getFilePath(BennoFiles.FileName.START_BSH);
 
         mainMenu = new MainMenu(
                 context.engine,
-                context.bennoFiles.getBshFile(BennoFiles.InterfaceBshFileName.START),
+                context.bennoFiles.getPreloadedBshFile(startBshFilePath),
                 this.getStateMachine()
         );
     }

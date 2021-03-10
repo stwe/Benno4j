@@ -17,18 +17,51 @@ import java.util.Objects;
 
 import static de.sg.ogl.Log.LOGGER;
 
+/**
+ * Represents a PaletteFile.
+ * The class loads the pallet values from the <i>stadtfld.col</i> file.
+ */
 public class PaletteFile extends BinaryFile {
 
+    //-------------------------------------------------
+    // Constants
+    //-------------------------------------------------
+
+    /**
+     * The number of palette colors.
+     */
     private static final int NUMBER_OF_COLORS = 256;
+
+    /**
+     * The number of expected {@link de.sg.benno.chunk.Chunk} objects in the file.
+     */
     private static final int NUMBER_OF_CHUNKS = 1;
+
+    /**
+     * The Id of the {@link de.sg.benno.chunk.Chunk}.
+     */
     private static final String CHUNK_ID = "COL";
 
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
+
+    /**
+     * An array with the palette color values.
+     * The color values are saved as int.
+     */
     private final int[] palette = new int[NUMBER_OF_COLORS];
 
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
+    /**
+     * Constructs a new {@link PaletteFile} object.
+     *
+     * @param path The {@link Path} to the palette file.
+     * @throws IOException If an I/O error is thrown.
+     */
     PaletteFile(Path path) throws IOException {
         super(Objects.requireNonNull(path, "path must not be null"));
 
@@ -49,6 +82,11 @@ public class PaletteFile extends BinaryFile {
     // Getter
     //-------------------------------------------------
 
+    /**
+     * Get {@link #palette}.
+     *
+     * @return {@link #palette}
+     */
     public int[] getPalette() {
         return palette;
     }

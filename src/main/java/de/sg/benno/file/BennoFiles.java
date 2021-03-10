@@ -27,24 +27,30 @@ import java.util.stream.Collectors;
 
 import static de.sg.ogl.Log.LOGGER;
 
+/**
+ * Determines the {@link Path} to the most important files and preloads files.
+ */
 public class BennoFiles {
 
-    private interface FileName {
-        String getFileName();
-    }
+    //-------------------------------------------------
+    // Constants
+    //-------------------------------------------------
 
-    public enum ZoomableBshFileName implements FileName {
-        EFFEKTE("effekte.bsh"),
-        FISCHE("fische.bsh"),
-        GAUKLER("gaukler.bsh"),
-        MAEHER("maeher.bsh"),
-        NUMBERS("numbers.bsh"),
-        SCHATTEN("schatten.bsh"),
-        SHIP("ship.bsh"),
-        SOLDAT("soldat.bsh"),
-        STADTFLD("stadtfld.bsh"),
-        TIERE("tiere.bsh"),
-        TRAEGER("traeger.bsh");
+    /**
+     * BSH files that are available in different zoom levels.
+     */
+    public enum ZoomableBshFileName {
+        EFFEKTE_BSH("effekte.bsh"),
+        FISCHE_BSH("fische.bsh"),
+        GAUKLER_BSH("gaukler.bsh"),
+        MAEHER_BSH("maeher.bsh"),
+        NUMBERS_BSH("numbers.bsh"),
+        SCHATTEN_BSH("schatten.bsh"),
+        SHIP_BSH("ship.bsh"),
+        SOLDAT_BSH("soldat.bsh"),
+        STADTFLD_BSH("stadtfld.bsh"),
+        TIERE_BSH("tiere.bsh"),
+        TRAEGER_BSH("traeger.bsh");
 
         private final String fileName;
 
@@ -53,85 +59,84 @@ public class BennoFiles {
         }
 
         @Override
-        public String getFileName() {
-            return fileName;
-        }
-    }
-
-    public enum InterfaceBshFileName implements FileName {
-        BAUHAUS("bauhaus.bsh"),
-        START("start.bsh"),
-        EDITOR("editor.bsh"),
-        TOOLS("tools.bsh");
-
-        private final String fileName;
-
-        InterfaceBshFileName(String fileName) {
-            this.fileName = fileName;
-        }
-
-        @Override
-        public String getFileName() {
-            return fileName;
-        }
-    }
-
-    public enum OtherFileName implements FileName {
-        PALETTE("stadtfld.col");
-
-        private final String fileName;
-
-        OtherFileName(String fileName) {
-            this.fileName = fileName;
-        }
-
-        @Override
-        public String getFileName() {
+        public String toString() {
             return fileName;
         }
     }
 
     /**
-     * The game's root directory.
+     * All other files.
+     */
+    public enum FileName {
+        BAUHAUS_BSH("bauhaus.bsh"),
+        START_BSH("start.bsh"),
+        EDITOR_BSH("editor.bsh"),
+        TOOLS_BSH("tools.bsh"),
+        PALETTE_COL("stadtfld.col");
+
+        private final String fileName;
+
+        FileName(String fileName) {
+            this.fileName = fileName;
+        }
+
+        @Override
+        public String toString() {
+            return fileName;
+        }
+    }
+
+    /**
+     * The game's root {@link Path}.
      */
     private final Path rootPath;
 
     /**
-     * The savegame's root directory.
+     * The root {@link Path} to the savegames.
      */
     private final Path savegamePath;
 
     /**
-     * A list with all paths to the savegame files.
+     * A {@link ArrayList} with {@link Path} objects to the savegame files.
      */
     private final ArrayList<Path> savegameFilePaths = new ArrayList<>();
 
     /**
-     * A list with all paths to BSH files that are available in different zoom levels.
+     * A {@link HashMap} with {@link Path} objects to zoomable BSH files.
      */
     private final HashMap<Zoom.ZoomId, List<Path>> zoomableBshFilePaths = new HashMap<>();
 
     /**
-     * A list with the remaining paths, for example to the file with the color palette or files needed for the menus.
+     * A {@link HashMap} with the remaining {@link Path} objects, for example to the file with the color palette
+     * or files needed for the menus.
      */
     private final HashMap<FileName, Path> filePaths = new HashMap<>();
 
     /**
-     * The pre-loaded file with the color palette.
+     * A {@link PaletteFile} object.
      */
     private PaletteFile paletteFile;
 
     /**
-     * A list of already loaded BSH files.
+     * A {@link HashMap} of {@link BshFile} objects.
      */
-    private final HashMap<FileName, BshFile> bshFiles = new HashMap<>();
+    private final HashMap<Path, BshFile> preloadedBshFiles = new HashMap<>();
 
-    private DataFiles dataFiles;
+    /**
+     * A {@link DataFiles} object.
+     */
+    private final DataFiles dataFiles;
 
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
+    /**
+     * Constructs a new {@link BennoFiles} object.
+     *
+     * @param path The game's root {@link Path}.
+     * @throws IOException If an I/O error is thrown.
+     */
     public BennoFiles(String path) throws IOException {
         LOGGER.debug("Creates BennoFiles object.");
 
@@ -152,36 +157,71 @@ public class BennoFiles {
     // Getter
     //-------------------------------------------------
 
+    /**
+     * Get {@link #savegameFilePaths}.
+     *
+     * @return {@link #savegameFilePaths}
+     */
     public ArrayList<Path> getSavegameFilePaths() {
         return savegameFilePaths;
     }
 
-    public Path getZoomableBshFilePath(Zoom.ZoomId zoomId, ZoomableBshFileName bshFileName) {
+    /**
+     * Get zoomable BSH file {@link Path} from {@link #zoomableBshFilePaths}.
+     *
+     * @param zoomId {@link de.sg.benno.renderer.Zoom.ZoomId}
+     * @param zoomableBshFileName {@link ZoomableBshFileName}
+     * @return {@link Path}
+     */
+    public Path getZoomableBshFilePath(Zoom.ZoomId zoomId, ZoomableBshFileName zoomableBshFileName) {
         for (var val : zoomableBshFilePaths.get(zoomId)) {
-            if (val.toString().toLowerCase().contains(bshFileName.fileName)) {
+            if (val.toString().toLowerCase().contains(zoomableBshFileName.toString())) {
                 return val;
             }
         }
 
-        throw new BennoRuntimeException("The BSH file " + bshFileName.getFileName() + " could not found at " + rootPath + ".");
+        throw new BennoRuntimeException("The BSH file " + zoomableBshFileName + " could not found at " + rootPath + ".");
     }
 
+    /**
+     * Get {@link Path} from {@link #filePaths}.
+     *
+     * @param fileName {@link FileName}
+     * @return {@link Path}
+     */
     public Path getFilePath(FileName fileName) {
         return filePaths.get(fileName);
     }
 
+    /**
+     * Get {@link #paletteFile}.
+     *
+     * @return {@link #paletteFile}
+     */
     public PaletteFile getPaletteFile() {
         return paletteFile;
     }
 
-    public BshFile getBshFile(FileName fileName) throws IOException {
-        if (!bshFiles.containsKey(fileName)) {
-            loadBshFile(fileName);
+    /**
+     * Get a {@link BshFile}. This will be loaded if not already done.
+     *
+     * @param path A {@link Path} to a {@link BshFile}.
+     * @return {@link BshFile}
+     * @throws IOException If an I/O error is thrown.
+     */
+    public BshFile getPreloadedBshFile(Path path) throws IOException {
+        if (!preloadedBshFiles.containsKey(path)) {
+            loadBshFile(path);
         }
 
-        return bshFiles.get(fileName);
+        return preloadedBshFiles.get(path);
     }
 
+    /**
+     * get {@link #dataFiles}.
+     *
+     * @return {@link #dataFiles}
+     */
     public DataFiles getDataFiles() {
         return dataFiles;
     }
@@ -190,10 +230,13 @@ public class BennoFiles {
     // Clean up
     //-------------------------------------------------
 
+    /**
+     * Clean up {@link #preloadedBshFiles}.
+     */
     public void cleanUp() {
         LOGGER.debug("Clean up BennoFiles.");
 
-        for (var bshFile : bshFiles.values()) {
+        for (var bshFile : preloadedBshFiles.values()) {
             bshFile.cleanUp();
         }
     }
@@ -203,30 +246,30 @@ public class BennoFiles {
     //-------------------------------------------------
 
     /**
-     * Searches for files and saves the paths found.
+     * Searches for files and saves the paths found as {@link Path}.
      *
      * @throws IOException If an I/O error is thrown.
      */
     private void initPaths() throws IOException {
-        LOGGER.debug("Starts initializing filesystem from path {}...", rootPath);
+        LOGGER.debug("Starts initializing filesystem from root path {}...", rootPath);
 
-        // Savegames
+        // savegames
         findSavegameFiles();
 
-        // Zoom graphics in GFX, MGFX, SGFX
+        // zoom graphics in GFX, MGFX, SGFX
         findZoomableBshFiles(Zoom.ZoomId.SGFX);
         findZoomableBshFiles(Zoom.ZoomId.MGFX);
         findZoomableBshFiles(Zoom.ZoomId.GFX);
         checkForZoomableBshFiles();
 
-        // Interface graphics and other files (e.g. palette file)
+        // other files (e.g. palette file, gui files)
         findToolGfxFiles();
 
         LOGGER.debug("Successfully initialized filesystem.");
     }
 
     /**
-     * Use the found paths to preload files.
+     * Preloads some files.
      *
      * @throws IOException If an I/O error is thrown.
      */
@@ -234,39 +277,44 @@ public class BennoFiles {
         LOGGER.debug("Starts preloading some files ...");
 
         // preload palette file (stadtfld.col)
-        paletteFile = new PaletteFile(filePaths.get(OtherFileName.PALETTE));
+        paletteFile = new PaletteFile(getFilePath(FileName.PALETTE_COL));
 
         // preload start.bsh
         //loadBshFile(InterfaceBshFileName.BAUHAUS);
         //loadBshFile(InterfaceBshFileName.EDITOR); // 950
-        loadBshFile(InterfaceBshFileName.START);
+        loadBshFile(getFilePath(FileName.START_BSH));
         //loadBshFile(InterfaceBshFileName.TOOLS); // 670
+
+        // todo: remove true
+        //loadBshFile(getZoomableBshFilePath(Zoom.ZoomId.MGFX, ZoomableBshFileName.STADTFLD_BSH), true);
 
         LOGGER.debug("Successfully loaded files.");
     }
 
     /**
-     * Loads a BSH file and creates all textures.
+     * Loads a BSH file from the given {@link Path} and creates a {@link BshFile} object.
+     * The loaded {@link BshFile} object is saved in {@link #preloadedBshFiles}.
      *
-     * @param fileName The path to the BSH file.
+     * @param path The {@link Path} to the BSH file.
      * @param saveAsPng Is true if the textures should also be saved as Png.
      * @throws IOException If an I/O error is thrown.
      */
-    private void loadBshFile(FileName fileName, boolean saveAsPng) throws IOException {
-        bshFiles.put(
-                fileName,
-                new BshFile(filePaths.get(fileName), paletteFile.getPalette(), saveAsPng)
+    private void loadBshFile(Path path, boolean saveAsPng) throws IOException {
+        preloadedBshFiles.put(
+                path,
+                new BshFile(path, paletteFile.getPalette(), saveAsPng)
         );
     }
 
     /**
-     * Loads a BSH file and creates all textures.
+     * Loads a BSH file and creates a {@link BshFile} object.
+     * The loaded {@link BshFile} object is saved in {@link #preloadedBshFiles}.
      *
-     * @param fileName The path to the BSH file.
+     * @param path The {@link Path} to the BSH file.
      * @throws IOException If an I/O error is thrown.
      */
-    private void loadBshFile(FileName fileName) throws IOException {
-        loadBshFile(fileName, false);
+    private void loadBshFile(Path path) throws IOException {
+        loadBshFile(path, false);
     }
 
     //-------------------------------------------------
@@ -274,7 +322,7 @@ public class BennoFiles {
     //-------------------------------------------------
 
     /**
-     * searches for all savegame files and saves the paths found in a list.
+     * Searches for all savegame files and saves the found {@link Path} objects in a list.
      *
      * @throws IOException If an I/O error is thrown.
      */
@@ -286,16 +334,16 @@ public class BennoFiles {
     }
 
     /**
-     * Searches for all zoomable BSH files and saves the paths in a list.
+     * Searches for all zoomable BSH files and saves the found {@link Path} objects in a list.
      *
-     * @param zoomId A Zoom-Id (SGFX, MGFX, GFX).
+     * @param zoomId {@link de.sg.benno.renderer.Zoom.ZoomId}.
      * @throws IOException If an I/O error is thrown.
      */
     private void findZoomableBshFiles(Zoom.ZoomId zoomId) throws IOException {
         var paths = listZoomableBshFiles(Paths.get(zoomId.toString()));
 
         if (paths.isEmpty()) {
-            throw new BennoRuntimeException("No " + zoomId.toString() + " BSH files found at " + rootPath + ".");
+            throw new BennoRuntimeException("No " + zoomId + " BSH files found at " + rootPath + ".");
         }
 
         zoomableBshFilePaths.put(zoomId, paths);
@@ -307,31 +355,26 @@ public class BennoFiles {
      * @throws IOException If an I/O error is thrown.
      */
     private void findToolGfxFiles() throws IOException {
-        for (var bshFile : InterfaceBshFileName.values()) {
-            var paths = listToolGfxFile(bshFile.fileName);
-            addFilePath(paths, bshFile);
-        }
-
-        for (var otherFile : OtherFileName.values()) {
-            var paths = listToolGfxFile(otherFile.fileName);
-            addFilePath(paths, otherFile);
+        for (var file : FileName.values()) {
+            var paths = listToolGfxFile(file.toString());
+            addFilePath(paths, file);
         }
     }
 
     /**
      * Checks whether the given file was found and saves the first entry found.
      *
-     * @param pathList A list of the paths found.
-     * @param fileName The name of the file to check and add.
+     * @param paths A list of {@link Path} objects.
+     * @param fileName A {@link FileName} to check and add.
      */
-    private void addFilePath(List<Path> pathList, FileName fileName) {
-        if (pathList.isEmpty()) {
-            throw new BennoRuntimeException("The file " + fileName.getFileName() + " could not found at " + rootPath + ".");
+    private void addFilePath(List<Path> paths, FileName fileName) {
+        if (paths.isEmpty()) {
+            throw new BennoRuntimeException("The file " + fileName.toString() + " could not found at " + rootPath + ".");
         }
 
-        LOGGER.debug("Found file {} at {}.", fileName.getFileName(), pathList.get(0));
+        LOGGER.debug("Found file {} at {}.", fileName.toString(), paths.get(0));
 
-        filePaths.put(fileName, pathList.get(0));
+        filePaths.put(fileName, paths.get(0));
     }
 
     //-------------------------------------------------
@@ -339,7 +382,7 @@ public class BennoFiles {
     //-------------------------------------------------
 
     /**
-     * Checks whether all zoomable BSH files were found.
+     * Checks whether all {@link ZoomableBshFileName} were found.
      */
     private void checkForZoomableBshFiles() {
         for (var zoomId : Zoom.ZoomId.values()) {
@@ -347,7 +390,7 @@ public class BennoFiles {
                 var result = false;
                 String path = "";
                 for (var val : zoomableBshFilePaths.get(zoomId)) {
-                    if (val.toString().toLowerCase().contains(bshFile.fileName)) {
+                    if (val.toString().toLowerCase().contains(bshFile.toString())) {
                         result = true;
                         path = val.toString();
                         break;
@@ -355,10 +398,10 @@ public class BennoFiles {
                 }
 
                 if (!result) {
-                    throw new BennoRuntimeException("The BSH file " + bshFile.fileName + " could not found at " + rootPath + ".");
+                    throw new BennoRuntimeException("The BSH file " + bshFile.toString() + " could not found at " + rootPath + ".");
                 }
 
-                LOGGER.info("Found BSH file {}/{} at {}.", zoomId, bshFile.fileName, path);
+                LOGGER.info("Found BSH file {}/{} at {}.", zoomId, bshFile.toString(), path);
             }
         }
     }
@@ -366,7 +409,7 @@ public class BennoFiles {
     /**
      * Searches for savegames.
      *
-     * @return A list with all paths to the savegame files.
+     * @return A list of {@link Path} objects.
      * @throws IOException If an I/O error is thrown.
      */
     private List<Path> listSavegameFiles() throws IOException {
@@ -385,8 +428,8 @@ public class BennoFiles {
     /**
      * Searches for zoomable BSH files.
      *
-     * @param zoom The path to the Zoom-Id.
-     * @return A list with all paths.
+     * @param zoom The {@link Path} to a {@link de.sg.benno.renderer.Zoom.ZoomId}.
+     * @return A list of {@link Path} objects.
      * @throws IOException If an I/O error is thrown.
      */
     private List<Path> listZoomableBshFiles(Path zoom) throws IOException {
@@ -403,6 +446,13 @@ public class BennoFiles {
         return result;
     }
 
+    /**
+     * Checks if we are in the given zoom {@link Path}.
+     *
+     * @param path A given {@link Path}.
+     * @param zoom A given {@link Path} to a {@link de.sg.benno.renderer.Zoom.ZoomId}.
+     * @return boolean
+     */
     private static boolean checkZoomPath(Path path, Path zoom) {
         if (path.toString().toLowerCase().contains(zoom.toString().toLowerCase())) {
             return isContain(path.toString().toLowerCase(), zoom.toString().toLowerCase());
@@ -411,6 +461,13 @@ public class BennoFiles {
         return false;
     }
 
+    /**
+     * Checks if String contains exact a keyword.
+     *
+     * @param source The source to be checked.
+     * @param subItem The keyword.
+     * @return boolean
+     */
     private static boolean isContain(String source, String subItem){
         String str = "\\b" + subItem + "\\b";
         var pattern = Pattern.compile(str);
@@ -423,7 +480,7 @@ public class BennoFiles {
      * Looks for a file in the ToolGfx directory.
      *
      * @param fileName The name of the file to be searched for.
-     * @return A list with all paths.
+     * @return A list of {@link Path} objects.
      * @throws IOException If an I/O error is thrown.
      */
     private List<Path> listToolGfxFile(String fileName) throws IOException {
