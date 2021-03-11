@@ -13,15 +13,35 @@ import de.sg.ogl.resource.Texture;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
 
+/**
+ * Represents a BshTexture.
+ * Contains a {@link BufferedImage} and an OpenGl {@link Texture} for each Bsh image.
+ */
 public class BshTexture {
 
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
+
+    /**
+     * A {@link BufferedImage} object.
+     */
     private final BufferedImage bufferedImage;
+
+    /**
+     * A {@link Texture} object.
+     */
     private Texture texture;
 
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
+    /**
+     * Constructs a new {@link BshTexture} object.
+     *
+     * @param bufferedImage {@link BufferedImage}
+     */
     BshTexture(BufferedImage bufferedImage) {
         this.bufferedImage = Objects.requireNonNull(bufferedImage, "bufferedImage must not be null");
     }
@@ -30,10 +50,20 @@ public class BshTexture {
     // Getter
     //-------------------------------------------------
 
+    /**
+     * Get {@link #bufferedImage}.
+     *
+     * @return {@link #bufferedImage}
+     */
     public BufferedImage getBufferedImage() {
         return bufferedImage;
     }
 
+    /**
+     * Get {@link #texture}.
+     *
+     * @return {@link #texture}
+     */
     public Texture getTexture() {
         return texture;
     }
@@ -42,6 +72,11 @@ public class BshTexture {
     // Setter
     //-------------------------------------------------
 
+    /**
+     * Set a {@link Texture}.
+     *
+     * @param texture {@link Texture}
+     */
     void setTexture(Texture texture) {
         this.texture = texture;
     }

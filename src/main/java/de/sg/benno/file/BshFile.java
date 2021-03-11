@@ -33,16 +33,49 @@ import static org.lwjgl.opengl.GL12.GL_UNSIGNED_INT_8_8_8_8_REV;
 
 /**
  * Represents a BshFile.
- * The class loads a BSH file.
+ * The class loads a Bsh file.
  */
 public class BshFile extends BinaryFile {
 
-    private static class TextureHeader {
+    /**
+     * Represents the type of an Bsh image.
+     */
+    private enum BshType {
+        NORMAL(1),
+        NEW(13);
+
+        public final int value;
+
+        BshType(int value) {
+            this.value = value;
+        }
+
+        public static BshType fromInt(int value) {
+            switch (value) {
+                case 1 : return NORMAL;
+                case 13 : return NEW;
+            }
+
+            return null;
+        }
+    }
+
+    /**
+     * A {@link BufferedImage} with additional information.
+     */
+    private static class BufferedBshImage {
         final BufferedImage image;
-        final int type;
+        final BshType type;
         final int offset;
 
-        TextureHeader(BufferedImage image, int type, int offset) {
+        /**
+         * Constructs a new {@link BufferedBshImage} object.
+         *
+         * @param image A {@link BufferedImage}
+         * @param type A {@link BshType}
+         * @param offset The offset of the Bsh image.
+         */
+        BufferedBshImage(BufferedImage image, BshType type, int offset) {
             this.image = image;
             this.type = type;
             this.offset = offset;
@@ -94,12 +127,12 @@ public class BshFile extends BinaryFile {
     private final boolean saveAsPng;
 
     /**
-     * The offsets to the BSH images.
+     * The offsets to the Bsh images.
      */
     private final ArrayList<Integer> offsets = new ArrayList<>();
 
     /**
-     * The possible invalid offsets to the BSH images.
+     * The possible invalid offsets to the Bsh images.
      */
     private final HashSet<Integer> possibleInvalidOffsets = new HashSet<>();
 
@@ -119,7 +152,7 @@ public class BshFile extends BinaryFile {
     private int maxY = -999;
 
     /**
-     * Shortcut to the first {@link Chunk}.
+     * Shortcut to the {@link Chunk}.
      */
     private final Chunk chunk0;
 
@@ -130,7 +163,7 @@ public class BshFile extends BinaryFile {
     /**
      * Constructs a new {@link BshFile} object.
      *
-     * @param path The {@link Path} to the BSH file.
+     * @param path The {@link Path} to the Bsh file.
      * @param palette The color values from the <i>stadtfld.col</i> file.
      * @param saveAsPng If the variable is true, all images are saved as a Png in {@link #OUTPUT_DIR}.
      * @throws IOException If an I/O error is thrown.
@@ -159,7 +192,7 @@ public class BshFile extends BinaryFile {
     /**
      * Constructs a new {@link BshFile} object.
      *
-     * @param path The {@link Path} to the BSH file.
+     * @param path The {@link Path} to the Bsh file.
      * @param palette The color values from the <i>stadtfld.col</i> file.
      * @throws IOException If an I/O error is thrown.
      */
@@ -235,7 +268,7 @@ public class BshFile extends BinaryFile {
     //-------------------------------------------------
 
     /**
-     * Reads and saves all offsets of the BSH images.
+     * Reads and saves all offsets of the Bsh images.
      */
     private void readOffsets() {
         // get offset of the first texture
@@ -274,14 +307,19 @@ public class BshFile extends BinaryFile {
     // Texture
     //-------------------------------------------------
 
+    /**
+     * Reads the pixel data from the {@link #chunk0} and uses it to create {@link BshTexture} objects.
+     * The {@link BshTexture} objects are stored in {@link #bshTextures}.
+     *
+     * @throws IOException If an I/O error is thrown.
+     */
     private void decodeTextures() throws IOException {
         for (var offset : offsets) {
             if (!possibleInvalidOffsets.contains(offset)) {
                 chunk0.getData().position(offset);
 
                 var textureHeader = readTextureHeader(offset);
-
-                if (textureHeader.type == 13) {
+                if (textureHeader.type == BshType.NEW) {
                     decodeTexture13(textureHeader);
                 } else {
                     decodeTexture(textureHeader);
@@ -292,7 +330,13 @@ public class BshFile extends BinaryFile {
         LOGGER.debug("A total of {} bsh textures were created.", bshTextures.size());
     }
 
-    private void decodeTexture13(TextureHeader textureHeader) throws IOException {
+    /**
+     * Reads the pixel data from the {@link #chunk0} and uses it to create a {@link BshTexture} object.
+     *
+     * @param textureHeader {@link BufferedBshImage}
+     * @throws IOException If an I/O error is thrown.
+     */
+    private void decodeTexture13(BufferedBshImage textureHeader) throws IOException {
         int x = 0;
         int y = 0;
 
@@ -336,7 +380,13 @@ public class BshFile extends BinaryFile {
         bshTextures.add(bshTexture);
     }
 
-    private void decodeTexture(TextureHeader textureHeader) throws IOException {
+    /**
+     * Reads the pixel data from the {@link #chunk0} and uses it to create a {@link BshTexture} object.
+     *
+     * @param textureHeader {@link BufferedBshImage}
+     * @throws IOException If an I/O error is thrown.
+     */
+    private void decodeTexture(BufferedBshImage textureHeader) throws IOException {
         int x = 0;
         int y = 0;
 
@@ -381,6 +431,9 @@ public class BshFile extends BinaryFile {
         bshTextures.add(bshTexture);
     }
 
+    /**
+     * Makes the {@link BshTexture} objects available for OpenGL.
+     */
     private void createGlTextures() {
         for (var bshTexture : bshTextures) {
             var dbb = (DataBufferInt) bshTexture.getBufferedImage().getRaster().getDataBuffer();
@@ -409,8 +462,14 @@ public class BshFile extends BinaryFile {
         }
     }
 
-    private TextureHeader readTextureHeader(int offset) {
-        // with && height
+    /**
+     * Reads width, height, type and length of a Bsh image from {@link #chunk0}.
+     * A {@link BufferedBshImage} object is created from this.
+     *
+     * @param offset The offset in {@link #chunk0}.
+     * @return {@link BufferedBshImage}
+     */
+    private BufferedBshImage readTextureHeader(int offset) {
         var width = chunk0.getData().getInt();
         var height = chunk0.getData().getInt();
 
@@ -418,19 +477,23 @@ public class BshFile extends BinaryFile {
             throw new BennoRuntimeException("Invalid width or height.");
         }
 
-        // type
         var type = chunk0.getData().getInt();
-
-        // length
         var length = chunk0.getData().getInt();
 
-        return new TextureHeader(new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB), type, offset);
+        return new BufferedBshImage(new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB), BshType.fromInt(type), offset);
     }
 
     //-------------------------------------------------
     // Helper
     //-------------------------------------------------
 
+    /**
+     * Saves a {@link BufferedImage} as a Png.
+     *
+     * @param image {@link BufferedImage}
+     * @param offset The offset in {@link #chunk0} used as file name.
+     * @throws IOException If an I/O error is thrown.
+     */
     private void saveAsPng(BufferedImage image, int offset) throws IOException {
         Files.createDirectories(Paths.get(OUTPUT_DIR));
 
@@ -451,6 +514,9 @@ public class BshFile extends BinaryFile {
         ImageIO.write(image, "PNG", file);
     }
 
+    /**
+     * Determines the maximum width and height of the images.
+     */
     private void setMaxValues() {
         for (var bshTexture : bshTextures) {
             if (bshTexture.getBufferedImage().getWidth() > maxX) {
