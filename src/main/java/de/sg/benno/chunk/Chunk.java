@@ -63,7 +63,7 @@ public class Chunk {
     private int dataLengthInt;
 
     /**
-     * The ByteBuffer with the Chunk data.
+     * The {@link ByteBuffer} with the Chunk data.
      */
     private ByteBuffer byteBuffer;
 
