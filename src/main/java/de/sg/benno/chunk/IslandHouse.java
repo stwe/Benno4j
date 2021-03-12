@@ -194,6 +194,7 @@ public class IslandHouse {
      * Checks whether the island number from the {@link #chunk} belong to the {@link #parentIsland}.
      *
      * @param islandNumber The given island number from the {@link #chunk}.
+     *
      * @return True if valid.
      */
     private boolean isValidIslandNumber(int islandNumber) {
@@ -205,6 +206,7 @@ public class IslandHouse {
      *
      * @param xPosOnIsland The x position on the island.
      * @param yPosOnIsland The y position on the island.
+     *
      * @return True if valid.
      */
     private boolean isValidTilePosition(int xPosOnIsland, int yPosOnIsland) {
@@ -215,6 +217,7 @@ public class IslandHouse {
      * Checks whether the specified x position is on the island.
      *
      * @param xPosOnIsland The x position on the island.
+     *
      * @return True if valid.
      */
     private boolean isValidTilePosX(int xPosOnIsland) {
@@ -225,6 +228,7 @@ public class IslandHouse {
      * Checks whether the specified y position is on the island.
      *
      * @param yPosOnIsland The y position on the island.
+     *
      * @return True if valid.
      */
     private boolean isValidTilePosY(int yPosOnIsland) {

@@ -8,9 +8,25 @@
 
 package de.sg.benno.renderer;
 
-public class Zoom {
+/**
+ * Represents a zoom level with the respective constants.
+ */
+public enum Zoom {
+    SGFX(8, 4 ,4 ,16, 8),
+    MGFX(16, 8, 2, 32, 16),
+    GFX(32, 16, 1, 64, 31);
 
-    public enum ZoomId {
-        SGFX, MGFX, GFX
+    public int xRaster;
+    public int yRaster;
+    public int elevation;
+    public int defaultTileWidth;
+    public int defaultTileHeight;
+
+    Zoom(int xRaster, int yRaster, int elevation, int defaultTileWidth, int defaultTileHeight) {
+        this.xRaster = xRaster;
+        this.yRaster = yRaster;
+        this.elevation = elevation;
+        this.defaultTileWidth = defaultTileWidth;
+        this.defaultTileHeight = defaultTileHeight;
     }
 }

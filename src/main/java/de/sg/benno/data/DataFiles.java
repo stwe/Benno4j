@@ -19,18 +19,48 @@ import java.util.Objects;
 
 import static de.sg.ogl.Log.LOGGER;
 
+/**
+ * Represents a DataFiles object.
+ */
 public class DataFiles {
 
+    //-------------------------------------------------
+    // Constants
+    //-------------------------------------------------
+
+    /**
+     * Json file with the information of all buildings.
+     */
     private static final String BUILDINGS_JSON = "history/buildings.json";
+
+    /**
+     * Json file with the information of the main menu.
+     */
     private static final String BASE_JSON = "history/base.json";
 
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
+
+    /**
+     * A map with {@link Building} objects.
+     */
     private final HashMap<Integer, Building> buildings = new HashMap<>();
+
+    /**
+     * A map with {@link Widget} objects.
+     */
     private final HashMap<Integer, Widget> widgets = new HashMap<>();
 
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
+    /**
+     * Constructs a new {@link DataFiles} object.
+     *
+     * @throws IOException If an I/O error is thrown.
+     */
     public DataFiles() throws IOException {
         LOGGER.debug("Creates DataFiles object.");
 
@@ -42,10 +72,20 @@ public class DataFiles {
     // Getter
     //-------------------------------------------------
 
+    /**
+     * Get {@link #buildings}.
+     *
+     * @return {@link #buildings}
+     */
     public HashMap<Integer, Building> getBuildings() {
         return buildings;
     }
 
+    /**
+     * Get {@link #widgets}.
+     *
+     * @return {@link #widgets}
+     */
     public HashMap<Integer, Widget> getWidgets() {
         return widgets;
     }
@@ -54,6 +94,11 @@ public class DataFiles {
     // Read data
     //-------------------------------------------------
 
+    /**
+     * Creates the map with the building information from the Json data.
+     *
+     * @param rootNode {@link JsonNode}
+     */
     private void readBuildings(JsonNode rootNode) {
         Objects.requireNonNull(rootNode, "rootNode must not be null");
 
@@ -111,6 +156,11 @@ public class DataFiles {
         LOGGER.debug("Building data read successfully. {} entries were found.", buildings.size());
     }
 
+    /**
+     * Creates the map with the widget information from the Json data.
+     *
+     * @param rootNode {@link JsonNode}
+     */
     private void readBaseWidgets(JsonNode rootNode) {
         Objects.requireNonNull(rootNode, "rootNode must not be null");
 
@@ -174,6 +224,14 @@ public class DataFiles {
     // Helper
     //-------------------------------------------------
 
+    /**
+     * Returns the root Json node.
+     *
+     * @param path Path to the Json file.
+     *
+     * @return {@link JsonNode}
+     * @throws IOException If an I/O error is thrown.
+     */
     private JsonNode getRootNodeData(String path) throws IOException {
         var inputStream = Util.getFileFromResourceAsStream(path);
         var reader = new InputStreamReader(Objects.requireNonNull(inputStream, "inputStream must not be null"));

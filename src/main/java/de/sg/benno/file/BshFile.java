@@ -467,6 +467,7 @@ public class BshFile extends BinaryFile {
      * A {@link BufferedBshImage} object is created from this.
      *
      * @param offset The offset in {@link #chunk0}.
+     *
      * @return {@link BufferedBshImage}
      */
     private BufferedBshImage readTextureHeader(int offset) {

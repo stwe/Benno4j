@@ -8,7 +8,21 @@
 
 package de.sg.benno.data;
 
+/**
+ * The information about a building.
+ */
 public class Building {
+
+    //-------------------------------------------------
+    // Constants
+    //-------------------------------------------------
+
+    public static final int WATER_ID = 1201;
+
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
+
     public int id = -1;
     public int gfx = -1;
     public int blocknr = -1;

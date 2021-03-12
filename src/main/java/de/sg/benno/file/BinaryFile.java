@@ -81,6 +81,7 @@ public abstract class BinaryFile implements BinaryFileInterface {
      * Get {@link Chunk} by index.
      *
      * @param chunkIndex The given index.
+     *
      * @return {@link Chunk}
      */
     public Chunk getChunk(int chunkIndex) {
@@ -92,6 +93,7 @@ public abstract class BinaryFile implements BinaryFileInterface {
      *
      * @param chunkIndex The index of the {@link Chunk} in {@link #chunks}.
      * @param chunkId The Id.
+     *
      * @return boolean
      */
     boolean chunkIndexHasId(int chunkIndex, String chunkId) {

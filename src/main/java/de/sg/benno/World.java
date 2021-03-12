@@ -40,7 +40,8 @@ public class World {
      *
      * @param x The world position in x direction.
      * @param y The world position in y direction.
-     * @param island5List A list of all the {@link Island5}.
+     * @param island5List A list of {@link Island5} objects.
+     *
      * @return An {@link Island5} otherwise null.
      */
     public static Island5 isIslandOnPosition(int x, int y, ArrayList<Island5> island5List) {

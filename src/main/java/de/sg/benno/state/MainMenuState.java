@@ -40,7 +40,7 @@ public class MainMenuState extends ApplicationState {
 
         mainMenu = new MainMenu(
                 context.engine,
-                context.bennoFiles.getPreloadedBshFile(startBshFilePath),
+                context.bennoFiles.getBshFile(startBshFilePath),
                 this.getStateMachine()
         );
     }
