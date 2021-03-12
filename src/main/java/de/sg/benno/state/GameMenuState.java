@@ -43,7 +43,7 @@ public class GameMenuState extends ApplicationState {
 
         gameMenu = new GameMenu(
                 context.engine,
-                context.bennoFiles.getPreloadedBshFile(startBshFilePath),
+                context.bennoFiles.getBshFile(startBshFilePath),
                 createLabels(context.bennoFiles.getSavegameFilePaths()),
                 context.bennoFiles.getSavegameFilePaths(),
                 this.getStateMachine()

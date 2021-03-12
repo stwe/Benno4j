@@ -11,6 +11,9 @@ package de.sg.benno.chunk;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
+/**
+ * A TitleGraphic object contains information for display on the screen.
+ */
 public class TileGraphic {
 
     /**
@@ -27,6 +30,9 @@ public class TileGraphic {
         }
     }
 
+    /**
+     * Combines gfxIndex and tile height into one type.
+     */
     public static class TileGfxInfo {
         public int gfxIndex;
         public TileHeight tileHeight = TileHeight.SEA_LEVEL;
@@ -36,8 +42,23 @@ public class TileGraphic {
     // Member
     //-------------------------------------------------
 
+    /**
+     * The gfx number.
+     */
     public TileGfxInfo tileGfxInfo = new TileGfxInfo();
+
+    /**
+     * The position in world space.
+     */
     public Vector2i worldPosition = new Vector2i();
+
+    /**
+     * The position in screen space.
+     */
     public Vector2f screenPosition = new Vector2f();
+
+    /**
+     * The tile size.
+     */
     public Vector2f size = new Vector2f();
 }

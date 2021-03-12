@@ -8,6 +8,9 @@
 
 package de.sg.benno.data;
 
+/**
+ * Represents a Widget.
+ */
 public class Widget {
     public int id = -1;
     public int gfx = -1;

@@ -60,6 +60,24 @@ public class BshTexture {
     }
 
     /**
+     * Get the width of the {@link #bufferedImage}.
+     *
+     * @return int
+     */
+    public int getWidth() {
+        return bufferedImage.getWidth();
+    }
+
+    /**
+     * Get the height of the {@link #bufferedImage}.
+     *
+     * @return int
+     */
+    public int getHeight() {
+        return bufferedImage.getHeight();
+    }
+
+    /**
      * Get {@link #texture}.
      *
      * @return {@link #texture}
