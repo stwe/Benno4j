@@ -1,5 +1,3 @@
-src/main/resources/island/*
-
 ##############################
 ## Java
 ##############################
@@ -42,3 +40,6 @@ out/
 ##############################
 .vscode/
 .code-workspace
+
+
+!/lib/sgogl-java.jar
