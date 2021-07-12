@@ -19,15 +19,28 @@ import java.io.IOException;
 
 import static de.sg.ogl.Log.LOGGER;
 
+/**
+ * Represents the main class of the game.
+ */
 public class BennoApp extends SgOglApplication {
 
+    /**
+     * A {@link BennoFiles} object.
+     */
     private BennoFiles bennoFiles;
+
+    /**
+     * A {@link StateMachine} object.
+     */
     private StateMachine stateMachine;
 
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
+    /**
+     * Constructs a new {@link BennoApp} object.
+     */
     public BennoApp() throws IOException, IllegalAccessException {
         LOGGER.debug("Creates BennoApp object.");
 
@@ -45,7 +58,7 @@ public class BennoApp extends SgOglApplication {
     public void init() throws Exception {
         LOGGER.debug("Starts initializing BennoApp ...");
 
-        this.bennoFiles = new BennoFiles(BennoConfig.ROOT_PATH);
+        this.bennoFiles = new BennoFiles();
 
         Context stateContext = new Context();
         stateContext.engine = getEngine();
@@ -55,7 +68,9 @@ public class BennoApp extends SgOglApplication {
         this.stateMachine.add("main_menu", new MainMenuState(stateMachine));
         this.stateMachine.add("game_menu", new GameMenuState(stateMachine));
         this.stateMachine.add("game", new GameState(stateMachine));
-        this.stateMachine.change("main_menu");
+        //this.stateMachine.change("main_menu");
+
+        this.stateMachine.change("game", bennoFiles.getSavegameFilePaths().get(0));
 
         LOGGER.debug("BennoApp successfully initialized.");
     }

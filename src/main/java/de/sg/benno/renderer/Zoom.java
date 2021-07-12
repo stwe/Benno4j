@@ -12,8 +12,19 @@ package de.sg.benno.renderer;
  * Represents a zoom level with the respective constants.
  */
 public enum Zoom {
+    /**
+     * Small zoom graphics.
+     */
     SGFX(8, 4 ,4 ,16, 8),
+
+    /**
+     * Medium zoom graphics.
+     */
     MGFX(16, 8, 2, 32, 16),
+
+    /**
+     * Full zoom graphics.
+     */
     GFX(32, 16, 1, 64, 31);
 
     public int xRaster;

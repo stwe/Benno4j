@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 import static de.sg.ogl.Log.LOGGER;
 
 /**
- * Determines the {@link Path} to the most important files and preloads files.
+ * Determines the {@link Path} to the most important files for preloading.
  */
 public class BennoFiles {
 
@@ -40,16 +40,60 @@ public class BennoFiles {
      * BSH files that are available in different zoom levels.
      */
     public enum ZoomableBshFileName {
+
+        /**
+         * Effects
+         */
         EFFEKTE_BSH("effekte.bsh"),
+
+        /**
+         * Sea life
+         */
         FISCHE_BSH("fische.bsh"),
+
+        /**
+         * Jugglers
+         */
         GAUKLER_BSH("gaukler.bsh"),
+
+        /**
+         * Farmers
+         */
         MAEHER_BSH("maeher.bsh"),
+
+        /**
+         * Numbers 0-9
+         */
         NUMBERS_BSH("numbers.bsh"),
+
+        /**
+         * Shadows
+         */
         SCHATTEN_BSH("schatten.bsh"),
+
+        /**
+         * Ships
+         */
         SHIP_BSH("ship.bsh"),
+
+        /**
+         * Soldiers
+         */
         SOLDAT_BSH("soldat.bsh"),
+
+        /**
+         * Buildings and terrain
+         */
         STADTFLD_BSH("stadtfld.bsh"),
+
+        /**
+         * Animals
+         */
         TIERE_BSH("tiere.bsh"),
+
+        /**
+         * Workers
+         */
         TRAEGER_BSH("traeger.bsh");
 
         private final String fileName;
@@ -65,13 +109,32 @@ public class BennoFiles {
     }
 
     /**
-     * All other files.
+     * All other files in ToolGfx. Interface graphics and more.
      */
     public enum FileName {
+        /**
+         * Building thumbnails and terrain.
+         */
         BAUHAUS_BSH("bauhaus.bsh"),
+
+        /**
+         * Menu graphics.
+         */
         START_BSH("start.bsh"),
+
+        /**
+         * Editor interface graphics.
+         */
         EDITOR_BSH("editor.bsh"),
+
+        /**
+         * Interface graphics.
+         */
         TOOLS_BSH("tools.bsh"),
+
+        /**
+         * The palette file.
+         */
         PALETTE_COL("stadtfld.col");
 
         private final String fileName;
@@ -111,8 +174,8 @@ public class BennoFiles {
     private final HashMap<Zoom, List<Path>> zoomableBshFilePaths = new HashMap<>();
 
     /**
-     * A {@link HashMap} with the remaining {@link Path} objects, for example to the file with the color palette
-     * or files needed for the menus.
+     * A {@link HashMap} with the remaining {@link Path} objects in ToolGfx, for example to the file with the
+     * color palette or files needed for the menus.
      */
     private final HashMap<FileName, Path> filePaths = new HashMap<>();
 
@@ -138,15 +201,14 @@ public class BennoFiles {
     /**
      * Constructs a new {@link BennoFiles} object.
      *
-     * @param path The game's root {@link Path}.
      * @throws IOException If an I/O error is thrown.
      */
-    public BennoFiles(String path) throws IOException {
+    public BennoFiles() throws IOException {
         LOGGER.debug("Creates BennoFiles object.");
 
-        this.rootPath = Paths.get(Objects.requireNonNull(path, "path must not be null"));
+        this.rootPath = Paths.get(Objects.requireNonNull(BennoConfig.ROOT_PATH, "root path must not be null"));
         var home = FileSystemView.getFileSystemView().getDefaultDirectory().getPath();
-        this.savegamePath = Path.of(home + BennoConfig.SAVEGAME_PATH);
+        this.savegamePath = Path.of(home + Objects.requireNonNull(BennoConfig.SAVEGAME_PATH, "savegame path must not be null"));
 
         LOGGER.debug("Home directory found at {}.", home);
         LOGGER.debug("Search savegames at {}.", this.savegamePath);
@@ -260,16 +322,18 @@ public class BennoFiles {
     private void initPaths() throws IOException {
         LOGGER.debug("Starts initializing filesystem from root path {}...", rootPath);
 
-        // savegames
+        // store all savegame paths in a list
         findSavegameFiles();
 
-        // zoom graphics in GFX, MGFX, SGFX
+        // store all zoom graphics from GFX, MGFX, SGFX in a list
         findZoomableBshFiles(Zoom.SGFX);
         findZoomableBshFiles(Zoom.MGFX);
         findZoomableBshFiles(Zoom.GFX);
+
+        // checks that all zoomable BSH files have been found
         checkForZoomableBshFiles();
 
-        // other files (e.g. palette file, gui files)
+        // other files (e.g. palette file, gui files) in ToolGfx
         findToolGfxFiles();
 
         LOGGER.debug("Successfully initialized filesystem.");
@@ -292,10 +356,9 @@ public class BennoFiles {
         loadBshFile(getFilePath(FileName.START_BSH));
         //loadBshFile(InterfaceBshFileName.TOOLS); // 670
 
-        // todo: remove true
         //loadBshFile(getZoomableBshFilePath(Zoom.ZoomId.MGFX, ZoomableBshFileName.STADTFLD_BSH), true);
 
-        LOGGER.debug("Successfully loaded files.");
+        LOGGER.debug("Successfully preload files.");
     }
 
     /**
@@ -309,7 +372,7 @@ public class BennoFiles {
     private void loadBshFile(Path path, boolean saveAsPng) throws IOException {
         bshFiles.put(
                 path,
-                new BshFile(path, paletteFile.getPalette(), saveAsPng)
+                new BshFile(path, Objects.requireNonNull(paletteFile, "paletteFile must not be null").getPalette(), saveAsPng)
         );
     }
 
@@ -354,6 +417,8 @@ public class BennoFiles {
         }
 
         zoomableBshFilePaths.put(zoom, paths);
+
+        LOGGER.debug("Found {} BSH files in {}.", paths.size(), zoom);
     }
 
     /**
