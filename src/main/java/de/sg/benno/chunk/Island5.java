@@ -8,6 +8,7 @@
 
 package de.sg.benno.chunk;
 
+import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.data.Building;
 
 import java.util.*;
@@ -112,14 +113,28 @@ public class Island5 {
     //-------------------------------------------------
 
     /**
-     * The buildings list.
+     * A map with {@link Building} objects.
      */
     private final HashMap<Integer, Building> buildings;
 
+    /**
+     * A list with all added {@link IslandHouse} objects.
+     */
     private final ArrayList<IslandHouse> islandHouseList = new ArrayList<>();
+
+    /**
+     * A helper list with {@link IslandHouse} objects to determine the top and bottom layer.
+     */
     private final ArrayList<IslandHouse> finalIslandHouseList = new ArrayList<>();
 
+    /**
+     * The top layer.
+     */
     private IslandHouse topLayer;
+
+    /**
+     * The bottom layer.
+     */
     private IslandHouse bottomLayer;
 
     //-------------------------------------------------
@@ -163,29 +178,49 @@ public class Island5 {
      * @param islandHouse {@link IslandHouse}
      */
     public void addIslandHouse(IslandHouse islandHouse) {
-        islandHouseList.add(islandHouse);
+        islandHouseList.add(Objects.requireNonNull(islandHouse, "islandHouse must not be null"));
     }
 
     //-------------------------------------------------
     // Init
     //-------------------------------------------------
 
+    // ------------------
+    // todo
+    // ------------------
+
     /**
-     * Determines the top and bottom layer.
+     * Set the top and bottom layer.
      */
     public void initLayer() {
-        if (islandHouseList.isEmpty()) {
-            throw new RuntimeException("No IslandHouse data found.");
-        }
 
-        // todo: hardcoded for the current savegame
+        if (!modified && islandHouseList.size() <= 1) {
 
-        // the island is modified, first chunk is bottom
-        finalIslandHouseList.add(islandHouseList.get(0));
 
-        // a possible second chunk is top
-        if (islandHouseList.size() == 2) {
-            finalIslandHouseList.add(islandHouseList.get(1));
+            if (islandHouseList.size() == 2) {
+                finalIslandHouseList.add(islandHouseList.get(0));
+                finalIslandHouseList.add(islandHouseList.get(1));
+            }
+
+            // there is only one islandHouse chunk present, this is the bottom layer
+            if (islandHouseList.size() == 1) {
+                finalIslandHouseList.add(islandHouseList.get(0));
+                // create empty top
+                //auto empty = std::make_shared<IslandHouse>("INSELHAUS", island.width, island.height);
+                //finalIslandHouse.push_back(empty);
+            }
+        } else {
+            // the island is modified, first chunk is bottom
+            finalIslandHouseList.add(islandHouseList.get(0));
+
+            // a possible second chunk is top
+            if (islandHouseList.size() == 2) {
+                finalIslandHouseList.add(islandHouseList.get(1));
+            } else {
+                // create empty top
+                //auto empty = std::make_shared<IslandHouse>("INSELHAUS", island.width, island.height);
+                //finalIslandHouse.push_back(empty);
+            }
         }
 
         bottomLayer = finalIslandHouseList.get(0);
@@ -280,7 +315,7 @@ public class Island5 {
             }
         }
         if (!validSizeData) {
-            throw new RuntimeException("Invalid Island5 size data.");
+            throw new BennoRuntimeException("Invalid Island5 size data.");
         }
 
         var validClimateData = false;
@@ -292,7 +327,7 @@ public class Island5 {
             }
         }
         if (!validClimateData) {
-            throw new RuntimeException("Invalid Island5 climate data.");
+            throw new BennoRuntimeException("Invalid Island5 climate data.");
         }
 
         modified = byteToInt(chunk.getData().get()) == 1;
@@ -305,7 +340,7 @@ public class Island5 {
 
         // ensure correct position in the chunk
         if (chunk.getData().position() - start != CHUNK_SIZE_IN_BYTES) {
-            throw new RuntimeException("Unexpected error.");
+            throw new BennoRuntimeException("Unexpected error.");
         }
 
         LOGGER.debug("Island5 data read successfully.");

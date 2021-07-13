@@ -37,7 +37,7 @@ public class Tile {
     public static final int BYTES_PER_TILE = 8;
 
     /**
-     * This means that the tile is not set.
+     * This means that the {@link Tile} is not set.
      */
     public static final int NO_GRAPHIC = 0xFFFF;
 
@@ -46,7 +46,7 @@ public class Tile {
     //-------------------------------------------------
 
     /**
-     * The tile gaphic Id, see haeuser.cod for reference.
+     * The tile gaphic Id, see haeuser.cod or {@link de.sg.benno.data.Building} for reference.
      */
     public int graphicId = NO_GRAPHIC;
 
@@ -109,7 +109,8 @@ public class Tile {
     }
 
     /**
-     * Constructs a new {@link Tile} object by another {@link Tile} (copy constructor).
+     * Copy constructor (copy each field of the input object into the new instance).
+     * Constructs a new {@link Tile} object by another {@link Tile}.
      *
      * @param tile {@link Tile}.
      */

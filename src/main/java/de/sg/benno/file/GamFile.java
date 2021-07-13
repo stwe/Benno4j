@@ -24,8 +24,7 @@ import static de.sg.benno.World.*;
 import static de.sg.ogl.Log.LOGGER;
 
 /**
- * Represents a GamFile.
- * Loads a savegame.
+ * Loads a savegame (.gam file).
  */
 public class GamFile extends BinaryFile {
 
@@ -39,6 +38,7 @@ public class GamFile extends BinaryFile {
     private final HashMap<Integer, Building> buildings;
 
     private final BshFile bshFile;
+
     private final Zoom zoom;
 
     /**
@@ -57,6 +57,8 @@ public class GamFile extends BinaryFile {
      *
      * @param path The {@link Path} to the savegame.
      * @param buildings The map with all {@link Building} objects.
+     * @param bshFile A stadtfldBsh {@link BshFile}.
+     * @param zoom A {@link Zoom}.
      * @throws IOException If an I/O error is thrown.
      */
     public GamFile(
@@ -69,12 +71,10 @@ public class GamFile extends BinaryFile {
 
         LOGGER.debug("Creates GamFile object from file {}.", path);
 
-        Objects.requireNonNull(buildings, "buildings must not be null");
-        this.buildings = buildings;
-
         // todo - hier alle zoomstufen laden?
-        this.bshFile = bshFile;
-        this.zoom = zoom;
+        this.buildings = Objects.requireNonNull(buildings, "buildings must not be null");
+        this.bshFile = Objects.requireNonNull(bshFile, "bshFile must not be null");
+        this.zoom = Objects.requireNonNull(zoom, "zoom must not be null");
 
         readDataFromChunks();
     }
@@ -137,7 +137,7 @@ public class GamFile extends BinaryFile {
             for (int x = 0; x < WORLD_WIDTH; x++) {
                 var island5 = isIslandOnPosition(x, y, island5List);
 
-                if (island5 == null) {
+                if (island5.isEmpty()) {
                     var waterGfxIndex = buildings.get(Building.WATER_ID).gfx;
                     waterGfxIndex += (y + x * 3) % 12;
 

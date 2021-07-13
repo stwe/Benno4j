@@ -356,7 +356,7 @@ public class BennoFiles {
         loadBshFile(getFilePath(FileName.START_BSH));
         //loadBshFile(InterfaceBshFileName.TOOLS); // 670
 
-        //loadBshFile(getZoomableBshFilePath(Zoom.ZoomId.MGFX, ZoomableBshFileName.STADTFLD_BSH), true);
+        //loadBshFile(getZoomableBshFilePath(Zoom.MGFX, ZoomableBshFileName.STADTFLD_BSH), true);
 
         LOGGER.debug("Successfully preload files.");
     }

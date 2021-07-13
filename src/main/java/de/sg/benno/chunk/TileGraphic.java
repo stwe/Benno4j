@@ -16,6 +16,10 @@ import org.joml.Vector2i;
  */
 public class TileGraphic {
 
+    //-------------------------------------------------
+    // Types
+    //-------------------------------------------------
+
     /**
      * Represents the two possible heights of the terrain.
      */
@@ -31,7 +35,7 @@ public class TileGraphic {
     }
 
     /**
-     * Combines gfxIndex and tile height into one type.
+     * Combines gfxIndex and {@link TileHeight} into one type.
      */
     public static class TileGfxInfo {
         public int gfxIndex;
@@ -43,7 +47,7 @@ public class TileGraphic {
     //-------------------------------------------------
 
     /**
-     * The gfx number.
+     * The gfx info.
      */
     public TileGfxInfo tileGfxInfo = new TileGfxInfo();
 

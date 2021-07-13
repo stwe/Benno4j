@@ -11,6 +11,7 @@ package de.sg.benno;
 import de.sg.benno.chunk.Island5;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 /**
  * Common stuff for the world.
@@ -42,18 +43,20 @@ public class World {
      * @param y The world position in y direction.
      * @param island5List A list of {@link Island5} objects.
      *
-     * @return An {@link Island5} otherwise null.
+     * @return A nullable {@link Island5} Optional.
      */
-    public static Island5 isIslandOnPosition(int x, int y, ArrayList<Island5> island5List) {
+    public static Optional<Island5> isIslandOnPosition(int x, int y, ArrayList<Island5> island5List) {
+        Island5 result = null;
+
         for (var island5 : island5List) {
             if ((x >= island5.xPos) &&
                 (y >= island5.yPos) &&
                 (x < island5.xPos + island5.width) &&
                 (y < island5.yPos + island5.height)) {
-                return island5;
+                result = island5;
             }
         }
 
-        return null;
+        return Optional.ofNullable(result);
     }
 }

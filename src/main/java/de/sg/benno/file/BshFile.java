@@ -56,7 +56,7 @@ public class BshFile extends BinaryFile {
                 case 13 : return NEW;
             }
 
-            return null;
+            return null; // todo
         }
     }
 

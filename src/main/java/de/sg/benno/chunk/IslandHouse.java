@@ -8,6 +8,8 @@
 
 package de.sg.benno.chunk;
 
+import de.sg.benno.BennoRuntimeException;
+
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -16,7 +18,7 @@ import static de.sg.benno.chunk.Tile.BYTES_PER_TILE;
 import static de.sg.ogl.Log.LOGGER;
 
 /**
- * Represents an IslandHouse. An IslandHouse represents a tile layer consists of many tiles.
+ * Represents a tile layer consists of many tiles.
  */
 public class IslandHouse {
 
@@ -54,7 +56,7 @@ public class IslandHouse {
     //-------------------------------------------------
 
     /**
-     * Constructs a new {@link IslandHouse} object by a given {@link Chunk}.
+     * Constructs a new {@link IslandHouse} object.
      *
      * @param chunk {@link Chunk}
      * @param parentIsland {@link Island5}
@@ -65,11 +67,11 @@ public class IslandHouse {
 
         LOGGER.debug("Creates IslandHouse object.");
 
-        nrOfRawElements = calcNrOfRawElements();
-        if (nrOfRawElements > 0) {
+        this.nrOfRawElements = calcNrOfRawElements();
+        if (this.nrOfRawElements > 0) {
             createRawTiles();
         } else {
-            LOGGER.debug("Skip reading. There were no tiles found.");
+            LOGGER.debug("Skip reading. There were no raw tiles found.");
         }
 
         createLayerTiles();
@@ -97,15 +99,17 @@ public class IslandHouse {
      * Reads the data from the {@link #chunk} and uses it to create the raw tiles.
      */
     private void createRawTiles() {
-        LOGGER.debug("Start reading the IslandHouse tile data...");
+        LOGGER.debug("Start reading the IslandHouse raw tile data...");
 
         for (var i = 0; i < nrOfRawElements; i++) {
+            // read data to create a Tile object
             var graphicId = shortToInt(chunk.getData().getShort()); // 2
             var xPosOnIsland = byteToInt(chunk.getData().get());    // 1
             var yPosOnIsland = byteToInt(chunk.getData().get());    // 1
             var packedInt = chunk.getData().getInt();               // 4
                                                                          // = 8 Bytes
 
+            // create a Tile from the data above
             var tile = new Tile();
             tile.graphicId = graphicId;
             tile.xPosOnIsland = xPosOnIsland;
@@ -116,17 +120,18 @@ public class IslandHouse {
 
             tile.islandNumber = bitExtracted(packedInt, 8, 7);
             if (!isValidIslandNumber(tile.islandNumber)) {
-                throw new RuntimeException("Invalid island number.");
+                throw new BennoRuntimeException("Invalid island number.");
             }
 
             tile.cityNumber = bitExtracted(packedInt, 3, 15);
             tile.randomNumber = bitExtracted(packedInt, 5, 18);
             tile.playerNumber = bitExtracted(packedInt, 4, 23);
 
+            // add Tile
             rawTiles.add(tile);
         }
 
-        LOGGER.debug("IslandHouse tile data read successfully.");
+        LOGGER.debug("IslandHouse raw tile data read successfully.");
     }
 
     //-------------------------------------------------
@@ -137,10 +142,13 @@ public class IslandHouse {
      * Creates the layer tiles using raw tiles.
      */
     private void createLayerTiles() {
+        LOGGER.debug("Start creating the IslandHouse layer tiles...");
+
         var width = parentIsland.width;
         var height = parentIsland.height;
         var buildings = parentIsland.getBuildings();
 
+        // create width * height new Tile objects, initialized with default values
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 layerTiles.add(new Tile());
@@ -168,7 +176,7 @@ public class IslandHouse {
                         var targetIndex = (rawTile.yPosOnIsland + y) * width + rawTile.xPosOnIsland + x;
 
                         layerTiles.get(targetIndex).graphicId = rawTile.graphicId;
-                        layerTiles.get(targetIndex).xPosOnIsland = x;
+                        layerTiles.get(targetIndex).xPosOnIsland = x; // todo
                         layerTiles.get(targetIndex).yPosOnIsland = y;
 
                         layerTiles.get(targetIndex).orientation = rawTile.orientation;
@@ -181,9 +189,11 @@ public class IslandHouse {
                     }
                 }
             } else {
-                throw new RuntimeException("Invalid Tile position.");
+                throw new BennoRuntimeException("Invalid Tile position.");
             }
         }
+
+        LOGGER.debug("IslandHouse layer tiles created successfully.");
     }
 
     //-------------------------------------------------

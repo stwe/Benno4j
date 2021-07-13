@@ -16,7 +16,7 @@ import java.io.IOException;
 public interface BinaryFileInterface {
 
     /**
-     * Opens and reads the file. {@link de.sg.benno.chunk.Chunk} objects are created from the content.
+     * Opens and reads the file. {@link de.sg.benno.chunk.Chunk} objects are created from the file content.
      *
      * @throws IOException If an I/O error is thrown.
      */
