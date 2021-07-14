@@ -77,6 +77,23 @@ public class IslandHouse {
         createLayerTiles();
     }
 
+    /**
+     * Constructs a new {@link IslandHouse} object.
+     *
+     * @param parentIsland {@link Island5}
+     */
+    public IslandHouse(Island5 parentIsland) {
+        // creates an empty layer
+
+        this.chunk = null;
+        this.parentIsland = Objects.requireNonNull(parentIsland, "parentIsland must not be null");
+        this.nrOfRawElements = 0;
+
+        LOGGER.debug("Creates (empty) IslandHouse object.");
+
+        createLayerTiles();
+    }
+
     //-------------------------------------------------
     // Raw Tiles
     //-------------------------------------------------

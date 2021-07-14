@@ -33,9 +33,19 @@ public class GamFile extends BinaryFile {
     //-------------------------------------------------
 
     /**
+     * The {@link BennoFiles} object.
+     */
+    private final BennoFiles bennoFiles;
+
+    /**
      * The map with all {@link Building} objects.
      */
     private final HashMap<Integer, Building> buildings;
+
+
+
+
+
 
     private final BshFile bshFile;
 
@@ -56,25 +66,23 @@ public class GamFile extends BinaryFile {
      * Contructs a new {@link GamFile} object.
      *
      * @param path The {@link Path} to the savegame.
-     * @param buildings The map with all {@link Building} objects.
-     * @param bshFile A stadtfldBsh {@link BshFile}.
-     * @param zoom A {@link Zoom}.
+     * @param bennoFiles {@link BennoFiles}.
      * @throws IOException If an I/O error is thrown.
      */
-    public GamFile(
-            Path path,
-            HashMap<Integer, Building> buildings,
-            BshFile bshFile,
-            Zoom zoom
-    ) throws IOException {
+    public GamFile(Path path, BennoFiles bennoFiles) throws IOException {
         super(Objects.requireNonNull(path, "path must not be null"));
 
         LOGGER.debug("Creates GamFile object from file {}.", path);
 
+        this.bennoFiles = Objects.requireNonNull(bennoFiles, "bennoFiles must not be null");
+        this.buildings = this.bennoFiles.getDataFiles().getBuildings();
+
         // todo - hier alle zoomstufen laden?
-        this.buildings = Objects.requireNonNull(buildings, "buildings must not be null");
-        this.bshFile = Objects.requireNonNull(bshFile, "bshFile must not be null");
-        this.zoom = Objects.requireNonNull(zoom, "zoom must not be null");
+        // momentan nur MGFX laden
+        this.bshFile = this.bennoFiles.getBshFile(this.bennoFiles.getZoomableBshFilePath(
+                Zoom.MGFX, BennoFiles.ZoomableBshFileName.STADTFLD_BSH
+        ));
+        this.zoom = Zoom.MGFX;
 
         readDataFromChunks();
     }
@@ -84,12 +92,12 @@ public class GamFile extends BinaryFile {
     //-------------------------------------------------
 
     @Override
-    public void readDataFromChunks() throws IOException {
+    public void readDataFromChunks() {
         LOGGER.debug("Start reading savegame data from Chunks...");
 
         for (var chunk : getChunks()) {
             if (chunk.getId().equals("INSEL5")) {
-                var island5 = new Island5(chunk, buildings);
+                var island5 = new Island5(chunk, bennoFiles);
                 island5List.add(island5);
             }
 

@@ -189,31 +189,31 @@ public class Island {
         LITTLE {
             @Override
             public String toString() {
-                return "Little";
+                return "lit"; // part of the filename
             }
         },
         MIDDLE {
             @Override
             public String toString() {
-                return "Middle";
+                return "mit"; // part of the filename
             }
         },
         MEDIAN {
             @Override
             public String toString() {
-                return "Median";
+                return "med"; // part of the filename
             }
         },
         BIG {
             @Override
             public String toString() {
-                return "Big";
+                return "big"; // part of the filename
             }
         },
         LARGE {
             @Override
             public String toString() {
-                return "Large";
+                return "lar"; // part of the filename
             }
         }
     }
@@ -225,19 +225,19 @@ public class Island {
         NORTH {
             @Override
             public String toString() {
-                return "North";
+                return "NORD"; // the path name
             }
         },
         SOUTH {
             @Override
             public String toString() {
-                return "South";
+                return "SUED"; // the path name
             }
         },
         ANY {
             @Override
             public String toString() {
-                return "Any";
+                return "Any"; // todo ?
             }
         }
     }

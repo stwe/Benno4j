@@ -10,6 +10,7 @@ package de.sg.benno.file;
 
 import de.sg.benno.BennoConfig;
 import de.sg.benno.BennoRuntimeException;
+import de.sg.benno.chunk.Island;
 import de.sg.benno.data.DataFiles;
 import de.sg.benno.renderer.Zoom;
 
@@ -180,6 +181,11 @@ public class BennoFiles {
     private final HashMap<FileName, Path> filePaths = new HashMap<>();
 
     /**
+     * A {@link HashMap} with {@link Path} objects to SCP files.
+     */
+    private final HashMap<Island.IslandClimate, List<Path>> scpFilePaths = new HashMap<>();
+
+    /**
      * A {@link PaletteFile} object.
      */
     private PaletteFile paletteFile;
@@ -248,6 +254,28 @@ public class BennoFiles {
         }
 
         throw new BennoRuntimeException("The BSH file " + zoomableBshFileName + " could not found at " + rootPath + ".");
+    }
+
+    /**
+     * Get SCP file {@link Path} from {@link #scpFilePaths}.
+     *
+     * @param climate {@link de.sg.benno.chunk.Island.IslandClimate}
+     * @param scpFileName The name of the SCP file.
+     *
+     * @return {@link Path}
+     */
+    public Path getScpFilePath(Island.IslandClimate climate, String scpFileName) {
+        if (scpFileName.isEmpty()) {
+            throw new BennoRuntimeException("Invalid SCP filename given.");
+        }
+
+        for (var val : scpFilePaths.get(climate)) {
+            if (val.toString().toLowerCase().contains(scpFileName)) {
+                return val;
+            }
+        }
+
+        throw new BennoRuntimeException("The SCP file " + scpFileName + " could not found at " + rootPath + ".");
     }
 
     /**
@@ -325,13 +353,17 @@ public class BennoFiles {
         // store all savegame paths in a list
         findSavegameFiles();
 
-        // store all zoom graphics from GFX, MGFX, SGFX in a list
+        // store the path of all zoom graphics from GFX, MGFX, SGFX in a list
         findZoomableBshFiles(Zoom.SGFX);
         findZoomableBshFiles(Zoom.MGFX);
         findZoomableBshFiles(Zoom.GFX);
 
         // checks that all zoomable BSH files have been found
         checkForZoomableBshFiles();
+
+        // store the path of all SCP files in a list
+        findScpFiles(Island.IslandClimate.NORTH);
+        findScpFiles(Island.IslandClimate.SOUTH);
 
         // other files (e.g. palette file, gui files) in ToolGfx
         findToolGfxFiles();
@@ -404,7 +436,7 @@ public class BennoFiles {
     }
 
     /**
-     * Searches for all zoomable BSH files and saves the found {@link Path} objects in a list.
+     * Searches for zoomable BSH files and saves the found {@link Path} objects in a list.
      *
      * @param zoom {@link de.sg.benno.renderer.Zoom}.
      * @throws IOException If an I/O error is thrown.
@@ -418,7 +450,25 @@ public class BennoFiles {
 
         zoomableBshFilePaths.put(zoom, paths);
 
-        LOGGER.debug("Found {} BSH files in {}.", paths.size(), zoom);
+        LOGGER.debug("Found {} BSH files in {}.", paths.size(), zoom.toString());
+    }
+
+    /**
+     * Searches for SCP files and saves the found {@link Path} objects in a list.
+     *
+     * @param climate {@link de.sg.benno.chunk.Island.IslandClimate}.
+     * @throws IOException If an I/O error is thrown.
+     */
+    private void findScpFiles(Island.IslandClimate climate) throws IOException {
+        var paths = listScpFiles(Paths.get(climate.toString()));
+
+        if (paths.isEmpty()) {
+            throw new BennoRuntimeException("No " + climate + " SCP files found at " + rootPath + ".");
+        }
+
+        scpFilePaths.put(climate, paths);
+
+        LOGGER.debug("Found {} SCP files in {}.", paths.size(), climate.toString());
     }
 
     /**
@@ -500,19 +550,19 @@ public class BennoFiles {
     /**
      * Searches for zoomable BSH files.
      *
-     * @param zoom The {@link Path} to a {@link de.sg.benno.renderer.Zoom}.
+     * @param zoomPath The {@link Path} to a {@link de.sg.benno.renderer.Zoom}.
      *
      * @return A list of {@link Path} objects.
      * @throws IOException If an I/O error is thrown.
      */
-    private List<Path> listZoomableBshFiles(Path zoom) throws IOException {
+    private List<Path> listZoomableBshFiles(Path zoomPath) throws IOException {
         List<Path> result;
 
         try (var walk = Files.walk(rootPath)) {
             result = walk
                     .filter(Files::isRegularFile)
                     .filter(p -> p.getFileName().toString().toLowerCase().endsWith(".bsh"))
-                    .filter(p -> checkZoomPath(p.getParent(), zoom))
+                    .filter(p -> checkPath(p.getParent(), zoomPath))
                     .collect(Collectors.toList());
         }
 
@@ -520,16 +570,38 @@ public class BennoFiles {
     }
 
     /**
-     * Checks if we are in the given zoom {@link Path}.
+     * Searches for SCP files.
+     *
+     * @param climatePath The {@link Path} to a {@link de.sg.benno.chunk.Island.IslandClimate}.
+     *
+     * @return A list of {@link Path} objects.
+     * @throws IOException If an I/O error is thrown.
+     */
+    private List<Path> listScpFiles(Path climatePath) throws IOException  {
+        List<Path> result;
+
+        try (var walk = Files.walk(rootPath)) {
+            result = walk
+                    .filter(Files::isRegularFile)
+                    .filter(p -> p.getFileName().toString().toLowerCase().endsWith(".scp"))
+                    .filter(p -> checkPath(p.getParent(), climatePath))
+                    .collect(Collectors.toList());
+        }
+
+        return result;
+    }
+
+    /**
+     * Checks if we are in a given {@link Path}.
      *
      * @param path A given {@link Path}.
-     * @param zoom A given {@link Path} to a {@link de.sg.benno.renderer.Zoom}.
+     * @param otherPath A given other {@link Path}.
      *
      * @return boolean
      */
-    private static boolean checkZoomPath(Path path, Path zoom) {
-        if (path.toString().toLowerCase().contains(zoom.toString().toLowerCase())) {
-            return isContain(path.toString().toLowerCase(), zoom.toString().toLowerCase());
+    private static boolean checkPath(Path path, Path otherPath) {
+        if (path.toString().toLowerCase().contains(otherPath.toString().toLowerCase())) {
+            return isContain(path.toString().toLowerCase(), otherPath.toString().toLowerCase());
         }
 
         return false;

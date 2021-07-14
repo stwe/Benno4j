@@ -9,9 +9,7 @@
 package de.sg.benno.state;
 
 import de.sg.benno.BennoRuntimeException;
-import de.sg.benno.file.BennoFiles;
 import de.sg.benno.file.GamFile;
-import de.sg.benno.renderer.Zoom;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
 
@@ -79,12 +77,6 @@ public class GameState extends ApplicationState {
 
     private void loadSavegame(Path path) throws IOException {
         var context = (Context)getStateMachine().getStateContext();
-
-        var buildings = context.bennoFiles.getDataFiles().getBuildings();
-        var stadtfldBsh = context.bennoFiles.getBshFile(context.bennoFiles.getZoomableBshFilePath(
-                Zoom.MGFX, BennoFiles.ZoomableBshFileName.STADTFLD_BSH
-        ));
-
-        gamFile = new GamFile(path, buildings, stadtfldBsh, Zoom.MGFX);
+        gamFile = new GamFile(path, context.bennoFiles);
     }
 }

@@ -10,6 +10,7 @@ package de.sg.benno.chunk;
 
 import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.data.Building;
+import de.sg.benno.file.BennoFiles;
 
 import java.util.*;
 
@@ -113,7 +114,12 @@ public class Island5 {
     //-------------------------------------------------
 
     /**
-     * A map with {@link Building} objects.
+     * The {@link BennoFiles} object.
+     */
+    private final BennoFiles bennoFiles;
+
+    /**
+     * The map with all {@link Building} objects.
      */
     private final HashMap<Integer, Building> buildings;
 
@@ -145,12 +151,13 @@ public class Island5 {
      * Constructs a new {@link Island5} object.
      *
      * @param chunk {@link Chunk}
-     * @param buildings The buildings list.
+     * @param bennoFiles {@link BennoFiles}.
      */
-    public Island5(Chunk chunk, HashMap<Integer, Building> buildings) {
+    public Island5(Chunk chunk, BennoFiles bennoFiles) {
         LOGGER.debug("Creates Island5 object.");
 
-        this.buildings = Objects.requireNonNull(buildings, "buildings must not be null");
+        this.bennoFiles = Objects.requireNonNull(bennoFiles, "bennoFiles must not be null");
+        this.buildings = this.bennoFiles.getDataFiles().getBuildings();
 
         readData(Objects.requireNonNull(chunk, "chunk must not be null"));
     }
@@ -193,23 +200,35 @@ public class Island5 {
      * Set the top and bottom layer.
      */
     public void initLayer() {
+        LOGGER.debug("Start set top and bottom layer...");
 
         if (!modified && islandHouseList.size() <= 1) {
+            LOGGER.debug("The island {} is unmodified.", islandNumber);
 
+            // load the unmodified bottom layer from the island .scp file
+            var scpFilePath = bennoFiles.getScpFilePath(climate, getScpFileName());
 
+            /*
             if (islandHouseList.size() == 2) {
                 finalIslandHouseList.add(islandHouseList.get(0));
                 finalIslandHouseList.add(islandHouseList.get(1));
             }
+            */
 
             // there is only one islandHouse chunk present, this is the bottom layer
             if (islandHouseList.size() == 1) {
                 finalIslandHouseList.add(islandHouseList.get(0));
                 // create empty top
-                //auto empty = std::make_shared<IslandHouse>("INSELHAUS", island.width, island.height);
-                //finalIslandHouse.push_back(empty);
+                var emptyIslandHouse = new IslandHouse(this);
+                finalIslandHouseList.add(emptyIslandHouse);
             }
         } else {
+            LOGGER.debug("The island {} is modified.", islandNumber);
+
+            if (islandHouseList.isEmpty()) {
+                throw new BennoRuntimeException("Invalid number of layes.");
+            }
+
             // the island is modified, first chunk is bottom
             finalIslandHouseList.add(islandHouseList.get(0));
 
@@ -218,13 +237,15 @@ public class Island5 {
                 finalIslandHouseList.add(islandHouseList.get(1));
             } else {
                 // create empty top
-                //auto empty = std::make_shared<IslandHouse>("INSELHAUS", island.width, island.height);
-                //finalIslandHouse.push_back(empty);
+                var emptyIslandHouse = new IslandHouse(this);
+                finalIslandHouseList.add(emptyIslandHouse);
             }
         }
 
         bottomLayer = finalIslandHouseList.get(0);
         topLayer = finalIslandHouseList.get(1);
+
+        LOGGER.debug("Set top and bottom layer successfully.");
     }
 
     //-------------------------------------------------
@@ -344,5 +365,19 @@ public class Island5 {
         }
 
         LOGGER.debug("Island5 data read successfully.");
+    }
+
+    //-------------------------------------------------
+    // Helper
+    //-------------------------------------------------
+
+    /**
+     * Returns the name of the island SCP file.
+     * A xxxyy.scp file is the "naked" island, where xxx is one of lar/big/med/mit/lit and yy is a two-digit number.
+     *
+     * @return String
+     */
+    private String getScpFileName() {
+        return size.toString() + String.format("%02d", islandNumber) + ".scp";
     }
 }
