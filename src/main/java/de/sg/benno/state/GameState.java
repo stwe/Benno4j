@@ -9,7 +9,11 @@
 package de.sg.benno.state;
 
 import de.sg.benno.BennoRuntimeException;
+import de.sg.benno.file.BennoFiles;
+import de.sg.benno.file.BshFile;
 import de.sg.benno.file.GamFile;
+import de.sg.benno.renderer.TileRenderer;
+import de.sg.benno.renderer.Zoom;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
 
@@ -21,6 +25,10 @@ import static de.sg.ogl.Log.LOGGER;
 public class GameState extends ApplicationState {
 
     private GamFile gamFile;
+
+    private TileRenderer tileRenderer;
+
+    private BshFile bshFile;
 
     //-------------------------------------------------
     // Ctors.
@@ -49,6 +57,13 @@ public class GameState extends ApplicationState {
         } else {
             throw new BennoRuntimeException("Invalid parameter type.");
         }
+
+        var context = (Context)getStateMachine().getStateContext();
+        tileRenderer = new TileRenderer(context.engine);
+
+        bshFile = gamFile.getBennoFiles().getBshFile(gamFile.getBennoFiles().getZoomableBshFilePath(
+                Zoom.SGFX, BennoFiles.ZoomableBshFileName.STADTFLD_BSH
+        ));
     }
 
     @Override
@@ -63,12 +78,16 @@ public class GameState extends ApplicationState {
 
     @Override
     public void render() {
-
+        for (var tile : gamFile.getDeepWaterTiles(Zoom.SGFX)) {
+            tileRenderer.render(bshFile.getBshTextures().get(tile.tileGfxInfo.gfxIndex), tile.screenPosition);
+        }
     }
 
     @Override
     public void cleanUp() {
         LOGGER.debug("Start clean up for the GameState.");
+
+        tileRenderer.cleanUp();
     }
 
     //-------------------------------------------------

@@ -79,6 +79,15 @@ public class GamFile extends BinaryFile {
     //-------------------------------------------------
 
     /**
+     * Get {@link BennoFiles}.
+     *
+     * @return {@link BennoFiles}
+     */
+    public BennoFiles getBennoFiles() {
+        return bennoFiles;
+    }
+
+    /**
      * Get {@link #deepWaterTiles}.
      *
      * @return {@link #deepWaterTiles}
