@@ -42,21 +42,15 @@ public class GamFile extends BinaryFile {
      */
     private final HashMap<Integer, Building> buildings;
 
-
-
-
-
-
-    private final BshFile bshFile;
-
-    private final Zoom zoom;
-
     /**
      * The list with all {@link Island5} objects.
      */
     private final ArrayList<Island5> island5List = new ArrayList<>();
 
-    private final ArrayList<TileGraphic> deepWaterGraphicTiles = new ArrayList<>();
+    /**
+     * {@link ArrayList} objects holding deep water {@link TileGraphic} for each {@link Zoom} level.
+     */
+    private final HashMap<Zoom, ArrayList<TileGraphic>> deepWaterTiles = new HashMap<>();
 
     //-------------------------------------------------
     // Ctors.
@@ -66,7 +60,7 @@ public class GamFile extends BinaryFile {
      * Contructs a new {@link GamFile} object.
      *
      * @param path The {@link Path} to the savegame.
-     * @param bennoFiles {@link BennoFiles}.
+     * @param bennoFiles The {@link BennoFiles} object.
      * @throws IOException If an I/O error is thrown.
      */
     public GamFile(Path path, BennoFiles bennoFiles) throws IOException {
@@ -77,14 +71,31 @@ public class GamFile extends BinaryFile {
         this.bennoFiles = Objects.requireNonNull(bennoFiles, "bennoFiles must not be null");
         this.buildings = this.bennoFiles.getDataFiles().getBuildings();
 
-        // todo - hier alle zoomstufen laden?
-        // momentan nur MGFX laden
-        this.bshFile = this.bennoFiles.getBshFile(this.bennoFiles.getZoomableBshFilePath(
-                Zoom.MGFX, BennoFiles.ZoomableBshFileName.STADTFLD_BSH
-        ));
-        this.zoom = Zoom.MGFX;
-
         readDataFromChunks();
+    }
+
+    //-------------------------------------------------
+    // Getter
+    //-------------------------------------------------
+
+    /**
+     * Get {@link #deepWaterTiles}.
+     *
+     * @return {@link #deepWaterTiles}
+     */
+    public HashMap<Zoom, ArrayList<TileGraphic>> getDeepWaterTiles() {
+        return deepWaterTiles;
+    }
+
+    /**
+     * Get an {@link ArrayList} with {@link TileGraphic} objects of the deep water area.
+     *
+     * @param zoom {@link Zoom}
+     *
+     * @return An {@link ArrayList} with {@link TileGraphic} objects.
+     */
+    public ArrayList<TileGraphic> getDeepWaterTiles(Zoom zoom) {
+        return deepWaterTiles.get(zoom);
     }
 
     //-------------------------------------------------
@@ -92,7 +103,7 @@ public class GamFile extends BinaryFile {
     //-------------------------------------------------
 
     @Override
-    public void readDataFromChunks() {
+    public void readDataFromChunks() throws IOException {
         LOGGER.debug("Start reading savegame data from Chunks...");
 
         for (var chunk : getChunks()) {
@@ -108,8 +119,11 @@ public class GamFile extends BinaryFile {
             }
         }
 
+        // set top and bottom layer
         initIsland5Layer();
-        initDeepWaterArea();
+
+        // create deep water tiles for each zoom level
+        createDeepWaterAreaTiles();
 
         LOGGER.debug("Savegame data read successfully.");
     }
@@ -120,13 +134,13 @@ public class GamFile extends BinaryFile {
 
     /**
      * Initializes the layers of all {@link Island5} objects.
-     * This determines which layer is top and which is bottom.
+     * Sets the top and bottom layer.
      */
-    private void initIsland5Layer() {
+    private void initIsland5Layer() throws IOException {
         LOGGER.debug("Initialize layer.");
 
         for (var island5 : island5List) {
-            island5.initLayer();
+            island5.setTopAndBottomLayer();
         }
     }
 
@@ -134,13 +148,30 @@ public class GamFile extends BinaryFile {
     // Deep water
     //-------------------------------------------------
 
-    private void initDeepWaterArea() {
-        LOGGER.debug("Create data for the DeepWaterRenderer.");
+    /**
+     * Creates deep water tiles for each zoom level.
+     */
+    private void createDeepWaterAreaTiles() throws IOException {
+        LOGGER.debug("Create tiles for the DeepWaterRenderer.");
 
-        createDeepWaterGraphicTiles();
+        createDeepWaterGraphicTiles(Zoom.GFX);
+        createDeepWaterGraphicTiles(Zoom.MGFX);
+        createDeepWaterGraphicTiles(Zoom.SGFX);
     }
 
-    private void createDeepWaterGraphicTiles() {
+    /**
+     * Create deep water {@link TileGraphic} objects for a given {@link Zoom}.
+     *
+     * @param zoom {@link Zoom}
+     */
+    private void createDeepWaterGraphicTiles(Zoom zoom) throws IOException {
+        // it is possible to preload the files in BennoFiles
+        var bshFile = this.bennoFiles.getBshFile(this.bennoFiles.getZoomableBshFilePath(
+                zoom, BennoFiles.ZoomableBshFileName.STADTFLD_BSH
+        ));
+
+        var tiles = new ArrayList<TileGraphic>();
+
         for (int y = 0; y < WORLD_HEIGHT; y++) {
             for (int x = 0; x < WORLD_WIDTH; x++) {
                 var island5 = isIslandOnPosition(x, y, island5List);
@@ -149,10 +180,10 @@ public class GamFile extends BinaryFile {
                     var waterGfxIndex = buildings.get(Building.WATER_ID).gfx;
                     waterGfxIndex += (y + x * 3) % 12;
 
-                    var deepWaterTileGraphic = new TileGraphic();
-                    deepWaterTileGraphic.tileGfxInfo.gfxIndex = waterGfxIndex;
-                    deepWaterTileGraphic.worldPosition.x = x;
-                    deepWaterTileGraphic.worldPosition.y = y;
+                    var deepWaterTile = new TileGraphic();
+                    deepWaterTile.tileGfxInfo.gfxIndex = waterGfxIndex;
+                    deepWaterTile.worldPosition.x = x;
+                    deepWaterTile.worldPosition.y = y;
 
                     var waterBshTexture = bshFile.getBshTextures().get(waterGfxIndex);
                     var screenPosition = TileUtil.worldToScreen(x, y, zoom.xRaster, zoom.yRaster);
@@ -163,13 +194,14 @@ public class GamFile extends BinaryFile {
                     screenPosition.x -= waterBshTexture.getWidth();
                     screenPosition.y -= waterBshTexture.getHeight();
 
-                    deepWaterTileGraphic.screenPosition = new Vector2f(screenPosition);
-                    deepWaterTileGraphic.size = new Vector2f(waterBshTexture.getWidth(), waterBshTexture.getHeight());
+                    deepWaterTile.screenPosition = new Vector2f(screenPosition);
+                    deepWaterTile.size = new Vector2f(waterBshTexture.getWidth(), waterBshTexture.getHeight());
 
-                    deepWaterGraphicTiles.add(deepWaterTileGraphic);
-                    // m_deepWaterIndex[chunk::TileUtil::GetIndexFrom2D(x, y)] = static_cast<int>(t_graphicTiles.size()) - 1;
+                    tiles.add(deepWaterTile);
                 }
             }
         }
+
+        deepWaterTiles.put(zoom, tiles);
     }
 }

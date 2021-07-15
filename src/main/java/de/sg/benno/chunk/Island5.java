@@ -11,7 +11,9 @@ package de.sg.benno.chunk;
 import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.data.Building;
 import de.sg.benno.file.BennoFiles;
+import de.sg.benno.file.ScpFile;
 
+import java.io.IOException;
 import java.util.*;
 
 import static de.sg.benno.Util.*;
@@ -129,7 +131,7 @@ public class Island5 {
     private final ArrayList<IslandHouse> islandHouseList = new ArrayList<>();
 
     /**
-     * A helper list with {@link IslandHouse} objects to determine the top and bottom layer.
+     * A (helper) list holding the {@link #topLayer} and {@link #bottomLayer}.
      */
     private final ArrayList<IslandHouse> finalIslandHouseList = new ArrayList<>();
 
@@ -175,6 +177,24 @@ public class Island5 {
         return buildings;
     }
 
+    /**
+     * Get {@link #topLayer}.
+     *
+     * @return {@link #topLayer}
+     */
+    public IslandHouse getTopLayer() {
+        return topLayer;
+    }
+
+    /**
+     * Get {@link #bottomLayer}.
+     *
+     * @return {@link #bottomLayer}
+     */
+    public IslandHouse getBottomLayer() {
+        return bottomLayer;
+    }
+
     //-------------------------------------------------
     // Setter
     //-------------------------------------------------
@@ -192,30 +212,38 @@ public class Island5 {
     // Init
     //-------------------------------------------------
 
-    // ------------------
-    // todo
-    // ------------------
-
     /**
-     * Set the top and bottom layer.
+     * Sets the final top and bottom layer.
      */
-    public void initLayer() {
-        LOGGER.debug("Start set top and bottom layer...");
+    public void setTopAndBottomLayer() throws IOException {
+        LOGGER.debug("Modified flag: {}", modified);
+        LOGGER.debug("Number of layers: {}", islandHouseList.size());
+        LOGGER.debug("Start set top and bottom final layer...");
 
         if (!modified && islandHouseList.size() <= 1) {
-            LOGGER.debug("The island {} is unmodified.", islandNumber);
+            LOGGER.debug("Load the unmodified bottom layer from the island SCP file.");
 
-            // load the unmodified bottom layer from the island .scp file
-            var scpFilePath = bennoFiles.getScpFilePath(climate, getScpFileName());
+            var scpFile = new ScpFile(bennoFiles.getScpFilePath(climate, getScpFileName()));
+            if (scpFile.getNumberOfChunks() >= 2) {
+                var scpFileChunk1 = scpFile.getChunks().get(1);
+                if (scpFileChunk1.getId().equals("INSELHAUS")) {
+                    throw new BennoRuntimeException("Not implemented yet.");
+                    /*
+                    // todo: in ScpFile erstellen
+                    //std::make_shared<IslandHouse>(chunks[1]->chunk.data, chunks[1]->chunk.length, chunks[1]->chunk.name.c_str(), island.width, island.height);
+                    var scpIslandHouse = new IslandHouse(vars);
+                    islandHouseList.add(0, scpIslandHouse);
+                    */
+                }
+            } else {
+                throw new BennoRuntimeException("Invalid number of chunks.");
+            }
 
-            /*
             if (islandHouseList.size() == 2) {
                 finalIslandHouseList.add(islandHouseList.get(0));
                 finalIslandHouseList.add(islandHouseList.get(1));
             }
-            */
 
-            // there is only one islandHouse chunk present, this is the bottom layer
             if (islandHouseList.size() == 1) {
                 finalIslandHouseList.add(islandHouseList.get(0));
                 // create empty top
@@ -223,13 +251,13 @@ public class Island5 {
                 finalIslandHouseList.add(emptyIslandHouse);
             }
         } else {
-            LOGGER.debug("The island {} is modified.", islandNumber);
+            LOGGER.debug("The island is considered modified, first chunk is bottom.");
 
             if (islandHouseList.isEmpty()) {
                 throw new BennoRuntimeException("Invalid number of layes.");
             }
 
-            // the island is modified, first chunk is bottom
+            // first chunk is bottom
             finalIslandHouseList.add(islandHouseList.get(0));
 
             // a possible second chunk is top
@@ -237,6 +265,7 @@ public class Island5 {
                 finalIslandHouseList.add(islandHouseList.get(1));
             } else {
                 // create empty top
+                // todo
                 var emptyIslandHouse = new IslandHouse(this);
                 finalIslandHouseList.add(emptyIslandHouse);
             }
@@ -245,7 +274,7 @@ public class Island5 {
         bottomLayer = finalIslandHouseList.get(0);
         topLayer = finalIslandHouseList.get(1);
 
-        LOGGER.debug("Set top and bottom layer successfully.");
+        LOGGER.debug("Set top and bottom final layer successfully.");
     }
 
     //-------------------------------------------------

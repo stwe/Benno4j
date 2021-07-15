@@ -9,7 +9,6 @@
 package de.sg.benno.renderer;
 
 import de.sg.benno.file.BshTexture;
-import de.sg.ogl.Color;
 import de.sg.ogl.Log;
 import de.sg.ogl.OpenGL;
 import de.sg.ogl.SgOglEngine;

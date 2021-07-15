@@ -379,16 +379,21 @@ public class BennoFiles {
     private void preloadFiles() throws IOException {
         LOGGER.debug("Starts preloading some files ...");
 
-        // preload palette file (stadtfld.col)
+        LOGGER.debug("Preload palette file.");
         paletteFile = new PaletteFile(getFilePath(FileName.PALETTE_COL));
 
-        // preload start.bsh
         //loadBshFile(InterfaceBshFileName.BAUHAUS);
         //loadBshFile(InterfaceBshFileName.EDITOR); // 950
+
+        LOGGER.debug("Preload main menu graphics.");
         loadBshFile(getFilePath(FileName.START_BSH));
+
         //loadBshFile(InterfaceBshFileName.TOOLS); // 670
 
-        //loadBshFile(getZoomableBshFilePath(Zoom.MGFX, ZoomableBshFileName.STADTFLD_BSH), true);
+        LOGGER.debug("Preload buildings and terrain.");
+        loadBshFile(getZoomableBshFilePath(Zoom.GFX, ZoomableBshFileName.STADTFLD_BSH), false);
+        loadBshFile(getZoomableBshFilePath(Zoom.MGFX, ZoomableBshFileName.STADTFLD_BSH), false);
+        loadBshFile(getZoomableBshFilePath(Zoom.SGFX, ZoomableBshFileName.STADTFLD_BSH), false);
 
         LOGGER.debug("Successfully preload files.");
     }
