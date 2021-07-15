@@ -13,6 +13,7 @@ import de.sg.ogl.Log;
 import de.sg.ogl.OpenGL;
 import de.sg.ogl.SgOglEngine;
 import de.sg.ogl.buffer.Vao;
+import de.sg.ogl.camera.OrthographicCamera;
 import de.sg.ogl.resource.Geometry;
 import de.sg.ogl.resource.Shader;
 import de.sg.ogl.resource.Texture;
@@ -23,7 +24,11 @@ import org.joml.Vector3f;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 
-public class TileRenderer {
+public class DeepWaterRenderer {
+
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
 
     private final SgOglEngine engine;
 
@@ -31,7 +36,11 @@ public class TileRenderer {
     private final Shader shader;
     private final Vao vao;
 
-    public TileRenderer(SgOglEngine engine) throws Exception {
+    //-------------------------------------------------
+    // Ctors.
+    //-------------------------------------------------
+
+    public DeepWaterRenderer(SgOglEngine engine) throws Exception {
         this.engine = engine;
 
         this.quadGeometry = engine.getResourceManager().loadGeometry(Geometry.GeometryId.QUAD_2D);
@@ -41,7 +50,11 @@ public class TileRenderer {
         this.initVao();
     }
 
-    public void render(BshTexture texture, Vector2f position) {
+    //-------------------------------------------------
+    // Logic
+    //-------------------------------------------------
+
+    public void renderTile(BshTexture texture, Vector2f position, OrthographicCamera camera) {
         OpenGL.enableAlphaBlending();
         shader.bind();
         Texture.bindForReading(texture.getTexture().getId(), GL_TEXTURE0);
@@ -55,6 +68,7 @@ public class TileRenderer {
                 .scale(new Vector3f(size, 1.0f));
 
         shader.setUniform("model", modelMatrix);
+        shader.setUniform("view", camera.getViewMatrix());
         shader.setUniform("projection", new Matrix4f(engine.getWindow().getOrthographicProjectionMatrix()));
         shader.setUniform("diffuseMap", 0);
 
@@ -67,12 +81,21 @@ public class TileRenderer {
         Texture.unbind();
     }
 
+    //-------------------------------------------------
+    // Init
+    //-------------------------------------------------
+
     private void initVao() {
         vao.addVbo(quadGeometry.vertices, quadGeometry.drawCount, quadGeometry.defaultBufferLayout);
     }
 
+    //-------------------------------------------------
+    // Clean up
+    //-------------------------------------------------
+
     public void cleanUp() {
-        Log.LOGGER.debug("Clean up TileRenderer.");
+        Log.LOGGER.debug("Clean up DeepWaterRenderer.");
+
         this.vao.cleanUp();
     }
 }

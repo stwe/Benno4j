@@ -12,8 +12,10 @@ import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.file.BshFile;
 import de.sg.benno.file.GamFile;
-import de.sg.benno.renderer.TileRenderer;
+import de.sg.benno.renderer.DeepWaterRenderer;
 import de.sg.benno.renderer.Zoom;
+import de.sg.ogl.camera.OrthographicCamera;
+import de.sg.ogl.input.KeyInput;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
 
@@ -21,14 +23,18 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import static de.sg.ogl.Log.LOGGER;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 
 public class GameState extends ApplicationState {
 
     private GamFile gamFile;
 
-    private TileRenderer tileRenderer;
+    private DeepWaterRenderer tileRenderer;
 
     private BshFile bshFile;
+
+    private OrthographicCamera camera;
 
     //-------------------------------------------------
     // Ctors.
@@ -59,27 +65,36 @@ public class GameState extends ApplicationState {
         }
 
         var context = (Context)getStateMachine().getStateContext();
-        tileRenderer = new TileRenderer(context.engine);
+        tileRenderer = new DeepWaterRenderer(context.engine);
 
         bshFile = gamFile.getBennoFiles().getBshFile(gamFile.getBennoFiles().getZoomableBshFilePath(
                 Zoom.SGFX, BennoFiles.ZoomableBshFileName.STADTFLD_BSH
         ));
+
+        camera = new OrthographicCamera();
+        camera.setCameraVelocity(1000.0f);
     }
 
     @Override
     public void input() {
+        if (KeyInput.isKeyPressed(GLFW_KEY_ESCAPE)) {
+            var context = (Context)getStateMachine().getStateContext();
+            glfwSetWindowShouldClose(context.engine.getWindow().getWindowHandle(), true);
+        }
 
+        // todo
+        camera.update(0.016f);
     }
 
     @Override
-    public void update(float v) {
-
+    public void update(float dt) {
+        //camera.update(dt);
     }
 
     @Override
     public void render() {
         for (var tile : gamFile.getDeepWaterTiles(Zoom.SGFX)) {
-            tileRenderer.render(bshFile.getBshTextures().get(tile.tileGfxInfo.gfxIndex), tile.screenPosition);
+            tileRenderer.renderTile(bshFile.getBshTextures().get(tile.tileGfxInfo.gfxIndex), tile.screenPosition, camera);
         }
     }
 
