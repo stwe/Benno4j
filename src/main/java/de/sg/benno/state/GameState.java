@@ -9,11 +9,7 @@
 package de.sg.benno.state;
 
 import de.sg.benno.BennoRuntimeException;
-import de.sg.benno.file.BennoFiles;
-import de.sg.benno.file.BshFile;
 import de.sg.benno.file.GamFile;
-import de.sg.benno.renderer.DeepWaterRenderer;
-import de.sg.benno.renderer.Zoom;
 import de.sg.ogl.camera.OrthographicCamera;
 import de.sg.ogl.input.KeyInput;
 import de.sg.ogl.state.ApplicationState;
@@ -29,10 +25,6 @@ import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 public class GameState extends ApplicationState {
 
     private GamFile gamFile;
-
-    private DeepWaterRenderer tileRenderer;
-
-    private BshFile bshFile;
 
     private OrthographicCamera camera;
 
@@ -64,13 +56,6 @@ public class GameState extends ApplicationState {
             throw new BennoRuntimeException("Invalid parameter type.");
         }
 
-        var context = (Context)getStateMachine().getStateContext();
-        tileRenderer = new DeepWaterRenderer(context.engine);
-
-        bshFile = gamFile.getBennoFiles().getBshFile(gamFile.getBennoFiles().getZoomableBshFilePath(
-                Zoom.SGFX, BennoFiles.ZoomableBshFileName.STADTFLD_BSH
-        ));
-
         camera = new OrthographicCamera();
         camera.setCameraVelocity(1000.0f);
     }
@@ -93,16 +78,14 @@ public class GameState extends ApplicationState {
 
     @Override
     public void render() {
-        for (var tile : gamFile.getDeepWaterTiles(Zoom.SGFX)) {
-            tileRenderer.renderTile(bshFile.getBshTextures().get(tile.tileGfxInfo.gfxIndex), tile.screenPosition, camera);
-        }
+        gamFile.render(camera);
     }
 
     @Override
     public void cleanUp() {
         LOGGER.debug("Start clean up for the GameState.");
 
-        tileRenderer.cleanUp();
+        gamFile.cleanUp();
     }
 
     //-------------------------------------------------
@@ -110,7 +93,6 @@ public class GameState extends ApplicationState {
     //-------------------------------------------------
 
     private void loadSavegame(Path path) throws IOException {
-        var context = (Context)getStateMachine().getStateContext();
-        gamFile = new GamFile(path, context.bennoFiles);
+        gamFile = new GamFile(path, (Context)getStateMachine().getStateContext());
     }
 }

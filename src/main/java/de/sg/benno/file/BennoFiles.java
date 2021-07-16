@@ -34,7 +34,7 @@ import static de.sg.ogl.Log.LOGGER;
 public class BennoFiles {
 
     //-------------------------------------------------
-    // Constants
+    // Types
     //-------------------------------------------------
 
     /**

@@ -24,6 +24,9 @@ import org.joml.Vector3f;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 
+/**
+ * @deprecated replaced by {@link WaterRenderer}.
+ */
 public class DeepWaterRenderer {
 
     //-------------------------------------------------

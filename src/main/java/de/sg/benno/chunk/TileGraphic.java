@@ -8,8 +8,10 @@
 
 package de.sg.benno.chunk;
 
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
+import org.joml.Vector3f;
 
 /**
  * A TitleGraphic object contains information for display on the screen.
@@ -65,4 +67,23 @@ public class TileGraphic {
      * The tile size.
      */
     public Vector2f size = new Vector2f();
+
+    //-------------------------------------------------
+    // Getter
+    //-------------------------------------------------
+
+    /**
+     * Create and get the model matrix of this {@link TileGraphic}.
+     *
+     * @return {@link Matrix4f}
+     */
+    public Matrix4f getModelMatrix() {
+        Matrix4f modelMatrix = new Matrix4f();
+        modelMatrix
+                .identity()
+                .translate(new Vector3f(screenPosition, 0.0f))
+                .scale(new Vector3f(size, 1.0f));
+
+        return modelMatrix;
+    }
 }
