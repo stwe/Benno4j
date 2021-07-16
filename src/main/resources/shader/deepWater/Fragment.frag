@@ -12,5 +12,5 @@ void main()
 {
     vec3 uv = vec3(vUv, vTextureIndex);
     //fragColor = texture(sampler, uv);
-    fragColor = vec4(1.0, 0.1, 0.1, 1.0);
+    fragColor = vec4(vColor, 1.0);
 }

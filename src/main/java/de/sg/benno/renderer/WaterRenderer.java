@@ -17,6 +17,7 @@ import de.sg.ogl.camera.OrthographicCamera;
 import de.sg.ogl.resource.Geometry;
 import de.sg.ogl.resource.Shader;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
 import java.util.ArrayList;
@@ -30,6 +31,15 @@ import static org.lwjgl.opengl.GL33.glVertexAttribDivisor;
 public class WaterRenderer {
 
     //-------------------------------------------------
+    // Constants
+    //-------------------------------------------------
+
+    /**
+     * Color if no texture is used.
+     */
+    private static final Vector3f WATER_COLOR = new Vector3f(0.0f, 0.0f, 1.0f);
+
+    //-------------------------------------------------
     // Member
     //-------------------------------------------------
 
@@ -40,6 +50,7 @@ public class WaterRenderer {
     private final Geometry quadGeometry;
     private final Shader shader;
     private final Vao vao;
+    private int instances;
     private int textureWidth;
     private int textureHeight;
 
@@ -60,7 +71,8 @@ public class WaterRenderer {
         this.quadGeometry = context.engine.getResourceManager().loadGeometry(Geometry.GeometryId.QUAD_2D);
         this.shader = context.engine.getResourceManager().loadResource(Shader.class, "deepWater");
         this.vao = new Vao();
-        
+        this.instances = modelMatrices.size();
+
         initVao();
     }
 
@@ -68,6 +80,11 @@ public class WaterRenderer {
     // Logic
     //-------------------------------------------------
 
+    /**
+     * Renders the whole deep water area.
+     *
+     * @param camera {@link OrthographicCamera}
+     */
     public void render(OrthographicCamera camera) {
         OpenGL.enableWireframeMode();
         //OpenGL.enableAlphaBlending();
@@ -88,6 +105,9 @@ public class WaterRenderer {
     // Init
     //-------------------------------------------------
 
+    /**
+     * Setup {@link #vao}.
+     */
     private void initVao() {
         textureWidth = zoom.defaultTileWidth;
         textureHeight = zoom.defaultTileHeight;
@@ -95,13 +115,24 @@ public class WaterRenderer {
         addMeshVbo();
         addModelMatricesVbo();
         addTextureIdsVbo();
+
+        createTextureArray();
     }
 
+    /**
+     * Add a 2DQuad to a new {@link de.sg.ogl.buffer.Vbo}.
+     */
     private void addMeshVbo() {
-        // add quad geometry (2xposition, 3xcolor, 2xuv = 42 floats per quad)
-        vao.addVbo(Vertex2D.toFloatArray(quadGeometry.vertices), quadGeometry.defaultBufferLayout); // vao is unbind
+        for (var vertex : quadGeometry.vertices) {
+            vertex.color = WATER_COLOR;
+        }
+
+        vao.addVbo(Vertex2D.toFloatArray(quadGeometry.vertices), quadGeometry.defaultBufferLayout);
     }
 
+    /**
+     * Add {@link #modelMatrices} to a new {@link de.sg.ogl.buffer.Vbo}.
+     */
     private void addModelMatricesVbo() {
         // bind vao
         vao.bind();
@@ -112,7 +143,7 @@ public class WaterRenderer {
         // bind vbo
         vbo.bind();
 
-        var instances = modelMatrices.size();
+        // store data
         var fb = BufferUtils.createFloatBuffer(instances * 16);
         for (var matrix : modelMatrices) {
             float[] t = new float[16];
@@ -125,6 +156,7 @@ public class WaterRenderer {
         // unbind vbo
         vbo.unbind();
 
+        // set buffer layout
         vbo.addFloatAttribute(3, 4, 16, 0, true);
         vbo.addFloatAttribute(4, 4, 16, 4, true);
         vbo.addFloatAttribute(5, 4, 16, 8, true);
@@ -134,6 +166,9 @@ public class WaterRenderer {
         vao.unbind();
     }
 
+    /**
+     * Add {@link #textureIds} to a new {@link de.sg.ogl.buffer.Vbo}.
+     */
     private void addTextureIdsVbo() {
         // bind vao
         vao.bind();
@@ -144,7 +179,7 @@ public class WaterRenderer {
         // bind vbo
         vbo.bind();
 
-        var instances = textureIds.size();
+        // store data
         var ib = BufferUtils.createIntBuffer(instances);
         for (var textureId : textureIds) {
             ib.put(textureId);
@@ -153,6 +188,7 @@ public class WaterRenderer {
 
         glBufferData(GL_ARRAY_BUFFER, ib, GL_STATIC_DRAW);
 
+        // set buffer layout
         glEnableVertexAttribArray(7);
         glVertexAttribIPointer(7, 1, 4, 4, ib);
         glVertexAttribDivisor(7, 1);
@@ -165,9 +201,20 @@ public class WaterRenderer {
     }
 
     //-------------------------------------------------
+    // Texture array
+    //-------------------------------------------------
+
+    private void createTextureArray() {
+
+    }
+
+    //-------------------------------------------------
     // Clean up
     //-------------------------------------------------
 
+    /**
+     * Clean up.
+     */
     public void cleanUp() {
         Log.LOGGER.debug("Clean up WaterRenderer.");
 
