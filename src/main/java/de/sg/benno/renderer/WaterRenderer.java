@@ -36,6 +36,9 @@ import static org.lwjgl.opengl.GL33.glVertexAttribDivisor;
 import static org.lwjgl.opengl.GL45.glTextureStorage3D;
 import static org.lwjgl.opengl.GL45.glTextureSubImage3D;
 
+/**
+ * Represents a WaterRenderer.
+ */
 public class WaterRenderer {
 
     //-------------------------------------------------
@@ -43,37 +46,107 @@ public class WaterRenderer {
     //-------------------------------------------------
 
     /**
-     * Color if no texture is used.
+     * Color (blue) if no texture is used.
      */
     private static final Vector3f WATER_COLOR = new Vector3f(0.0f, 0.0f, 1.0f);
 
+    /**
+     * Number of vertices to be rendered per instance.
+     */
     private static final int DRAW_COUNT = 6;
+
+    /**
+     * Number of texture levels.
+     */
     private static final int MIP_LEVEL_COUNT = 1;
+
+    /**
+     * Number of water textures (START_WATER_GFX_INDEX - END_WATER_GFX_INDEX).
+     */
     private static final int LAYER_COUNT = 12;
+
+    /**
+     * First water gfx index.
+     */
     public static final int START_WATER_GFX_INDEX = 758;
+
+    /**
+     * Last water gfx index.
+     */
     private static final int END_WATER_GFX_INDEX = 769;
 
     //-------------------------------------------------
     // Member
     //-------------------------------------------------
 
+    /**
+     * The {@link ArrayList<Matrix4f>} objects.
+     */
     private final ArrayList<Matrix4f> modelMatrices;
+
+    /**
+     * The {@link ArrayList<Integer>} objects.
+     */
     private final ArrayList<Integer> textureIds;
+
+    /**
+     * The {@link Context} object.
+     */
     private final Context context;
+
+    /**
+     * The {@link Zoom} using in this renderer.
+     */
     private final Zoom zoom;
-    private final Geometry quadGeometry;
+
+    /**
+     * The {@link Shader} using in this renderer.
+     */
     private final Shader shader;
+
+    /**
+     * The {@link Vao} object.
+     */
     private final Vao vao;
+
+    /**
+     * Number of instances to render.
+     */
     private final int instances;
+
+    /**
+     * The width of all textures.
+     */
     private int textureWidth;
+
+    /**
+     * The height of all textures.
+     */
     private int textureHeight;
+
+    /**
+     * The {@link BshFile} object.
+     */
     private final BshFile bshFile;
+
+    /**
+     * The texture array id.
+     */
     private int textureArrayId;
 
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
+    /**
+     * Constructs a new {@link WaterRenderer} object.
+     *
+     * @param modelMatrices {@link ArrayList<Matrix4f>}
+     * @param textureIds {@link ArrayList<Integer>}
+     * @param context {@link Context}
+     * @param zoom {@link Zoom}
+     * @throws Exception If an error is thrown.
+     */
     public WaterRenderer(
             ArrayList<Matrix4f> modelMatrices,
             ArrayList<Integer> textureIds,
@@ -84,7 +157,6 @@ public class WaterRenderer {
         this.textureIds = textureIds;
         this.context = context;
         this.zoom = zoom;
-        this.quadGeometry = context.engine.getResourceManager().loadGeometry(Geometry.GeometryId.QUAD_2D);
         this.shader = context.engine.getResourceManager().loadResource(Shader.class, "deepWater");
         this.vao = new Vao();
         this.instances = modelMatrices.size();
@@ -155,6 +227,7 @@ public class WaterRenderer {
      * Add a 2DQuad to a new {@link de.sg.ogl.buffer.Vbo}.
      */
     private void addMeshVbo() {
+        var quadGeometry = context.engine.getResourceManager().loadGeometry(Geometry.GeometryId.QUAD_2D);
         for (var vertex : quadGeometry.vertices) {
             vertex.color = WATER_COLOR;
         }
@@ -236,6 +309,9 @@ public class WaterRenderer {
     // Texture array
     //-------------------------------------------------
 
+    /**
+     * Creates a texture array from the existing water textures.
+     */
     private void createTextureArray() {
         textureArrayId = Texture.generateNewTextureId();
         Texture.bind(textureArrayId, GL_TEXTURE_2D_ARRAY);
@@ -277,7 +353,7 @@ public class WaterRenderer {
      * Clean up.
      */
     public void cleanUp() {
-        Log.LOGGER.debug("Clean up WaterRenderer.");
+        Log.LOGGER.debug("Clean up WaterRenderer for {}.", zoom);
 
         this.vao.cleanUp();
     }

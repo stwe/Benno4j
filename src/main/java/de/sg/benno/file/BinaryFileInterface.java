@@ -25,7 +25,7 @@ public interface BinaryFileInterface {
     /**
      * Reads the data from the {@link de.sg.benno.chunk.Chunk} objects.
      *
-     * @throws IOException If an I/O error is thrown.
+     * @throws Exception If an error is thrown.
      */
-    void readDataFromChunks() throws IOException;
+    void readDataFromChunks() throws Exception;
 }

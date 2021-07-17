@@ -10,12 +10,12 @@ package de.sg.benno.state;
 
 import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.file.GamFile;
+import de.sg.benno.renderer.Zoom;
 import de.sg.ogl.camera.OrthographicCamera;
 import de.sg.ogl.input.KeyInput;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 import static de.sg.ogl.Log.LOGGER;
@@ -83,7 +83,7 @@ public class GameState extends ApplicationState {
 
     @Override
     public void render() {
-        gamFile.render(camera, wireframe);
+        gamFile.render(camera, wireframe, Zoom.MGFX);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class GameState extends ApplicationState {
     // Helper
     //-------------------------------------------------
 
-    private void loadSavegame(Path path) throws IOException {
+    private void loadSavegame(Path path) throws Exception {
         gamFile = new GamFile(path, (Context)getStateMachine().getStateContext());
     }
 }

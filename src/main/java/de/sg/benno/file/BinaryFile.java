@@ -114,5 +114,5 @@ public abstract class BinaryFile implements BinaryFileInterface {
     }
 
     @Override
-    public abstract void readDataFromChunks() throws IOException;
+    public abstract void readDataFromChunks() throws Exception;
 }
