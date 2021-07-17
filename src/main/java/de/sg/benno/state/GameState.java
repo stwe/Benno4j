@@ -19,14 +19,15 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import static de.sg.ogl.Log.LOGGER;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
-import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
+import static org.lwjgl.glfw.GLFW.*;
 
 public class GameState extends ApplicationState {
 
     private GamFile gamFile;
 
     private OrthographicCamera camera;
+
+    private boolean wireframe = false;
 
     //-------------------------------------------------
     // Ctors.
@@ -67,18 +68,22 @@ public class GameState extends ApplicationState {
             glfwSetWindowShouldClose(context.engine.getWindow().getWindowHandle(), true);
         }
 
+        if (KeyInput.isKeyPressed(GLFW_KEY_G)) {
+            wireframe = !wireframe;
+        }
+
         // todo
         camera.update(0.016f);
     }
 
     @Override
     public void update(float dt) {
-        //camera.update(dt);
+
     }
 
     @Override
     public void render() {
-        gamFile.render(camera);
+        gamFile.render(camera, wireframe);
     }
 
     @Override

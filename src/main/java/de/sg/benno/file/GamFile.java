@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 import static de.sg.benno.World.*;
+import static de.sg.benno.renderer.WaterRenderer.START_WATER_GFX_INDEX;
 import static de.sg.ogl.Log.LOGGER;
 
 /**
@@ -112,8 +113,8 @@ public class GamFile extends BinaryFile {
      *
      * @param camera The {@link OrthographicCamera} object.
      */
-    public void render(OrthographicCamera camera) {
-        waterRenderer.render(camera);
+    public void render(OrthographicCamera camera, boolean wireframe) {
+        waterRenderer.render(camera, wireframe);
     }
 
     //-------------------------------------------------
@@ -179,21 +180,20 @@ public class GamFile extends BinaryFile {
     private void initDeepWaterRenderer() throws Exception {
         LOGGER.debug("Start init WaterRenderer...");
 
-        //createDeepWaterGraphicTiles(Zoom.GFX);
+        createDeepWaterGraphicTiles(Zoom.GFX);
         //createDeepWaterGraphicTiles(Zoom.MGFX);
-        createDeepWaterGraphicTiles(Zoom.SGFX);
+        //createDeepWaterGraphicTiles(Zoom.SGFX);
 
         // todo: all zoom levels
-        var startGfxIndex = 758;
         ArrayList<Matrix4f> modelMatrices = new ArrayList<>();
         ArrayList<Integer> textureIds = new ArrayList<>();
         LOGGER.debug("Buffer model matrices and texture Ids.");
-        for (var tile : deepWaterTiles.get(Zoom.SGFX)) {
+        for (var tile : deepWaterTiles.get(Zoom.GFX)) {
             modelMatrices.add(tile.getModelMatrix());
-            textureIds.add(tile.tileGfxInfo.gfxIndex - startGfxIndex);
+            textureIds.add(tile.tileGfxInfo.gfxIndex - START_WATER_GFX_INDEX);
         }
 
-        waterRenderer = new WaterRenderer(modelMatrices, textureIds, context, Zoom.SGFX);
+        waterRenderer = new WaterRenderer(modelMatrices, textureIds, context, Zoom.GFX);
 
         LOGGER.debug("The WaterRenderer was created successfully.");
     }

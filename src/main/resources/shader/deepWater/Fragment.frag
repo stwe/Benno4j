@@ -6,11 +6,11 @@ in vec3 vColor;
 in vec2 vUv;
 flat in int vTextureIndex;
 
-//niform sampler2DArray sampler;
+uniform sampler2DArray sampler;
 
 void main()
 {
     vec3 uv = vec3(vUv, vTextureIndex);
-    //fragColor = texture(sampler, uv);
-    fragColor = vec4(vColor, 1.0);
+    fragColor = texture(sampler, uv);
+    //fragColor = vec4(vColor, 1.0);
 }

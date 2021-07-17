@@ -8,6 +8,9 @@
 
 package de.sg.benno.renderer;
 
+import de.sg.benno.BennoRuntimeException;
+import de.sg.benno.file.BennoFiles;
+import de.sg.benno.file.BshFile;
 import de.sg.benno.state.Context;
 import de.sg.ogl.Log;
 import de.sg.ogl.OpenGL;
@@ -16,17 +19,22 @@ import de.sg.ogl.buffer.Vertex2D;
 import de.sg.ogl.camera.OrthographicCamera;
 import de.sg.ogl.resource.Geometry;
 import de.sg.ogl.resource.Shader;
+import de.sg.ogl.resource.Texture;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
+import java.awt.image.DataBufferInt;
 import java.util.ArrayList;
 
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL30.GL_TEXTURE_2D_ARRAY;
 import static org.lwjgl.opengl.GL30.glVertexAttribIPointer;
 import static org.lwjgl.opengl.GL31.glDrawArraysInstanced;
 import static org.lwjgl.opengl.GL33.glVertexAttribDivisor;
+import static org.lwjgl.opengl.GL45.glTextureStorage3D;
+import static org.lwjgl.opengl.GL45.glTextureSubImage3D;
 
 public class WaterRenderer {
 
@@ -39,6 +47,12 @@ public class WaterRenderer {
      */
     private static final Vector3f WATER_COLOR = new Vector3f(0.0f, 0.0f, 1.0f);
 
+    private static final int DRAW_COUNT = 6;
+    private static final int MIP_LEVEL_COUNT = 1;
+    private static final int LAYER_COUNT = 12;
+    public static final int START_WATER_GFX_INDEX = 758;
+    private static final int END_WATER_GFX_INDEX = 769;
+
     //-------------------------------------------------
     // Member
     //-------------------------------------------------
@@ -50,9 +64,11 @@ public class WaterRenderer {
     private final Geometry quadGeometry;
     private final Shader shader;
     private final Vao vao;
-    private int instances;
+    private final int instances;
     private int textureWidth;
     private int textureHeight;
+    private final BshFile bshFile;
+    private int textureArrayId;
 
     //-------------------------------------------------
     // Ctors.
@@ -73,6 +89,10 @@ public class WaterRenderer {
         this.vao = new Vao();
         this.instances = modelMatrices.size();
 
+        bshFile = context.bennoFiles.getBshFile(context.bennoFiles.getZoomableBshFilePath(
+                zoom, BennoFiles.ZoomableBshFileName.STADTFLD_BSH
+        ));
+
         initVao();
     }
 
@@ -85,20 +105,32 @@ public class WaterRenderer {
      *
      * @param camera {@link OrthographicCamera}
      */
-    public void render(OrthographicCamera camera) {
-        OpenGL.enableWireframeMode();
-        //OpenGL.enableAlphaBlending();
+    public void render(OrthographicCamera camera, boolean wireframe) {
+        if (!wireframe) {
+            OpenGL.enableAlphaBlending();
+        } else {
+            OpenGL.enableWireframeMode();
+        }
+
         shader.bind();
+
+        Texture.bindForReading(textureArrayId, GL_TEXTURE0, GL_TEXTURE_2D_ARRAY);
 
         shader.setUniform("projection", new Matrix4f(context.engine.getWindow().getOrthographicProjectionMatrix()));
         shader.setUniform("view", camera.getViewMatrix());
+        shader.setUniform("sampler", 0);
 
         vao.bind();
-        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, modelMatrices.size());
+        glDrawArraysInstanced(GL_TRIANGLES, 0, DRAW_COUNT, modelMatrices.size());
         vao.unbind();
 
-        //OpenGL.disableBlending();
         Shader.unbind();
+
+        if (!wireframe) {
+            OpenGL.disableBlending();
+        } else {
+            OpenGL.disableWireframeMode();
+        }
     }
 
     //-------------------------------------------------
@@ -205,7 +237,36 @@ public class WaterRenderer {
     //-------------------------------------------------
 
     private void createTextureArray() {
+        textureArrayId = Texture.generateNewTextureId();
+        Texture.bind(textureArrayId, GL_TEXTURE_2D_ARRAY);
+        glTextureStorage3D(textureArrayId, MIP_LEVEL_COUNT, GL_RGBA8, textureWidth, textureHeight, LAYER_COUNT);
 
+        var zOffset = 0;
+
+        for (var i = START_WATER_GFX_INDEX; i <= END_WATER_GFX_INDEX; i++) {
+            var currentTexture = bshFile.getBshTextures().get(i);
+            if (currentTexture.getWidth() != textureWidth || currentTexture.getHeight() != textureHeight) {
+                throw new BennoRuntimeException("Invalid texture size.");
+            }
+
+            var dbb = (DataBufferInt) currentTexture.getBufferedImage().getRaster().getDataBuffer();
+
+            glTextureSubImage3D(
+                    textureArrayId,
+                    0,
+                    0, 0,
+                    zOffset,
+                    textureWidth, textureHeight,
+                    1,
+                    GL_BGRA,
+                    GL_UNSIGNED_INT_8_8_8_8_REV,
+                    dbb.getData()
+            );
+
+            zOffset++;
+        }
+
+        glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     }
 
     //-------------------------------------------------
