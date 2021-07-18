@@ -9,6 +9,7 @@
 package de.sg.benno.renderer;
 
 import de.sg.benno.BennoRuntimeException;
+import de.sg.benno.data.Building;
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.file.BshFile;
 import de.sg.benno.state.Context;
@@ -60,21 +61,6 @@ public class WaterRenderer {
      */
     private static final int MIP_LEVEL_COUNT = 1;
 
-    /**
-     * Number of water textures (START_WATER_GFX_INDEX - END_WATER_GFX_INDEX).
-     */
-    private static final int LAYER_COUNT = 12;
-
-    /**
-     * First water gfx index.
-     */
-    public static final int START_WATER_GFX_INDEX = 758;
-
-    /**
-     * Last water gfx index.
-     */
-    private static final int END_WATER_GFX_INDEX = 769;
-
     //-------------------------------------------------
     // Member
     //-------------------------------------------------
@@ -85,9 +71,9 @@ public class WaterRenderer {
     private final ArrayList<Matrix4f> modelMatrices;
 
     /**
-     * The {@link ArrayList<Integer>} objects.
+     * A {@link Building} object.
      */
-    private final ArrayList<Integer> textureIds;
+    private final Building building;
 
     /**
      * The {@link Context} object.
@@ -117,12 +103,12 @@ public class WaterRenderer {
     /**
      * The width of all textures.
      */
-    private int textureWidth;
+    private final int textureWidth;
 
     /**
      * The height of all textures.
      */
-    private int textureHeight;
+    private final int textureHeight;
 
     /**
      * The {@link BshFile} object.
@@ -142,26 +128,29 @@ public class WaterRenderer {
      * Constructs a new {@link WaterRenderer} object.
      *
      * @param modelMatrices {@link ArrayList<Matrix4f>}
-     * @param textureIds {@link ArrayList<Integer>}
+     * @param building {@link Building}
      * @param context {@link Context}
      * @param zoom {@link Zoom}
      * @throws Exception If an error is thrown.
      */
     public WaterRenderer(
             ArrayList<Matrix4f> modelMatrices,
-            ArrayList<Integer> textureIds,
+            Building building,
             Context context,
             Zoom zoom
     ) throws Exception {
         this.modelMatrices = modelMatrices;
-        this.textureIds = textureIds;
+        this.building = building;
         this.context = context;
         this.zoom = zoom;
         this.shader = context.engine.getResourceManager().loadResource(Shader.class, "deepWater");
         this.vao = new Vao();
         this.instances = modelMatrices.size();
 
-        bshFile = context.bennoFiles.getBshFile(context.bennoFiles.getZoomableBshFilePath(
+        this.textureWidth = zoom.defaultTileWidth;
+        this.textureHeight = zoom.defaultTileHeight;
+
+        this.bshFile = context.bennoFiles.getBshFile(context.bennoFiles.getZoomableBshFilePath(
                 zoom, BennoFiles.ZoomableBshFileName.STADTFLD_BSH
         ));
 
@@ -213,9 +202,6 @@ public class WaterRenderer {
      * Setup {@link #vao}.
      */
     private void initVao() {
-        textureWidth = zoom.defaultTileWidth;
-        textureHeight = zoom.defaultTileHeight;
-
         addMeshVbo();
         addModelMatricesVbo();
         addTextureIdsVbo();
@@ -272,7 +258,7 @@ public class WaterRenderer {
     }
 
     /**
-     * Add {@link #textureIds} to a new {@link de.sg.ogl.buffer.Vbo}.
+     * Sets a texture index for each instance.
      */
     private void addTextureIdsVbo() {
         // bind vao
@@ -286,9 +272,13 @@ public class WaterRenderer {
 
         // store data
         var ib = BufferUtils.createIntBuffer(instances);
-        for (var textureId : textureIds) {
-            ib.put(textureId);
+        // use first texture (index: 0) in texture array for each instance
+        BufferUtils.zeroBuffer(ib);
+        /*
+        for (var i = 0; i < instances; i++) {
+            ib.put(0);
         }
+        */
         ib.flip();
 
         glBufferData(GL_ARRAY_BUFFER, ib, GL_STATIC_DRAW);
@@ -310,16 +300,21 @@ public class WaterRenderer {
     //-------------------------------------------------
 
     /**
-     * Creates a texture array from the existing water textures.
+     * Creates a texture array from {@link #building}.
      */
     private void createTextureArray() {
         textureArrayId = Texture.generateNewTextureId();
         Texture.bind(textureArrayId, GL_TEXTURE_2D_ARRAY);
-        glTextureStorage3D(textureArrayId, MIP_LEVEL_COUNT, GL_RGBA8, textureWidth, textureHeight, LAYER_COUNT);
+
+        var gfxCount = building.animAnz * building.animAdd;
+        var startGfx = building.gfx;
+        var endGfx = startGfx + gfxCount;
+
+        glTextureStorage3D(textureArrayId, MIP_LEVEL_COUNT, GL_RGBA8, textureWidth, textureHeight, gfxCount);
 
         var zOffset = 0;
 
-        for (var i = START_WATER_GFX_INDEX; i <= END_WATER_GFX_INDEX; i++) {
+        for (var i = startGfx; i < endGfx; i++) {
             var currentTexture = bshFile.getBshTextures().get(i);
             if (currentTexture.getWidth() != textureWidth || currentTexture.getHeight() != textureHeight) {
                 throw new BennoRuntimeException("Invalid texture size.");

@@ -51,6 +51,57 @@ public class GameState extends ApplicationState {
 
         var path = params[0];
 
+        //var context = (Context)getStateMachine().getStateContext();
+        //var files = context.bennoFiles;
+
+        //var buildings = files.getDataFiles().getBuildings();
+        //var water = buildings.get(1201);
+
+        /*
+        id = 1201
+        gfx = 758
+        rotate = 0
+        randAnz = -1
+        animAnz = 6
+        animTime = 130
+        animFrame = 0
+        animAdd = 1
+        */
+
+
+        /*
+        2622 (Ruine):    673    Rot: 0   AnimAnz:  -   AnimAdd:  -
+        1383 (Wald):     674    Rot: 0   AnimAnz:  5   AnimAdd:  1
+               ?         679
+        ----------------------------------------------------------
+        1253 (Meer):     680    Rot: 0   AnimAnz:  6   AnimAdd:  1
+        1203 (Meer):     686    Rot: 0   AnimAnz:  6   AnimAdd:  1
+        1252 (Meer):     692    Rot: 1   AnimAnz:  6   AnimAdd:  4
+        1202 (Meer):     716    Rot: 1   AnimAnz:  6   AnimAdd:  4
+        1254 (Meer):     740    Rot: 0   AnimAnz:  6   AnimAdd:  1
+        1204 (Meer):     746    Rot: 0   AnimAnz:  6   AnimAdd:  1
+        1251 (Meer):     752    Rot: 0   AnimAnz:  6   AnimAdd:  1
+        1201 (Meer):     758    Rot: 0   AnimAnz:  6   AnimAdd:  1
+        1259 (Meer):     764    Rot: 1   AnimAnz:  6   AnimAdd:  4
+        1209 (Meer):     788    Rot: 1   AnimAnz:  6   AnimAdd:  4
+        ----------------------------------------------------------
+        1205 (Brandung)  812
+
+        1206 (Brandeck)  836
+        1207 (Brandeck)  860
+        1208 (Mündung)   884
+
+                                1210, 1211, 1212, 1213 fehlen
+        1214 (Mündung)   908
+
+        901 (Fluss):    1576    Rot: 1   AnimAnz:  6   AnimAdd:  4
+        902 (Fluss):    1600    Rot: 1   AnimAnz:  6   AnimAdd:  4
+        903 (Fluss):    1624    Rot: 1   AnimAnz:  6   AnimAdd:  4
+        904 (Flusseck): 1648    Rot: 4   AnimAnz:  6   AnimAdd: 16
+        905 (Flusseck): 1744    Rot: 4   AnimAnz: 16   AnimAdd: 16
+        */
+
+
         if (path instanceof Path) {
             loadSavegame((Path)path);
         } else {
@@ -83,7 +134,7 @@ public class GameState extends ApplicationState {
 
     @Override
     public void render() {
-        gamFile.render(camera, wireframe, Zoom.MGFX);
+        gamFile.render(camera, wireframe, Zoom.GFX);
     }
 
     @Override

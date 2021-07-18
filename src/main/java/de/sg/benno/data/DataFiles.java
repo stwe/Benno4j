@@ -122,6 +122,8 @@ public class DataFiles {
                         building.gfx = var.get("valueInt").asInt();
                     }
 
+                    // blocknr
+
                     if (name.equals("Posoffs")) {
                         building.posoffs = var.get("valueInt").asInt();
                     }
@@ -134,17 +136,49 @@ public class DataFiles {
                         }
                     }
 
+                    // highflg
+                    // einhoffs
+                    // maxenergy
+                    // maxbrand
+
                     if (name.equals("Rotate")) {
                         building.rotate = var.get("valueInt").asInt();
+                    }
+
+                    // randAnz
+
+                    // sometimes missing
+                    if (name.equals("AnimAnz")) {
+                        building.animAnz = var.get("valueInt").asInt();
+                    }
+
+                    if (name.equals("AnimTime")) {
+                        // skip TIMENEVER string nodes
+                        if (var.has("valueInt")) {
+                            building.animTime = var.get("valueInt").asInt();
+                        }
                     }
 
                     if (name.equals("AnimFrame")) {
                         building.animFrame = var.get("valueInt").asInt();
                     }
 
-                    if (name.equals("AnimAnz")) {
-                        building.animAnz = var.get("valueInt").asInt();
+                    // sometimes missing
+                    if (name.equals("AnimAdd")) {
+                        building.animAdd = var.get("valueInt").asInt();
                     }
+
+                    // baugfx
+                    // kreuzBase
+                    // randwachs
+                    // randAdd
+                    // strandoff
+                    // placeFlg
+                    // noShotFlg
+                    // strandflg
+                    // ausbauflg
+                    // tuerflg
+                    // destroyflg
                 }
             }
 

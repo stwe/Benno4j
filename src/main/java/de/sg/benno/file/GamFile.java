@@ -25,7 +25,6 @@ import java.nio.file.Path;
 import java.util.*;
 
 import static de.sg.benno.World.*;
-import static de.sg.benno.renderer.WaterRenderer.START_WATER_GFX_INDEX;
 import static de.sg.ogl.Log.LOGGER;
 
 /**
@@ -58,7 +57,7 @@ public class GamFile extends BinaryFile {
     private final ArrayList<Island5> island5List = new ArrayList<>();
 
     /**
-     * Many {@link ArrayList} objects holding deep water {@link TileGraphic} for each {@link Zoom} level.
+     * Water {@link TileGraphic} objects for each {@link Zoom} level.
      */
     private final HashMap<Zoom, ArrayList<TileGraphic>> deepWaterTiles = new HashMap<>();
 
@@ -76,7 +75,7 @@ public class GamFile extends BinaryFile {
      *
      * @param path The {@link Path} to the savegame.
      * @param context The {@link Context} object.
-     * @throws IOException If an I/O error is thrown.
+     * @throws Exception If an error is thrown.
      */
     public GamFile(Path path, Context context) throws Exception {
         super(Objects.requireNonNull(path, "path must not be null"));
@@ -84,7 +83,8 @@ public class GamFile extends BinaryFile {
         LOGGER.debug("Creates GamFile object from file {}.", path);
 
         this.context = Objects.requireNonNull(context, "context must not be null");
-        this.bennoFiles = Objects.requireNonNull(context.bennoFiles, "bennoFiles must not be null");
+
+        this.bennoFiles = this.context.bennoFiles;
         this.buildings = this.bennoFiles.getDataFiles().getBuildings();
 
         readDataFromChunks();
@@ -142,9 +142,11 @@ public class GamFile extends BinaryFile {
     /**
      * Initializes the layers of all {@link Island5} objects.
      * Sets the final top and bottom layer.
+     *
+     * @throws IOException If an I/O error is thrown.
      */
     private void initIsland5Layer() throws IOException {
-        LOGGER.debug("Initialize layer.");
+        LOGGER.debug("Initialize top and bottom layer for each island.");
 
         for (var island5 : island5List) {
             island5.setTopAndBottomLayer();
@@ -163,13 +165,28 @@ public class GamFile extends BinaryFile {
     private void initDeepWaterRenderer() throws Exception {
         LOGGER.debug("Start init WaterRenderers...");
 
-        createWaterGraphicTiles(Zoom.GFX);
-        createWaterGraphicTiles(Zoom.MGFX);
-        createWaterGraphicTiles(Zoom.SGFX);
+        /*
+        2622 (Ruine):    673    Rot: 0   AnimAnz:  -   AnimAdd:  -
+        1383 (Wald):     674    Rot: 0   AnimAnz:  5   AnimAdd:  1
+               ?         679
+        ----------------------------------------------------------
+        1253 (Meer):     680    Rot: 0   AnimAnz:  6   AnimAdd:  1
+        1203 (Meer):     686    Rot: 0   AnimAnz:  6   AnimAdd:  1
+        1252 (Meer):     692    Rot: 1   AnimAnz:  6   AnimAdd:  4
+        1202 (Meer):     716    Rot: 1   AnimAnz:  6   AnimAdd:  4
+        1254 (Meer):     740    Rot: 0   AnimAnz:  6   AnimAdd:  1
+        1204 (Meer):     746    Rot: 0   AnimAnz:  6   AnimAdd:  1
+        1251 (Meer):     752    Rot: 0   AnimAnz:  6   AnimAdd:  1
+        1201 (Meer):     758    Rot: 0   AnimAnz:  6   AnimAdd:  1
+        1259 (Meer):     764    Rot: 1   AnimAnz:  6   AnimAdd:  4
+        1209 (Meer):     788    Rot: 1   AnimAnz:  6   AnimAdd:  4
+        ----------------------------------------------------------
+        1205 (Brandung)  812
+        */
 
-        createWaterRenderer(Zoom.GFX);
-        createWaterRenderer(Zoom.MGFX);
-        createWaterRenderer(Zoom.SGFX);
+        for (var zoom : Zoom.values()) {
+            createWaterGraphicTiles(zoom, 1203);
+        }
 
         LOGGER.debug("The WaterRenderers have been successfully initialized and created.");
     }
@@ -178,11 +195,12 @@ public class GamFile extends BinaryFile {
      * Create water {@link TileGraphic} objects for a given {@link Zoom}.
      *
      * @param zoom {@link Zoom}
+     * @param buildingId A building Id for water area. An Id can refer to several textures for animation.
+     * @throws Exception If an error is thrown.
      */
-    private void createWaterGraphicTiles(Zoom zoom) throws IOException {
+    private void createWaterGraphicTiles(Zoom zoom, int buildingId) throws Exception {
         LOGGER.debug("Create water tiles for {}.", zoom.toString());
 
-        // it is possible to preload the files in BennoFiles
         var bshFile = this.bennoFiles.getBshFile(this.bennoFiles.getZoomableBshFilePath(
                 zoom, BennoFiles.ZoomableBshFileName.STADTFLD_BSH
         ));
@@ -190,20 +208,20 @@ public class GamFile extends BinaryFile {
         // to store all deep water tiles
         var tiles = new ArrayList<TileGraphic>();
 
+        // get building
+        var water = buildings.get(buildingId);
+
         // create tiles
         for (int y = 0; y < WORLD_HEIGHT; y++) {
             for (int x = 0; x < WORLD_WIDTH; x++) {
                 var isWater = isIslandOnPosition(x, y, island5List).isEmpty();
                 if (isWater) {
-                    var waterGfxIndex = buildings.get(Building.WATER_ID).gfx;
-                    waterGfxIndex += (y + x * 3) % 12;
-
                     var deepWaterTile = new TileGraphic();
-                    deepWaterTile.tileGfxInfo.gfxIndex = waterGfxIndex;
+                    deepWaterTile.tileGfxInfo.gfxIndex = water.gfx;
                     deepWaterTile.worldPosition.x = x;
                     deepWaterTile.worldPosition.y = y;
 
-                    var waterBshTexture = bshFile.getBshTextures().get(waterGfxIndex);
+                    var waterBshTexture = bshFile.getBshTextures().get(water.gfx);
                     var screenPosition = TileUtil.worldToScreen(x, y, zoom.xRaster, zoom.yRaster);
                     var adjustHeight = TileUtil.adjustHeight(zoom.yRaster, TileGraphic.TileHeight.SEA_LEVEL.value, zoom.elevation);
 
@@ -221,24 +239,25 @@ public class GamFile extends BinaryFile {
         }
 
         deepWaterTiles.put(zoom, tiles);
+
+        createWaterRenderer(zoom, water);
     }
 
     /**
      * Creates a {@link WaterRenderer} object for a given {@link Zoom}.
      *
      * @param zoom {@link Zoom}
+     * @param building The water {@link Building}.
      * @throws Exception If an error is thrown.
      */
-    private void createWaterRenderer(Zoom zoom) throws Exception {
+    private void createWaterRenderer(Zoom zoom, Building building) throws Exception {
         ArrayList<Matrix4f> modelMatrices = new ArrayList<>();
-        ArrayList<Integer> textureIds = new ArrayList<>();
 
         for (var tile : deepWaterTiles.get(zoom)) {
             modelMatrices.add(tile.getModelMatrix());
-            textureIds.add(tile.tileGfxInfo.gfxIndex - START_WATER_GFX_INDEX);
         }
 
-        waterRenderers.put(zoom, new WaterRenderer(modelMatrices, textureIds, context, zoom));
+        waterRenderers.put(zoom, new WaterRenderer(modelMatrices, building, context, zoom));
     }
 
     //-------------------------------------------------
@@ -251,8 +270,6 @@ public class GamFile extends BinaryFile {
     public void cleanUp() {
         LOGGER.debug("Start clean up for the GamFile.");
 
-        waterRenderers.get(Zoom.GFX).cleanUp();
-        waterRenderers.get(Zoom.MGFX).cleanUp();
-        waterRenderers.get(Zoom.SGFX).cleanUp();
+        waterRenderers.forEach((k, v) -> v.cleanUp());
     }
 }
