@@ -62,6 +62,11 @@ public class GamFile extends BinaryFile {
     private final HashMap<Zoom, ArrayList<TileGraphic>> deepWaterTiles = new HashMap<>();
 
     /**
+     * To store the gfx start index. Animations do not always start with the first gfx.
+     */
+    private ArrayList<Integer> waterGfxStartIndex;
+
+    /**
      * The {@link WaterRenderer} objects to render water {@link TileGraphic}.
      */
     private final HashMap<Zoom, WaterRenderer> waterRenderers = new HashMap<>();
@@ -211,9 +216,16 @@ public class GamFile extends BinaryFile {
         // get building
         var water = buildings.get(buildingId);
 
+        // get building texture
+        var waterBshTexture = bshFile.getBshTextures().get(water.gfx);
+
+        // calc adjust height
+        var adjustHeight = TileUtil.adjustHeight(zoom.yRaster, TileGraphic.TileHeight.SEA_LEVEL.value, zoom.elevation);
+
         // create tiles
         for (int y = 0; y < WORLD_HEIGHT; y++) {
             for (int x = 0; x < WORLD_WIDTH; x++) {
+                // only consider deep water tiles here
                 var isWater = isIslandOnPosition(x, y, island5List).isEmpty();
                 if (isWater) {
                     var deepWaterTile = new TileGraphic();
@@ -221,12 +233,8 @@ public class GamFile extends BinaryFile {
                     deepWaterTile.worldPosition.x = x;
                     deepWaterTile.worldPosition.y = y;
 
-                    var waterBshTexture = bshFile.getBshTextures().get(water.gfx);
                     var screenPosition = TileUtil.worldToScreen(x, y, zoom.xRaster, zoom.yRaster);
-                    var adjustHeight = TileUtil.adjustHeight(zoom.yRaster, TileGraphic.TileHeight.SEA_LEVEL.value, zoom.elevation);
-
                     screenPosition.y += adjustHeight;
-
                     screenPosition.x -= waterBshTexture.getWidth();
                     screenPosition.y -= waterBshTexture.getHeight();
 
@@ -257,7 +265,22 @@ public class GamFile extends BinaryFile {
             modelMatrices.add(tile.getModelMatrix());
         }
 
-        waterRenderers.put(zoom, new WaterRenderer(modelMatrices, building, context, zoom));
+        // create only once
+        if (waterGfxStartIndex == null) {
+            waterGfxStartIndex = new ArrayList<>();
+            var tiles = deepWaterTiles.get(zoom);
+            for (var tile : tiles) {
+                waterGfxStartIndex.add((tile.worldPosition.y + tile.worldPosition.x * 3) % building.animAnz);
+            }
+        }
+
+        waterRenderers.put(zoom, new WaterRenderer(
+                modelMatrices,
+                Objects.requireNonNull(waterGfxStartIndex, "waterGfxStartIndex must not be null"),
+                building,
+                context,
+                zoom
+        ));
     }
 
     //-------------------------------------------------

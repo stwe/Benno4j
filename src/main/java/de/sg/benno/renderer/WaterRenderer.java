@@ -29,8 +29,11 @@ import java.util.ArrayList;
 
 import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL30.GL_TEXTURE_2D_ARRAY;
+import static org.lwjgl.opengl.GL30.glVertexAttribIPointer;
 import static org.lwjgl.opengl.GL31.glDrawArraysInstanced;
+import static org.lwjgl.opengl.GL33.glVertexAttribDivisor;
 import static org.lwjgl.opengl.GL45.glTextureStorage3D;
 import static org.lwjgl.opengl.GL45.glTextureSubImage3D;
 
@@ -63,9 +66,14 @@ public class WaterRenderer {
     //-------------------------------------------------
 
     /**
-     * The {@link ArrayList<Matrix4f>} objects.
+     * The {@link ArrayList<Matrix4f>} object with model matrices.
      */
     private final ArrayList<Matrix4f> modelMatrices;
+
+    /**
+     * The {@link ArrayList<Integer>} object with water gfx start index.
+     */
+    private final ArrayList<Integer> waterGfxStartIndex;
 
     /**
      * A {@link Building} object.
@@ -117,9 +125,20 @@ public class WaterRenderer {
      */
     private int textureArrayId;
 
+    /**
+     * The vbo for texture index data.
+     */
+    private int textureVbo;
+
+    /**
+     * The start time in milliseconds.
+     */
     private static long last;
 
-    private int ani = 0;
+    /**
+     * The current frame.
+     */
+    private int frame = 0;
 
     //-------------------------------------------------
     // Ctors.
@@ -129,6 +148,7 @@ public class WaterRenderer {
      * Constructs a new {@link WaterRenderer} object.
      *
      * @param modelMatrices {@link ArrayList<Matrix4f>}
+     * @param waterGfxStartIndex {@link ArrayList<Integer>}
      * @param building {@link Building}
      * @param context {@link Context}
      * @param zoom {@link Zoom}
@@ -136,21 +156,21 @@ public class WaterRenderer {
      */
     public WaterRenderer(
             ArrayList<Matrix4f> modelMatrices,
+            ArrayList<Integer> waterGfxStartIndex,
             Building building,
             Context context,
             Zoom zoom
     ) throws Exception {
         this.modelMatrices = modelMatrices;
+        this.waterGfxStartIndex = waterGfxStartIndex;
         this.building = building;
         this.context = context;
         this.zoom = zoom;
         this.shader = context.engine.getResourceManager().loadResource(Shader.class, "deepWater");
         this.vao = new Vao();
         this.instances = modelMatrices.size();
-
         this.textureWidth = zoom.defaultTileWidth;
         this.textureHeight = zoom.defaultTileHeight;
-
         this.bshFile = context.bennoFiles.getBshFile(context.bennoFiles.getZoomableBshFilePath(
                 zoom, BennoFiles.ZoomableBshFileName.STADTFLD_BSH
         ));
@@ -164,39 +184,18 @@ public class WaterRenderer {
     // Logic
     //-------------------------------------------------
 
-    /*
-    public void update(float dt) {
-        LOGGER.debug("Update VBO");
-
-        vao.bind();
-
-        // bind vbo
-        glBindBuffer(GL_ARRAY_BUFFER, textureVbo);
-
-        // new values
-        Arrays.fill(values, 2);
-        var ib = BufferUtils.createIntBuffer(instances);
-        ib.put(values);
-        ib.flip();
-
-        glBufferData(GL_ARRAY_BUFFER, ib, GL_DYNAMIC_DRAW);
-
-        // unbind vbo
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-    */
-
     /**
      * Renders the whole water area.
      *
      * @param camera {@link OrthographicCamera}
      */
     public void render(OrthographicCamera camera, boolean wireframe) {
+        // todo: tmp code
         var now = System.currentTimeMillis();
         var delta = now - last;
-
-        if (delta >= 130) {
-            ani = (ani + 1) % 6;
+        if (delta >= building.animTime) {
+            frame = (frame + 1) % building.animAnz;
+            updateVbo();
             last = now;
         }
 
@@ -213,7 +212,6 @@ public class WaterRenderer {
         shader.setUniform("projection", new Matrix4f(context.engine.getWindow().getOrthographicProjectionMatrix()));
         shader.setUniform("view", camera.getViewMatrix());
         shader.setUniform("sampler", 0);
-        shader.setUniform("textureIndex", ani);
 
         vao.bind();
         glDrawArraysInstanced(GL_TRIANGLES, 0, DRAW_COUNT, modelMatrices.size());
@@ -229,7 +227,7 @@ public class WaterRenderer {
     }
 
     //-------------------------------------------------
-    // Init
+    // Init Vao/Vbo
     //-------------------------------------------------
 
     /**
@@ -238,6 +236,7 @@ public class WaterRenderer {
     private void initVao() {
         addMeshVbo();
         addModelMatricesVbo();
+        addTextureIdsVbo();
 
         createTextureArray();
     }
@@ -290,7 +289,9 @@ public class WaterRenderer {
         vao.unbind();
     }
 
-    /*
+    /**
+     * Add {@link #waterGfxStartIndex} to a new {@link de.sg.ogl.buffer.Vbo}.
+     */
     private void addTextureIdsVbo() {
         // bind vao
         vao.bind();
@@ -299,14 +300,12 @@ public class WaterRenderer {
         textureVbo = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, textureVbo);
 
-        // store first texture index 0 for each instance
-        values = new int[instances];
-        Arrays.fill(values, 4);
+        // create and store data in an IntBuffer
         var ib = BufferUtils.createIntBuffer(instances);
-        ib.put(values);
+        ib.put(waterGfxStartIndex.stream().mapToInt(i -> i).toArray());
         ib.flip();
 
-        // store data in vbo
+        // store IntBuffer in a dynamic vbo
         glBufferData(GL_ARRAY_BUFFER, ib, GL_DYNAMIC_DRAW);
 
         // set buffer layout
@@ -320,7 +319,29 @@ public class WaterRenderer {
         // unbind vao
         vao.unbind();
     }
-    */
+
+    //-------------------------------------------------
+    // Update Vbo
+    //-------------------------------------------------
+
+    /**
+     * Update water gfx index Vbo.
+     */
+    private void updateVbo() {
+        // bind vbo
+        glBindBuffer(GL_ARRAY_BUFFER, textureVbo);
+
+        // todo: nicht die schnellste Lösung
+        // update data
+        var ib = BufferUtils.createIntBuffer(instances);
+        ib.put(waterGfxStartIndex.stream().mapToInt(i -> (i + frame) % building.animAnz).toArray());
+        ib.flip();
+
+        glBufferData(GL_ARRAY_BUFFER, ib, GL_DYNAMIC_DRAW);
+
+        // unbind vbo
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
 
     //-------------------------------------------------
     // Texture array
