@@ -315,6 +315,18 @@ public class BennoFiles {
     }
 
     /**
+     * Convenience function to get stadtfld.bsh {@link BshFile} by {@link de.sg.benno.renderer.Zoom}.
+     *
+     * @param zoom {@link de.sg.benno.renderer.Zoom}
+     *
+     * @return The stadtfld.bsh {@link BshFile}
+     * @throws IOException If an I/O error is thrown.
+     */
+    public BshFile getStadtfldBshFile(Zoom zoom) throws IOException {
+        return getBshFile(getZoomableBshFilePath(zoom, BennoFiles.ZoomableBshFileName.STADTFLD_BSH));
+    }
+
+    /**
      * Get {@link #dataFiles}.
      *
      * @return {@link #dataFiles}

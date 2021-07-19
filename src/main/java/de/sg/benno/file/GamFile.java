@@ -206,9 +206,7 @@ public class GamFile extends BinaryFile {
     private void createWaterGraphicTiles(Zoom zoom, int buildingId) throws Exception {
         LOGGER.debug("Create water tiles for {}.", zoom.toString());
 
-        var bshFile = this.bennoFiles.getBshFile(this.bennoFiles.getZoomableBshFilePath(
-                zoom, BennoFiles.ZoomableBshFileName.STADTFLD_BSH
-        ));
+        var bshFile = this.bennoFiles.getStadtfldBshFile(zoom);
 
         // to store all deep water tiles
         var tiles = new ArrayList<TileGraphic>();

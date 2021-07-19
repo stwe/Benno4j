@@ -10,11 +10,11 @@ package de.sg.benno.renderer;
 
 import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.data.Building;
-import de.sg.benno.file.BennoFiles;
 import de.sg.benno.file.BshFile;
 import de.sg.benno.state.Context;
 import de.sg.ogl.OpenGL;
 import de.sg.ogl.buffer.Vao;
+import de.sg.ogl.buffer.Vbo;
 import de.sg.ogl.buffer.Vertex2D;
 import de.sg.ogl.camera.OrthographicCamera;
 import de.sg.ogl.resource.Geometry;
@@ -126,9 +126,9 @@ public class WaterRenderer {
     private int textureArrayId;
 
     /**
-     * The vbo for texture index data.
+     * The {@link Vbo} for texture index data.
      */
-    private int textureVbo;
+    private Vbo textureVbo;
 
     /**
      * The start time in milliseconds.
@@ -171,9 +171,7 @@ public class WaterRenderer {
         this.instances = modelMatrices.size();
         this.textureWidth = zoom.defaultTileWidth;
         this.textureHeight = zoom.defaultTileHeight;
-        this.bshFile = context.bennoFiles.getBshFile(context.bennoFiles.getZoomableBshFilePath(
-                zoom, BennoFiles.ZoomableBshFileName.STADTFLD_BSH
-        ));
+        this.bshFile = context.bennoFiles.getStadtfldBshFile(zoom);
 
         initVao();
 
@@ -296,9 +294,11 @@ public class WaterRenderer {
         // bind vao
         vao.bind();
 
-        // create and bind new vbo
-        textureVbo = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, textureVbo);
+        // create and add new vbo
+        textureVbo = vao.addVbo();
+
+        // bind vbo
+        textureVbo.bind();
 
         // create and store data in an IntBuffer
         var ib = BufferUtils.createIntBuffer(instances);
@@ -314,7 +314,7 @@ public class WaterRenderer {
         glVertexAttribDivisor(7, 1);
 
         // unbind vbo
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        textureVbo.unbind();
 
         // unbind vao
         vao.unbind();
@@ -329,7 +329,7 @@ public class WaterRenderer {
      */
     private void updateVbo() {
         // bind vbo
-        glBindBuffer(GL_ARRAY_BUFFER, textureVbo);
+        textureVbo.bind();
 
         // todo: nicht die schnellste Lösung
         // update data
@@ -340,7 +340,7 @@ public class WaterRenderer {
         glBufferData(GL_ARRAY_BUFFER, ib, GL_DYNAMIC_DRAW);
 
         // unbind vbo
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        textureVbo.unbind();
     }
 
     //-------------------------------------------------
