@@ -29,6 +29,8 @@ public class GameState extends ApplicationState {
 
     private boolean wireframe = false;
 
+    private Zoom currentZoom = Zoom.GFX;
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -114,16 +116,32 @@ public class GameState extends ApplicationState {
 
     @Override
     public void input() {
+        // exit game
         if (KeyInput.isKeyPressed(GLFW_KEY_ESCAPE)) {
             var context = (Context)getStateMachine().getStateContext();
             glfwSetWindowShouldClose(context.engine.getWindow().getWindowHandle(), true);
         }
 
+        // wireframe
         if (KeyInput.isKeyPressed(GLFW_KEY_G)) {
             wireframe = !wireframe;
         }
 
+        // zoom
+        if (KeyInput.isKeyPressed(GLFW_KEY_1)) {
+            currentZoom = Zoom.SGFX;
+        }
+
+        if (KeyInput.isKeyPressed(GLFW_KEY_2)) {
+            currentZoom = Zoom.MGFX;
+        }
+
+        if (KeyInput.isKeyPressed(GLFW_KEY_3)) {
+            currentZoom = Zoom.GFX;
+        }
+
         // todo
+        // camera
         camera.update(0.016f);
     }
 
@@ -134,7 +152,7 @@ public class GameState extends ApplicationState {
 
     @Override
     public void render() {
-        gamFile.render(camera, wireframe, Zoom.GFX);
+        gamFile.render(camera, wireframe, currentZoom);
     }
 
     @Override

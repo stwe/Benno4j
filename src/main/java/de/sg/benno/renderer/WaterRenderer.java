@@ -13,7 +13,6 @@ import de.sg.benno.data.Building;
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.file.BshFile;
 import de.sg.benno.state.Context;
-import de.sg.ogl.Log;
 import de.sg.ogl.OpenGL;
 import de.sg.ogl.buffer.Vao;
 import de.sg.ogl.buffer.Vertex2D;
@@ -28,12 +27,10 @@ import org.lwjgl.BufferUtils;
 import java.awt.image.DataBufferInt;
 import java.util.ArrayList;
 
+import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL30.GL_TEXTURE_2D_ARRAY;
-import static org.lwjgl.opengl.GL30.glVertexAttribIPointer;
 import static org.lwjgl.opengl.GL31.glDrawArraysInstanced;
-import static org.lwjgl.opengl.GL33.glVertexAttribDivisor;
 import static org.lwjgl.opengl.GL45.glTextureStorage3D;
 import static org.lwjgl.opengl.GL45.glTextureSubImage3D;
 
@@ -120,6 +117,10 @@ public class WaterRenderer {
      */
     private int textureArrayId;
 
+    private static long last;
+
+    private int ani = 0;
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -155,18 +156,50 @@ public class WaterRenderer {
         ));
 
         initVao();
+
+        last = System.currentTimeMillis();
     }
 
     //-------------------------------------------------
     // Logic
     //-------------------------------------------------
 
+    /*
+    public void update(float dt) {
+        LOGGER.debug("Update VBO");
+
+        vao.bind();
+
+        // bind vbo
+        glBindBuffer(GL_ARRAY_BUFFER, textureVbo);
+
+        // new values
+        Arrays.fill(values, 2);
+        var ib = BufferUtils.createIntBuffer(instances);
+        ib.put(values);
+        ib.flip();
+
+        glBufferData(GL_ARRAY_BUFFER, ib, GL_DYNAMIC_DRAW);
+
+        // unbind vbo
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+    */
+
     /**
-     * Renders the whole deep water area.
+     * Renders the whole water area.
      *
      * @param camera {@link OrthographicCamera}
      */
     public void render(OrthographicCamera camera, boolean wireframe) {
+        var now = System.currentTimeMillis();
+        var delta = now - last;
+
+        if (delta >= 130) {
+            ani = (ani + 1) % 6;
+            last = now;
+        }
+
         if (!wireframe) {
             OpenGL.enableAlphaBlending();
         } else {
@@ -180,6 +213,7 @@ public class WaterRenderer {
         shader.setUniform("projection", new Matrix4f(context.engine.getWindow().getOrthographicProjectionMatrix()));
         shader.setUniform("view", camera.getViewMatrix());
         shader.setUniform("sampler", 0);
+        shader.setUniform("textureIndex", ani);
 
         vao.bind();
         glDrawArraysInstanced(GL_TRIANGLES, 0, DRAW_COUNT, modelMatrices.size());
@@ -204,7 +238,6 @@ public class WaterRenderer {
     private void initVao() {
         addMeshVbo();
         addModelMatricesVbo();
-        addTextureIdsVbo();
 
         createTextureArray();
     }
@@ -257,43 +290,37 @@ public class WaterRenderer {
         vao.unbind();
     }
 
-    /**
-     * Sets a texture index for each instance.
-     */
+    /*
     private void addTextureIdsVbo() {
         // bind vao
         vao.bind();
 
-        // create and add new vbo
-        var vbo = vao.addVbo();
+        // create and bind new vbo
+        textureVbo = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, textureVbo);
 
-        // bind vbo
-        vbo.bind();
-
-        // store data
+        // store first texture index 0 for each instance
+        values = new int[instances];
+        Arrays.fill(values, 4);
         var ib = BufferUtils.createIntBuffer(instances);
-        // use first texture (index: 0) in texture array for each instance
-        BufferUtils.zeroBuffer(ib);
-        /*
-        for (var i = 0; i < instances; i++) {
-            ib.put(0);
-        }
-        */
+        ib.put(values);
         ib.flip();
 
-        glBufferData(GL_ARRAY_BUFFER, ib, GL_STATIC_DRAW);
+        // store data in vbo
+        glBufferData(GL_ARRAY_BUFFER, ib, GL_DYNAMIC_DRAW);
 
         // set buffer layout
         glEnableVertexAttribArray(7);
-        glVertexAttribIPointer(7, 1, 4, 4, ib);
+        glVertexAttribIPointer(7, 1, GL_INT, 0, 16 * 4);
         glVertexAttribDivisor(7, 1);
 
         // unbind vbo
-        vbo.unbind();
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // unbind vao
         vao.unbind();
     }
+    */
 
     //-------------------------------------------------
     // Texture array
@@ -348,7 +375,7 @@ public class WaterRenderer {
      * Clean up.
      */
     public void cleanUp() {
-        Log.LOGGER.debug("Clean up WaterRenderer for {}.", zoom);
+        LOGGER.debug("Clean up WaterRenderer for {}.", zoom);
 
         this.vao.cleanUp();
     }
