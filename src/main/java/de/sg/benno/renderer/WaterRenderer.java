@@ -29,11 +29,7 @@ import java.util.ArrayList;
 
 import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL30.GL_TEXTURE_2D_ARRAY;
-import static org.lwjgl.opengl.GL30.glVertexAttribIPointer;
-import static org.lwjgl.opengl.GL31.glDrawArraysInstanced;
-import static org.lwjgl.opengl.GL33.glVertexAttribDivisor;
 import static org.lwjgl.opengl.GL45.glTextureStorage3D;
 import static org.lwjgl.opengl.GL45.glTextureSubImage3D;
 
@@ -168,6 +164,7 @@ public class WaterRenderer {
         this.zoom = zoom;
         this.shader = context.engine.getResourceManager().loadResource(Shader.class, "deepWater");
         this.vao = new Vao();
+        this.vao.setDrawCount(DRAW_COUNT);
         this.instances = modelMatrices.size();
         this.textureWidth = zoom.defaultTileWidth;
         this.textureHeight = zoom.defaultTileHeight;
@@ -212,7 +209,7 @@ public class WaterRenderer {
         shader.setUniform("sampler", 0);
 
         vao.bind();
-        glDrawArraysInstanced(GL_TRIANGLES, 0, DRAW_COUNT, modelMatrices.size());
+        vao.drawInstanced(GL_TRIANGLES, instances);
         vao.unbind();
 
         Shader.unbind();
@@ -309,9 +306,7 @@ public class WaterRenderer {
         glBufferData(GL_ARRAY_BUFFER, ib, GL_DYNAMIC_DRAW);
 
         // set buffer layout
-        glEnableVertexAttribArray(7);
-        glVertexAttribIPointer(7, 1, GL_INT, 0, 16 * 4);
-        glVertexAttribDivisor(7, 1);
+        textureVbo.addIntAttribute(7, 1, 1, 16, true);
 
         // unbind vbo
         textureVbo.unbind();
