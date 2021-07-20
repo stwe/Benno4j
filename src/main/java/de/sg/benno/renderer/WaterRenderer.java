@@ -22,7 +22,6 @@ import de.sg.ogl.resource.Shader;
 import de.sg.ogl.resource.Texture;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.lwjgl.BufferUtils;
 
 import java.awt.image.DataBufferInt;
 import java.util.ArrayList;
@@ -299,19 +298,16 @@ public class WaterRenderer {
      * Update water gfx index Vbo.
      */
     private void updateVbo() {
-        // bind vbo
-        textureVbo.bind();
+        // todo: glBufferData ist nicht die schnellste Lösung
+        /*
+        When replacing the entire data store, consider using glBufferSubData
+        rather than completely recreating the data store with glBufferData.
+        This avoids the cost of reallocating the data store.
+        */
 
-        // todo: nicht die schnellste Lösung
-        // update data
-        var ib = BufferUtils.createIntBuffer(instances);
-        ib.put(waterGfxStartIndex.stream().mapToInt(i -> (i + frame) % building.animAnz).toArray());
-        ib.flip();
-
-        glBufferData(GL_ARRAY_BUFFER, ib, GL_DYNAMIC_DRAW);
-
-        // unbind vbo
-        textureVbo.unbind();
+        textureVbo.storeIntegerInstances(
+                i -> (i + frame) % building.animAnz,
+                waterGfxStartIndex, instances, GL_DYNAMIC_DRAW);
     }
 
     //-------------------------------------------------
