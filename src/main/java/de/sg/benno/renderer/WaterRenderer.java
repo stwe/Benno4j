@@ -258,21 +258,8 @@ public class WaterRenderer {
         // create and add new vbo
         var vbo = vao.addVbo();
 
-        // bind vbo
-        vbo.bind();
-
-        // store data
-        var fb = BufferUtils.createFloatBuffer(instances * 16);
-        for (var matrix : modelMatrices) {
-            float[] t = new float[16];
-            fb.put(matrix.get(t));
-        }
-        fb.flip();
-
-        glBufferData(GL_ARRAY_BUFFER, fb, GL_STATIC_DRAW);
-
-        // unbind vbo
-        vbo.unbind();
+        // store model matrices (static draw)
+        vbo.storeMatrix4fInstances(modelMatrices, instances);
 
         // set buffer layout
         vbo.addFloatAttribute(3, 4, 16, 0, true);
@@ -294,22 +281,11 @@ public class WaterRenderer {
         // create and add new vbo
         textureVbo = vao.addVbo();
 
-        // bind vbo
-        textureVbo.bind();
-
-        // create and store data in an IntBuffer
-        var ib = BufferUtils.createIntBuffer(instances);
-        ib.put(waterGfxStartIndex.stream().mapToInt(i -> i).toArray());
-        ib.flip();
-
-        // store IntBuffer in a dynamic vbo
-        glBufferData(GL_ARRAY_BUFFER, ib, GL_DYNAMIC_DRAW);
+        // store index (dynamic draw)
+        textureVbo.storeIntegerInstances(waterGfxStartIndex, instances, GL_DYNAMIC_DRAW);
 
         // set buffer layout
         textureVbo.addIntAttribute(7, 1, 1, 16, true);
-
-        // unbind vbo
-        textureVbo.unbind();
 
         // unbind vao
         vao.unbind();
