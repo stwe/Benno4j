@@ -9,12 +9,19 @@
 package de.sg.benno.state;
 
 import de.sg.benno.BennoRuntimeException;
+import de.sg.benno.debug.DebugUi;
 import de.sg.benno.file.GamFile;
+import de.sg.benno.file.ImageFile;
 import de.sg.benno.renderer.Zoom;
 import de.sg.ogl.camera.OrthographicCamera;
 import de.sg.ogl.input.KeyInput;
+import de.sg.ogl.input.MouseInput;
+import de.sg.ogl.renderer.TileRenderer;
+import de.sg.ogl.resource.Texture;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
+import org.joml.Vector2f;
+import org.joml.Vector2i;
 
 import java.nio.file.Path;
 
@@ -30,6 +37,14 @@ public class GameState extends ApplicationState {
     private boolean wireframe = false;
 
     private Zoom currentZoom = Zoom.GFX;
+
+    private Texture rectangle;
+    private Texture highlight;
+    private TileRenderer tileRenderer;
+    public Vector2i cell = new Vector2i(0, 0);
+    public Vector2i offset = new Vector2i(0, 0);
+    private DebugUi debugUi;
+    public String debugText = "";
 
     //-------------------------------------------------
     // Ctors.
@@ -112,6 +127,12 @@ public class GameState extends ApplicationState {
 
         camera = new OrthographicCamera();
         camera.setCameraVelocity(1000.0f);
+
+        var context = (Context)getStateMachine().getStateContext();
+        rectangle = context.engine.getResourceManager().loadResource(Texture.class, "/debug/frame.png");
+        highlight = context.engine.getResourceManager().loadResource(Texture.class, "/debug/red.png");
+        tileRenderer = new TileRenderer(context.engine);
+        debugUi = new DebugUi(this);
     }
 
     @Override
@@ -139,20 +160,47 @@ public class GameState extends ApplicationState {
         if (KeyInput.isKeyPressed(GLFW_KEY_3)) {
             currentZoom = Zoom.GFX;
         }
-
-        // todo
-        // camera
-        camera.update(0.016f);
     }
 
     @Override
     public void update(float dt) {
+        // todo: dt -> shows a grid on move
+        camera.update(dt);
 
+        //camera.update(0.016f);
     }
 
     @Override
     public void render() {
         gamFile.render(camera, wireframe, currentZoom);
+
+        // work out active cell in screen space
+        cell.x = (int)MouseInput.getX() / currentZoom.defaultTileWidth;  // 64
+        cell.y = (int)MouseInput.getY() / currentZoom.defaultTileHeight; // 31
+
+        // work out mouse offset into cell in screen space
+        offset.x = (int)MouseInput.getX() % currentZoom.defaultTileWidth;
+        offset.y = (int)MouseInput.getY() % currentZoom.defaultTileHeight;
+
+        // draw rectangle
+        tileRenderer.render(
+                rectangle.getId(),
+                new Vector2f(cell.x * 64.0f, cell.y * 31.0f),
+                new Vector2f(64.0f, 32.0f)
+        );
+
+
+        // highlight tile
+        tileRenderer.render(
+                highlight.getId(),
+                new Vector2f(cell.x * 64.0f, cell.y * 31.0f),
+                new Vector2f(64.0f, 32.0f)
+        );
+    }
+
+    @Override
+    public void renderImGui() {
+        debugUi.render();
     }
 
     @Override

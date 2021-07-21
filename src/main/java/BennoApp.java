@@ -97,8 +97,10 @@ public class BennoApp extends SgOglApplication {
     }
 
     @Override
-    public void renderImGui() {
+    public void renderImGui() throws Exception {
 
+        // render ImGui current state
+        stateMachine.renderImGui();
     }
 
     @Override
