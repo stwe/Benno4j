@@ -9,11 +9,11 @@
 package de.sg.benno.state;
 
 import de.sg.benno.BennoRuntimeException;
+import de.sg.benno.Camera;
 import de.sg.benno.debug.DebugUi;
 import de.sg.benno.file.GamFile;
 import de.sg.benno.file.ImageFile;
 import de.sg.benno.renderer.Zoom;
-import de.sg.ogl.camera.OrthographicCamera;
 import de.sg.ogl.input.KeyInput;
 import de.sg.ogl.input.MouseInput;
 import de.sg.ogl.renderer.TileRenderer;
@@ -32,14 +32,15 @@ public class GameState extends ApplicationState {
 
     private GamFile gamFile;
 
-    private OrthographicCamera camera;
+    public Camera camera;
 
     private boolean wireframe = false;
 
-    private Zoom currentZoom = Zoom.GFX;
+    public Zoom currentZoom = Zoom.GFX;
 
     private Texture rectangle;
     private Texture highlight;
+    private ImageFile corner;
     private TileRenderer tileRenderer;
     public Vector2i cell = new Vector2i(0, 0);
     public Vector2i offset = new Vector2i(0, 0);
@@ -125,12 +126,12 @@ public class GameState extends ApplicationState {
             throw new BennoRuntimeException("Invalid parameter type.");
         }
 
-        camera = new OrthographicCamera();
-        camera.setCameraVelocity(1000.0f);
+        camera = new Camera();
 
         var context = (Context)getStateMachine().getStateContext();
         rectangle = context.engine.getResourceManager().loadResource(Texture.class, "/debug/frame.png");
         highlight = context.engine.getResourceManager().loadResource(Texture.class, "/debug/red.png");
+        corner = new ImageFile("/debug/corner.png");
         tileRenderer = new TileRenderer(context.engine);
         debugUi = new DebugUi(this);
     }
@@ -164,28 +165,27 @@ public class GameState extends ApplicationState {
 
     @Override
     public void update(float dt) {
-        // todo: dt -> shows a grid on move
-        camera.update(dt);
-
-        //camera.update(0.016f);
+        camera.update(currentZoom);
     }
 
     @Override
     public void render() {
         gamFile.render(camera, wireframe, currentZoom);
 
+        // todo: Baustelle
+
         // work out active cell in screen space
-        cell.x = (int)MouseInput.getX() / currentZoom.defaultTileWidth;  // 64
-        cell.y = (int)MouseInput.getY() / currentZoom.defaultTileHeight; // 31
+        cell.x = (int)MouseInput.getX() / currentZoom.defaultTileWidth;        // 64
+        cell.y = (int)MouseInput.getY() / (currentZoom.defaultTileHeight + 1); // 31 + 1
 
         // work out mouse offset into cell in screen space
         offset.x = (int)MouseInput.getX() % currentZoom.defaultTileWidth;
-        offset.y = (int)MouseInput.getY() % currentZoom.defaultTileHeight;
+        offset.y = (int)MouseInput.getY() % (currentZoom.defaultTileHeight + 1);
 
         // draw rectangle
         tileRenderer.render(
                 rectangle.getId(),
-                new Vector2f(cell.x * 64.0f, cell.y * 31.0f),
+                new Vector2f(cell.x * 64.0f, cell.y * 32.0f),
                 new Vector2f(64.0f, 32.0f)
         );
 
@@ -193,7 +193,7 @@ public class GameState extends ApplicationState {
         // highlight tile
         tileRenderer.render(
                 highlight.getId(),
-                new Vector2f(cell.x * 64.0f, cell.y * 31.0f),
+                new Vector2f(cell.x * 64.0f, cell.y * 32.0f),
                 new Vector2f(64.0f, 32.0f)
         );
     }

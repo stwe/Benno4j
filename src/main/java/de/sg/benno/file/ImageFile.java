@@ -14,6 +14,8 @@ import java.awt.image.DataBufferByte;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+// todo
+
 public class ImageFile {
 
     private final BufferedImage image;
