@@ -44,6 +44,7 @@ public class GameState extends ApplicationState {
     private TileRenderer tileRenderer;
     public Vector2i cell = new Vector2i(0, 0);
     public Vector2i offset = new Vector2i(0, 0);
+    public Vector2i selected = new Vector2i(0, 0);
     private DebugUi debugUi;
     public String debugText = "";
 
@@ -172,7 +173,7 @@ public class GameState extends ApplicationState {
     public void render() {
         gamFile.render(camera, wireframe, currentZoom);
 
-        // todo: Baustelle
+        // todo: Baustelle / hardcoded für GFX
 
         // work out active cell in screen space
         cell.x = (int)MouseInput.getX() / currentZoom.defaultTileWidth;        // 64
@@ -182,13 +183,23 @@ public class GameState extends ApplicationState {
         offset.x = (int)MouseInput.getX() % currentZoom.defaultTileWidth;
         offset.y = (int)MouseInput.getY() % (currentZoom.defaultTileHeight + 1);
 
+        // work out selected tile in world space
+        var origin = new Vector2i(0);
+        origin.x = (int)camera.position.x / 64;
+        origin.y = (int)camera.position.y / 32;
+
+        selected.x = (cell.y + origin.y) + (cell.x + origin.x);
+        selected.y = (cell.y + origin.y) - (cell.x + origin.x);
+
+        selected.x += 1;
+        selected.y -= 1;
+
         // draw rectangle
         tileRenderer.render(
                 rectangle.getId(),
                 new Vector2f(cell.x * 64.0f, cell.y * 32.0f),
                 new Vector2f(64.0f, 32.0f)
         );
-
 
         // highlight tile
         tileRenderer.render(

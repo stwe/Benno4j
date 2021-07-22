@@ -40,7 +40,7 @@ public class DebugUi {
     //-------------------------------------------------
 
     /**
-     * Render menu.
+     * Render debug menu.
      */
     public void render() {
         ImGui.begin("Debug");
@@ -56,10 +56,12 @@ public class DebugUi {
         ImGui.text("Mouse y: " + MouseInput.getY());
 
         ImGui.separator();
-        ImGui.text("Map x: " + gameState.cell.x);
-        ImGui.text("Map y: " + gameState.cell.y);
-        ImGui.text("Map offset x: " + gameState.offset.x);
-        ImGui.text("Map offset y: " + gameState.offset.y);
+        ImGui.text("Screen space cell x: " + gameState.cell.x);
+        ImGui.text("Screen space cell y: " + gameState.cell.y);
+        ImGui.text("Cell offset x: " + gameState.offset.x);
+        ImGui.text("Cell offset y: " + gameState.offset.y);
+        ImGui.text("Selected tile x: " + gameState.selected.x);
+        ImGui.text("Selected tile y: " + gameState.selected.y);
 
         ImGui.separator();
         ImGui.text("Info: " + gameState.debugText);

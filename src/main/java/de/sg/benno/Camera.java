@@ -41,6 +41,7 @@ public class Camera extends OrthographicCamera {
      * @param position The start position in screen space.
      */
     public Camera(Vector2f position) {
+        // todo: the given position should be in world space
         super(position);
    }
 
@@ -87,11 +88,21 @@ public class Camera extends OrthographicCamera {
      */
     protected void processKeyboard(Direction direction, Zoom zoom) {
         if (direction == Direction.UP) {
-            position.y += zoom.defaultTileHeight;
+            // the default tile height in GFX is 31, which must be corrected in some cases
+            if (zoom == Zoom.GFX) {
+                position.y += (zoom.defaultTileHeight + 1);
+            } else {
+                position.y += zoom.defaultTileHeight;
+            }
         }
 
         if (direction == Direction.DOWN) {
-            position.y -= zoom.defaultTileHeight;
+            // the default tile height in GFX is 31, which must be corrected in some cases
+            if (zoom == Zoom.GFX) {
+                position.y -= (zoom.defaultTileHeight + 1);
+            } else {
+                position.y -= zoom.defaultTileHeight;
+            }
         }
 
         if (direction == Direction.LEFT) {
