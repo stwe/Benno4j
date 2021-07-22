@@ -20,7 +20,6 @@ import de.sg.ogl.renderer.TileRenderer;
 import de.sg.ogl.resource.Texture;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
-import org.joml.Vector2f;
 import org.joml.Vector2i;
 
 import java.nio.file.Path;
@@ -173,7 +172,7 @@ public class GameState extends ApplicationState {
     public void render() {
         gamFile.render(camera, wireframe, currentZoom);
 
-        // todo: Baustelle / hardcoded für GFX
+        // todo: Baustelle / hardcoded tile selector für GFX
 
         // work out active cell in screen space
         cell.x = (int)MouseInput.getX() / currentZoom.defaultTileWidth;        // 64
@@ -194,39 +193,40 @@ public class GameState extends ApplicationState {
         selected.x += 1;
         selected.y -= 1;
 
-        var cellScreenSpace = new Vector2i(cell);
-
-        // "Bodge" selected cell by sampling corners
+        // selected cell by sampling corners
         var pixel = corner.getRGB(offset.x, offset.y);
         if (pixel[0] == 255 && pixel[1] == 0 && pixel[2] == 0) {
             debugText = "red | selected.x - 1";
-            cellScreenSpace.x -= 1;
+            selected.x -= 1;
         } else if (pixel[0] == 0 && pixel[1] == 255 && pixel[2] == 0) {
             debugText = "green | selected.y - 1";
-            cellScreenSpace.y -= 1;
+            selected.y -= 1;
         } else  if (pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 255) {
             debugText = "blue | selected.y + 1";
-            cellScreenSpace.y += 1;
+            selected.y += 1;
         } else if (pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 0) {
             debugText = "yellow | selected.x + 1";
-            cellScreenSpace.x += 1;
+            selected.x += 1;
         } else {
             debugText = "";
         }
 
-        // draw rectangle
+        /*
         tileRenderer.render(
                 rectangle.getId(),
                 new Vector2f(cell.x * 64.0f, cell.y * 32.0f),
                 new Vector2f(64.0f, 32.0f)
         );
 
-        // highlight tile
         tileRenderer.render(
                 highlight.getId(),
                 new Vector2f(cell.x * 64.0f, cell.y * 32.0f),
                 new Vector2f(64.0f, 32.0f)
         );
+        */
+
+        // update vbo
+        gamFile.updateSelectedWaterTile(selected);
     }
 
     @Override

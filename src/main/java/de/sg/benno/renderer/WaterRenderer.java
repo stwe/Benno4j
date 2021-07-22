@@ -9,6 +9,7 @@
 package de.sg.benno.renderer;
 
 import de.sg.benno.BennoRuntimeException;
+import de.sg.benno.TileUtil;
 import de.sg.benno.data.Building;
 import de.sg.benno.file.BshFile;
 import de.sg.benno.state.Context;
@@ -21,10 +22,13 @@ import de.sg.ogl.resource.Geometry;
 import de.sg.ogl.resource.Shader;
 import de.sg.ogl.resource.Texture;
 import org.joml.Matrix4f;
+import org.joml.Vector2i;
 import org.joml.Vector3f;
+import org.lwjgl.BufferUtils;
 
 import java.awt.image.DataBufferInt;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL15.*;
@@ -55,6 +59,16 @@ public class WaterRenderer {
      * Number of texture levels.
      */
     private static final int MIP_LEVEL_COUNT = 1;
+
+    /**
+     * Indicated that a tile is unselected.
+     */
+    private static final int WATER_TILE_IS_UNSELECTED = 1;
+
+    /**
+     * Indicated that a tile is selected.
+     */
+    private static final int WATER_TILE_IS_SELECTED = 2;
 
     //-------------------------------------------------
     // Member
@@ -126,6 +140,12 @@ public class WaterRenderer {
     private Vbo textureVbo;
 
     /**
+     * The {@link Vbo} for "selected" data.
+     * Every tile has a flag indicating whether it has been selected.
+     */
+    private Vbo selectedVbo;
+
+    /**
      * The start time in milliseconds.
      */
     private static long last;
@@ -189,7 +209,7 @@ public class WaterRenderer {
         var delta = now - last;
         if (delta >= building.animTime) {
             frame = (frame + 1) % building.animAnz;
-            updateVbo();
+            updateGfxStartIndexVbo();
             last = now;
         }
 
@@ -231,6 +251,7 @@ public class WaterRenderer {
         addMeshVbo();
         addModelMatricesVbo();
         addTextureIdsVbo();
+        addSelectedVbo();
 
         createTextureArray();
     }
@@ -284,7 +305,34 @@ public class WaterRenderer {
         textureVbo.storeIntegerInstances(waterGfxStartIndex, instances, GL_DYNAMIC_DRAW);
 
         // set buffer layout
-        textureVbo.addIntAttribute(7, 1, 1, 16, true);
+        textureVbo.addIntAttribute(7, 1, 1, 0, true);
+
+        // unbind vao
+        vao.unbind();
+    }
+
+    /**
+     * Every tile has a flag indicating whether it has been selected.
+     * Add this data to a new {@link de.sg.ogl.buffer.Vbo}.
+     * 1 = WATER_TILE_IS_UNSELECTED; 2 = selected (results in a darker color)
+     */
+    private void addSelectedVbo() {
+        // set default values (unselected = 1)
+        var values = new Integer[instances];
+        Arrays.fill(values, WATER_TILE_IS_UNSELECTED);
+        var selectedValues = new ArrayList<>(Arrays.asList(values));
+
+        // bind vao
+        vao.bind();
+
+        // create and add new vbo
+        selectedVbo = vao.addVbo();
+
+        // store index (dynamic draw)
+        selectedVbo.storeIntegerInstances(selectedValues, instances, GL_DYNAMIC_DRAW);
+
+        // set buffer layout
+        selectedVbo.addIntAttribute(8, 1, 1, 0, true);
 
         // unbind vao
         vao.unbind();
@@ -295,9 +343,28 @@ public class WaterRenderer {
     //-------------------------------------------------
 
     /**
+     * Updates the selected flag on the given tile position.
+     *
+     * @param selected The x and y position of the tile in world space.
+     */
+    public void updateSelectedVbo(Vector2i selected) {
+        var index = (long)TileUtil.getIndexFrom2D(selected.x, selected.y);
+        if (index >= 0) {
+            var ib = BufferUtils.createIntBuffer(1);
+            ib.put(WATER_TILE_IS_SELECTED);
+            ib.flip();
+
+            // todo: lib code
+            selectedVbo.bind();
+            glBufferSubData(GL_ARRAY_BUFFER, index * Integer.BYTES, ib);
+            selectedVbo.unbind();
+        }
+    }
+
+    /**
      * Update water gfx index Vbo.
      */
-    private void updateVbo() {
+    private void updateGfxStartIndexVbo() {
         // todo: glBufferData ist nicht die schnellste Lösung
         /*
         When replacing the entire data store, consider using glBufferSubData

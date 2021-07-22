@@ -19,6 +19,7 @@ import de.sg.benno.state.Context;
 import de.sg.ogl.camera.OrthographicCamera;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -108,6 +109,16 @@ public class GamFile extends BinaryFile {
      */
     public void render(OrthographicCamera camera, boolean wireframe, Zoom zoom) {
         waterRenderers.get(zoom).render(camera, wireframe);
+    }
+
+    /**
+     * Updates the selected water tile in each {@link WaterRenderer}.
+     * At the moment the color is getting darker.
+     *
+     * @param selected The x and y position of the tile in world space.
+     */
+    public void updateSelectedWaterTile(Vector2i selected) {
+        waterRenderers.forEach((k, v) -> v.updateSelectedVbo(selected));
     }
 
     //-------------------------------------------------
