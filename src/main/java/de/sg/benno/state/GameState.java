@@ -194,6 +194,26 @@ public class GameState extends ApplicationState {
         selected.x += 1;
         selected.y -= 1;
 
+        var cellScreenSpace = new Vector2i(cell);
+
+        // "Bodge" selected cell by sampling corners
+        var pixel = corner.getRGB(offset.x, offset.y);
+        if (pixel[0] == 255 && pixel[1] == 0 && pixel[2] == 0) {
+            debugText = "red | selected.x - 1";
+            cellScreenSpace.x -= 1;
+        } else if (pixel[0] == 0 && pixel[1] == 255 && pixel[2] == 0) {
+            debugText = "green | selected.y - 1";
+            cellScreenSpace.y -= 1;
+        } else  if (pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 255) {
+            debugText = "blue | selected.y + 1";
+            cellScreenSpace.y += 1;
+        } else if (pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 0) {
+            debugText = "yellow | selected.x + 1";
+            cellScreenSpace.x += 1;
+        } else {
+            debugText = "";
+        }
+
         // draw rectangle
         tileRenderer.render(
                 rectangle.getId(),
