@@ -34,6 +34,12 @@ import static de.sg.ogl.Log.LOGGER;
 public class GamFile extends BinaryFile {
 
     //-------------------------------------------------
+    // Constants
+    //-------------------------------------------------
+
+    private static final int NO_WATER = -1;
+
+    //-------------------------------------------------
     // Member
     //-------------------------------------------------
 
@@ -66,6 +72,12 @@ public class GamFile extends BinaryFile {
      * To store the gfx start index. Animations do not always start with the first gfx.
      */
     private ArrayList<Integer> waterGfxStartIndex;
+
+    /**
+     * Stores the instance number for every position in the world if there is a water tile there.
+     * Otherwise there is a value of -1 {@link #NO_WATER}.
+     */
+    private ArrayList<Integer> waterInstancesIndex;
 
     /**
      * The {@link WaterRenderer} objects to render water {@link TileGraphic}.
@@ -112,13 +124,16 @@ public class GamFile extends BinaryFile {
     }
 
     /**
-     * Updates the selected water tile in each {@link WaterRenderer}.
+     * Updates the selected flag at the given world position in each {@link WaterRenderer}.
      * At the moment the color is getting darker.
      *
      * @param selected The x and y position of the tile in world space.
      */
     public void updateSelectedWaterTile(Vector2i selected) {
-        waterRenderers.forEach((k, v) -> v.updateSelectedVbo(selected));
+        var index = getWaterInstanceIndex(selected.x, selected.y);
+        if (index > NO_WATER) {
+            waterRenderers.forEach((k, v) -> v.updateSelectedVbo(index));
+        }
     }
 
     //-------------------------------------------------
@@ -231,6 +246,11 @@ public class GamFile extends BinaryFile {
         // calc adjust height
         var adjustHeight = TileUtil.adjustHeight(zoom.yRaster, TileGraphic.TileHeight.SEA_LEVEL.value, zoom.elevation);
 
+        // no water at all
+        var values = new Integer[WORLD_HEIGHT * WORLD_WIDTH];
+        Arrays.fill(values, NO_WATER);
+        waterInstancesIndex = new ArrayList<>(Arrays.asList(values));
+
         // create tiles
         for (int y = 0; y < WORLD_HEIGHT; y++) {
             for (int x = 0; x < WORLD_WIDTH; x++) {
@@ -251,6 +271,7 @@ public class GamFile extends BinaryFile {
                     deepWaterTile.size = new Vector2f(waterBshTexture.getWidth(), waterBshTexture.getHeight());
 
                     tiles.add(deepWaterTile);
+                    waterInstancesIndex.set(TileUtil.getIndexFrom2D(x, y), tiles.size() - 1);
                 }
             }
         }
@@ -258,6 +279,22 @@ public class GamFile extends BinaryFile {
         deepWaterTiles.put(zoom, tiles);
 
         createWaterRenderer(zoom, water);
+    }
+
+    /**
+     * Returns the instance index for the given location.
+     *
+     * @param x The x position in world space.
+     * @param y The y position in world space.
+     *
+     * @return -1 {@link #NO_WATER} or the instance index.
+     */
+    private int getWaterInstanceIndex(int x, int y) {
+        if (x < 0 || y < 0) {
+            return NO_WATER;
+        }
+
+        return waterInstancesIndex.get(TileUtil.getIndexFrom2D(x, y));
     }
 
     /**

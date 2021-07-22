@@ -9,7 +9,6 @@
 package de.sg.benno.renderer;
 
 import de.sg.benno.BennoRuntimeException;
-import de.sg.benno.TileUtil;
 import de.sg.benno.data.Building;
 import de.sg.benno.file.BshFile;
 import de.sg.benno.state.Context;
@@ -22,7 +21,6 @@ import de.sg.ogl.resource.Geometry;
 import de.sg.ogl.resource.Shader;
 import de.sg.ogl.resource.Texture;
 import org.joml.Matrix4f;
-import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
@@ -343,12 +341,11 @@ public class WaterRenderer {
     //-------------------------------------------------
 
     /**
-     * Updates the selected flag on the given tile position.
+     * Updates the selected flag.
      *
-     * @param selected The x and y position of the tile in world space.
+     * @param index The instance of the tile.
      */
-    public void updateSelectedVbo(Vector2i selected) {
-        var index = (long)TileUtil.getIndexFrom2D(selected.x, selected.y);
+    public void updateSelectedVbo(int index) {
         if (index >= 0) {
             var ib = BufferUtils.createIntBuffer(1);
             ib.put(WATER_TILE_IS_SELECTED);
@@ -356,7 +353,7 @@ public class WaterRenderer {
 
             // todo: lib code
             selectedVbo.bind();
-            glBufferSubData(GL_ARRAY_BUFFER, index * Integer.BYTES, ib);
+            glBufferSubData(GL_ARRAY_BUFFER, (long)index * Integer.BYTES, ib);
             selectedVbo.unbind();
         }
     }
