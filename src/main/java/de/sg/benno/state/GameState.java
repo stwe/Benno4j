@@ -14,18 +14,24 @@ import de.sg.benno.debug.DebugUi;
 import de.sg.benno.file.GamFile;
 import de.sg.benno.file.ImageFile;
 import de.sg.benno.renderer.Zoom;
+import de.sg.ogl.buffer.Fbo;
 import de.sg.ogl.input.KeyInput;
 import de.sg.ogl.input.MouseInput;
 import de.sg.ogl.renderer.TileRenderer;
 import de.sg.ogl.resource.Texture;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
+import org.joml.Vector2f;
 import org.joml.Vector2i;
+import org.lwjgl.BufferUtils;
 
 import java.nio.file.Path;
 
 import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL30.*;
 
 public class GameState extends ApplicationState {
 
@@ -46,6 +52,10 @@ public class GameState extends ApplicationState {
     public Vector2i selected = new Vector2i(0, 0);
     private DebugUi debugUi;
     public String debugText = "";
+
+    private Fbo fbo;
+    private int rbo;
+    private Texture text;
 
     //-------------------------------------------------
     // Ctors.
@@ -135,6 +145,38 @@ public class GameState extends ApplicationState {
         corner = new ImageFile("/debug/corner.png");
         tileRenderer = new TileRenderer(context.engine);
         debugUi = new DebugUi(this);
+
+
+
+        fbo = new Fbo(
+                ((Context) getStateMachine().getStateContext()).engine,
+        250, 175);
+
+        fbo.bind();
+
+        text = new Texture();
+        Texture.bind(text.getId());
+        text.setNrChannels(4);
+        text.setFormat(GL_RGBA);
+
+        var ib = BufferUtils.createIntBuffer(250 * 175);
+        BufferUtils.zeroBuffer(ib);
+        ib.flip();
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 250, 175, 0, text.getFormat(), GL_UNSIGNED_BYTE, ib);
+        Texture.useBilinearFilter();
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, text.getId(), 0);
+
+        rbo = glGenRenderbuffers();
+        glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 250, 175);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            LOGGER.debug("Fehler");
+        }
+
+        fbo.unbind();
     }
 
     @Override
@@ -174,7 +216,17 @@ public class GameState extends ApplicationState {
 
     @Override
     public void render() {
+        fbo.bindAsRenderTarget();
+        //glEnable(GL_DEPTH_TEST);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         gamFile.render(camera, wireframe, currentZoom);
+
+        fbo.unbindRenderTarget();
+        //glDisable(GL_DEPTH_TEST);
+
+        tileRenderer.render(text.getId(), new Vector2f(0), new Vector2f(250, 175));
 
         // todo: Baustelle / hardcoded tile selector für GFX
 
