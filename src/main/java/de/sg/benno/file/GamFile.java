@@ -8,6 +8,7 @@
 
 package de.sg.benno.file;
 
+import de.sg.benno.BennoConfig;
 import de.sg.benno.TileUtil;
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.IslandHouse;
@@ -216,7 +217,7 @@ public class GamFile extends BinaryFile {
         */
 
         for (var zoom : Zoom.values()) {
-            createWaterGraphicTiles(zoom, 1203);
+            createWaterGraphicTiles(zoom, BennoConfig.DEEP_WATER_BUILDING_ID);
         }
 
         LOGGER.debug("The WaterRenderers have been successfully initialized and created.");

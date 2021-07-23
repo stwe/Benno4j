@@ -226,7 +226,7 @@ public class GameState extends ApplicationState {
         */
 
         // update vbo
-        gamFile.updateSelectedWaterTile(selected);
+        //gamFile.updateSelectedWaterTile(selected);
     }
 
     @Override

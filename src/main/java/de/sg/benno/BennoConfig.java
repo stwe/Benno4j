@@ -11,4 +11,10 @@ package de.sg.benno;
 public class BennoConfig {
     public static String ROOT_PATH;
     public static String SAVEGAME_PATH;
+
+    public static int GFX_CAMERA_SPEED;
+    public static int MGFX_CAMERA_SPEED;
+    public static int SGFX_CAMERA_SPEED;
+
+    public static int DEEP_WATER_BUILDING_ID;
 }
