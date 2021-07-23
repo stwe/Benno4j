@@ -351,10 +351,7 @@ public class WaterRenderer {
             ib.put(WATER_TILE_IS_SELECTED);
             ib.flip();
 
-            // todo: lib code
-            selectedVbo.bind();
-            glBufferSubData(GL_ARRAY_BUFFER, (long)index * Integer.BYTES, ib);
-            selectedVbo.unbind();
+            selectedVbo.storeData((long)index * Integer.BYTES, ib);
         }
     }
 
