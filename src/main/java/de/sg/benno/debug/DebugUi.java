@@ -45,17 +45,23 @@ public class DebugUi {
     public void render() {
         ImGui.begin("Debug");
 
-        ImGui.text("Camera x: " + gameState.camera.position.x);
-        ImGui.text("Camera y: " + gameState.camera.position.y);
+        ImGui.text("Camera position");
+        ImGui.text("Camera screen space x: " + gameState.camera.position.x);
+        ImGui.text("Camera screen space y: " + gameState.camera.position.y);
+        ImGui.text("Camera origin x: " + gameState.camera.origin.x);
+        ImGui.text("Camera origin y: " + gameState.camera.origin.y);
 
         ImGui.separator();
+        ImGui.text("Zoom");
         ImGui.text("Current zoom: " + gameState.currentZoom);
 
         ImGui.separator();
+        ImGui.text("Mouse position");
         ImGui.text("Mouse x: " + MouseInput.getX());
         ImGui.text("Mouse y: " + MouseInput.getY());
 
         ImGui.separator();
+        ImGui.text("Calc selected tile");
         ImGui.text("Screen space cell x: " + gameState.cell.x);
         ImGui.text("Screen space cell y: " + gameState.cell.y);
         ImGui.text("Cell offset x: " + gameState.offset.x);
@@ -64,6 +70,7 @@ public class DebugUi {
         ImGui.text("Selected tile y: " + gameState.selected.y);
 
         ImGui.separator();
+        ImGui.text("Other");
         ImGui.text("Info: " + gameState.debugText);
 
         ImGui.end();

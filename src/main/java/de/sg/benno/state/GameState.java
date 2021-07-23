@@ -126,7 +126,8 @@ public class GameState extends ApplicationState {
             throw new BennoRuntimeException("Invalid parameter type.");
         }
 
-        camera = new Camera();
+        //camera = new Camera(World.WORLD_WIDTH / 2, World.WORLD_HEIGHT / 2, currentZoom);
+        camera = new Camera(-2, -2, currentZoom);
 
         var context = (Context)getStateMachine().getStateContext();
         rectangle = context.engine.getResourceManager().loadResource(Texture.class, "/debug/frame.png");
@@ -152,14 +153,17 @@ public class GameState extends ApplicationState {
         // zoom
         if (KeyInput.isKeyPressed(GLFW_KEY_1)) {
             currentZoom = Zoom.SGFX;
+            camera.resetPosition(currentZoom);
         }
 
         if (KeyInput.isKeyPressed(GLFW_KEY_2)) {
             currentZoom = Zoom.MGFX;
+            camera.resetPosition(currentZoom);
         }
 
         if (KeyInput.isKeyPressed(GLFW_KEY_3)) {
             currentZoom = Zoom.GFX;
+            camera.resetPosition(currentZoom);
         }
     }
 

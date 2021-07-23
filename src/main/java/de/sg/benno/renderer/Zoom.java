@@ -39,6 +39,7 @@ public enum Zoom {
     public int elevation;
     public int defaultTileWidth;
     public int defaultTileHeight;
+    public int speedFactor;
 
     private final Vector2i cameraSpeed = new Vector2i();
 
@@ -50,7 +51,7 @@ public enum Zoom {
             int xRaster, int yRaster,
             int elevation,
             int defaultTileWidth, int defaultTileHeight,
-            int cameraInitialSpeedFactor
+            int speedFactor
     ) {
         this.xRaster = xRaster;
         this.yRaster = yRaster;
@@ -58,29 +59,40 @@ public enum Zoom {
         this.defaultTileWidth = defaultTileWidth;
         this.defaultTileHeight = defaultTileHeight;
 
-        setCameraSpeed(cameraInitialSpeedFactor);
+        this.speedFactor = speedFactor;
+
+        calcCameraSpeed();
     }
 
     //-------------------------------------------------
     // Getter
     //-------------------------------------------------
 
+    /**
+     * Get {@link #cameraSpeed}.
+     *
+     * @return {@link #cameraSpeed}
+     */
     public Vector2i getCameraSpeed() {
         return cameraSpeed;
     }
 
     //-------------------------------------------------
-    // Setter
+    // Init
     //-------------------------------------------------
 
-    private void setCameraSpeed(int factor) {
-        this.cameraSpeed.x = defaultTileWidth * factor;
+    /**
+     * Calc {@link #cameraSpeed}.
+     * The camera moves in world space units.
+     */
+    private void calcCameraSpeed() {
+        this.cameraSpeed.x = defaultTileWidth * speedFactor;
 
+        // the default tile height in GFX is 31, which must be corrected to 32
         if (defaultTileHeight != 31) {
-            this.cameraSpeed.y = defaultTileHeight * factor;
+            this.cameraSpeed.y = defaultTileHeight * speedFactor;
         } else {
-            // the default tile height in GFX is 31, which must be corrected to 32
-            this.cameraSpeed.y = xRaster * factor;
+            this.cameraSpeed.y = 32 * speedFactor;
         }
     }
 }
