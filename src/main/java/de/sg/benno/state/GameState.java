@@ -10,14 +10,13 @@ package de.sg.benno.state;
 
 import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.Camera;
+import de.sg.benno.World;
+import de.sg.benno.chunk.WorldData;
 import de.sg.benno.debug.DebugUi;
-import de.sg.benno.file.GamFile;
 import de.sg.benno.renderer.Zoom;
 import de.sg.ogl.input.KeyInput;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
-
-import java.nio.file.Path;
 
 import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.GLFW.*;
@@ -28,7 +27,7 @@ public class GameState extends ApplicationState {
     // Member
     //-------------------------------------------------
 
-    private GamFile gamFile;
+    private World world;
 
     public Camera camera;
 
@@ -58,11 +57,10 @@ public class GameState extends ApplicationState {
             throw new BennoRuntimeException("Wrong total number of params.");
         }
 
-        var path = params[0];
-        if (path instanceof Path) {
-            loadSavegame((Path)path);
+        if (params[0] instanceof WorldData) {
+            world = new World((WorldData)params[0]);
         } else {
-            throw new BennoRuntimeException("Invalid parameter type.");
+            throw new BennoRuntimeException("Invalid world data provider type.");
         }
 
         camera = new Camera(-2, -2, currentZoom);
@@ -119,14 +117,6 @@ public class GameState extends ApplicationState {
     public void cleanUp() {
         LOGGER.debug("Start clean up for the GameState.");
 
-        gamFile.cleanUp();
-    }
-
-    //-------------------------------------------------
-    // Helper
-    //-------------------------------------------------
-
-    private void loadSavegame(Path path) throws Exception {
-        gamFile = new GamFile(path, (Context)getStateMachine().getStateContext());
+        world.cleanUp();
     }
 }

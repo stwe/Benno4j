@@ -9,6 +9,7 @@
 import de.sg.benno.BennoConfig;
 import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.file.BennoFiles;
+import de.sg.benno.file.GamFile;
 import de.sg.benno.state.Context;
 import de.sg.benno.state.GameState;
 import de.sg.ogl.*;
@@ -74,7 +75,8 @@ public class BennoApp extends SgOglApplication {
 
         //this.stateMachine.change("main_menu");
         if (!bennoFiles.getSavegameFilePaths().isEmpty()) {
-            this.stateMachine.change("game", bennoFiles.getSavegameFilePaths().get(0));
+            var gamFile = new GamFile(bennoFiles.getSavegameFilePaths().get(0), stateContext);
+            this.stateMachine.change("game", gamFile);
         } else {
             throw new BennoRuntimeException("No savegame found.");
         }

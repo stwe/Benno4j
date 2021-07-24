@@ -13,6 +13,7 @@ import de.sg.benno.TileUtil;
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.IslandHouse;
 import de.sg.benno.chunk.TileGraphic;
+import de.sg.benno.chunk.WorldData;
 import de.sg.benno.data.Building;
 import de.sg.benno.renderer.WaterRenderer;
 import de.sg.benno.renderer.Zoom;
@@ -32,7 +33,7 @@ import static de.sg.ogl.Log.LOGGER;
 /**
  * Loads a savegame (.gam file).
  */
-public class GamFile extends BinaryFile {
+public class GamFile extends BinaryFile implements WorldData {
 
     //-------------------------------------------------
     // Constants
@@ -165,6 +166,22 @@ public class GamFile extends BinaryFile {
         initDeepWaterRenderer();
 
         LOGGER.debug("Savegame data read successfully.");
+    }
+
+    //-------------------------------------------------
+    // WorldDataInterface
+    //-------------------------------------------------
+
+    @Override
+    public ArrayList<Island5> getIsland5List() {
+        return island5List;
+    }
+
+    @Override
+    public void cleanUp() {
+        LOGGER.debug("Start clean up for the GamFile.");
+
+        waterRenderers.forEach((k, v) -> v.cleanUp());
     }
 
     //-------------------------------------------------
@@ -328,18 +345,5 @@ public class GamFile extends BinaryFile {
                 context,
                 zoom
         ));
-    }
-
-    //-------------------------------------------------
-    // Clean up
-    //-------------------------------------------------
-
-    /**
-     * Clean up.
-     */
-    public void cleanUp() {
-        LOGGER.debug("Start clean up for the GamFile.");
-
-        waterRenderers.forEach((k, v) -> v.cleanUp());
     }
 }

@@ -8,8 +8,12 @@
 
 package de.sg.benno.file;
 
+import de.sg.benno.chunk.Island5;
+import de.sg.benno.chunk.WorldData;
+
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Objects;
 
 import static de.sg.ogl.Log.LOGGER;
@@ -17,7 +21,7 @@ import static de.sg.ogl.Log.LOGGER;
 /**
  * Represents a ScpFile.
  */
-public class ScpFile extends BinaryFile {
+public class ScpFile extends BinaryFile implements WorldData {
 
     //-------------------------------------------------
     // Member
@@ -77,5 +81,19 @@ public class ScpFile extends BinaryFile {
 
         LOGGER.debug("Scp data read successfully.");
         */
+    }
+
+    //-------------------------------------------------
+    // WorldDataInterface
+    //-------------------------------------------------
+
+    @Override
+    public ArrayList<Island5> getIsland5List() {
+        return null;
+    }
+
+    @Override
+    public void cleanUp() {
+        LOGGER.debug("Start clean up for the ScpFile.");
     }
 }
