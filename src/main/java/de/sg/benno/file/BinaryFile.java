@@ -21,6 +21,10 @@ import java.util.Objects;
  */
 public abstract class BinaryFile implements BinaryFileInterface {
 
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
+
     /**
      * The {@link Path} to the file.
      */

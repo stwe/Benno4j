@@ -17,6 +17,10 @@ import static de.sg.ogl.Log.LOGGER;
 
 public class MainMenuState extends ApplicationState {
 
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
+
     private MainMenu mainMenu;
 
     //-------------------------------------------------

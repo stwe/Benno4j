@@ -9,6 +9,11 @@
 package de.sg.benno;
 
 public class BennoConfig {
+
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
+
     public static String ROOT_PATH;
     public static String SAVEGAME_PATH;
 

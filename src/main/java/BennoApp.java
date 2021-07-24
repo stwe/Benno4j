@@ -7,11 +7,10 @@
  */
 
 import de.sg.benno.BennoConfig;
+import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.state.Context;
-import de.sg.benno.state.GameMenuState;
 import de.sg.benno.state.GameState;
-import de.sg.benno.state.MainMenuState;
 import de.sg.ogl.*;
 import de.sg.ogl.state.StateMachine;
 
@@ -23,6 +22,10 @@ import static de.sg.ogl.Log.LOGGER;
  * Represents the main class of the game.
  */
 public class BennoApp extends SgOglApplication {
+
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
 
     /**
      * A {@link BennoFiles} object.
@@ -65,12 +68,16 @@ public class BennoApp extends SgOglApplication {
         stateContext.bennoFiles = this.bennoFiles;
 
         this.stateMachine = new StateMachine(stateContext);
-        this.stateMachine.add("main_menu", new MainMenuState(stateMachine));
-        this.stateMachine.add("game_menu", new GameMenuState(stateMachine));
+        //this.stateMachine.add("main_menu", new MainMenuState(stateMachine));
+        //this.stateMachine.add("game_menu", new GameMenuState(stateMachine));
         this.stateMachine.add("game", new GameState(stateMachine));
-        //this.stateMachine.change("main_menu");
 
-        this.stateMachine.change("game", bennoFiles.getSavegameFilePaths().get(0));
+        //this.stateMachine.change("main_menu");
+        if (!bennoFiles.getSavegameFilePaths().isEmpty()) {
+            this.stateMachine.change("game", bennoFiles.getSavegameFilePaths().get(0));
+        } else {
+            throw new BennoRuntimeException("No savegame found.");
+        }
 
         LOGGER.debug("BennoApp successfully initialized.");
     }

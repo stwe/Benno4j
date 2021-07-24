@@ -26,6 +26,10 @@ import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 
 public class MainMenu {
 
+    //-------------------------------------------------
+    // Constants
+    //-------------------------------------------------
+
     private static final int BACKGROUND = 0;
     private static final int SHIP = 14;
 
@@ -42,6 +46,10 @@ public class MainMenu {
     private static final int CREDITS_SELECT = 11;
     private static final int INTRO_SELECT = 12;
     private static final int EXIT_SELECT = 13;
+
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
 
     private final SgOglEngine engine;
     private final BshFile startBshFile;

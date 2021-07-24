@@ -32,6 +32,10 @@ import static java.awt.Font.PLAIN;
 
 public class GameMenu {
 
+    //-------------------------------------------------
+    // Constants
+    //-------------------------------------------------
+
     private static final int BACKGROUND = 0;
     private static final int LIST = 1;
 
@@ -47,6 +51,10 @@ public class GameMenu {
 
     private static final int UP = 41;
     private static final int DOWN = 42;
+
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
 
     private final SgOglEngine engine;
     private final BshFile startBshFile;

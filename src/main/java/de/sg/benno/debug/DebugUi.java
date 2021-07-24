@@ -10,6 +10,8 @@ package de.sg.benno.debug;
 
 import de.sg.benno.state.GameState;
 import de.sg.ogl.input.MouseInput;
+import imgui.flag.ImGuiCond;
+import imgui.flag.ImGuiWindowFlags;
 import imgui.internal.ImGui;
 
 /**
@@ -21,6 +23,8 @@ public class DebugUi {
      * The parent {@link GameState}.
      */
     private final GameState gameState;
+
+    private static int corner = 0;
 
     //-------------------------------------------------
     // Ctors.
@@ -43,7 +47,13 @@ public class DebugUi {
      * Render debug menu.
      */
     public void render() {
-        ImGui.begin("Debug");
+        ImGui.setNextWindowSize(250, 300, ImGuiCond.Once);
+        ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 1024 - 250, ImGui.getMainViewport().getPosY(), ImGuiCond.Once);
+
+        final int windowFlags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize
+                | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoNavFocus | ImGuiWindowFlags.NoBackground;
+
+        ImGui.begin("Debug", windowFlags);
 
         ImGui.text("Camera position");
         ImGui.text("Camera screen space x: " + gameState.camera.position.x);
@@ -59,19 +69,6 @@ public class DebugUi {
         ImGui.text("Mouse position");
         ImGui.text("Mouse x: " + MouseInput.getX());
         ImGui.text("Mouse y: " + MouseInput.getY());
-
-        ImGui.separator();
-        ImGui.text("Calc selected tile");
-        ImGui.text("Screen space cell x: " + gameState.cell.x);
-        ImGui.text("Screen space cell y: " + gameState.cell.y);
-        ImGui.text("Cell offset x: " + gameState.offset.x);
-        ImGui.text("Cell offset y: " + gameState.offset.y);
-        ImGui.text("Selected tile x: " + gameState.selected.x);
-        ImGui.text("Selected tile y: " + gameState.selected.y);
-
-        ImGui.separator();
-        ImGui.text("Other");
-        ImGui.text("Info: " + gameState.debugText);
 
         ImGui.end();
     }

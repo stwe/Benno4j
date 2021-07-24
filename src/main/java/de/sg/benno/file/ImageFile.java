@@ -8,31 +8,43 @@
 
 package de.sg.benno.file;
 
+import de.sg.benno.Util;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Objects;
 
 // todo
 
 public class ImageFile {
 
-    private final BufferedImage image;
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
 
-    public int width;
-    public int height;
+    private final BufferedImage image;
+    private final byte[] pixels;
+    private int width;
+    private int height;
     private final boolean hasAlphaChannel;
     private int pixelLength;
-    private final byte[] pixels;
 
+    //-------------------------------------------------
+    // Ctors.
+    //-------------------------------------------------
+
+    /**
+     * Constructs a new {@link ImageFile} object.
+     *
+     * @param path The file path to the image.
+     *
+     * @throws IOException If an I/O error is thrown.
+     */
     public ImageFile(String path) throws IOException {
-        var source = this.getClass().getResourceAsStream(path);
-        if (source == null) {
-            throw new FileNotFoundException("Image " + path + " not found.");
-        }
-
-        image = ImageIO.read(source);
+        var source = Util.getFileFromResourceAsStream(path);
+        image = ImageIO.read(Objects.requireNonNull(source, "source must not be null"));
 
         pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
         width = image.getWidth();
@@ -44,6 +56,15 @@ public class ImageFile {
         }
     }
 
+    //-------------------------------------------------
+    // Getter
+    //-------------------------------------------------
+
+    /**
+     * Get {@link #image}.
+     *
+     * @return {@link #image}
+     */
     public BufferedImage getImage() {
         return image;
     }

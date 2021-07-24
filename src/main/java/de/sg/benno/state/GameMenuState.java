@@ -20,6 +20,10 @@ import static de.sg.ogl.Log.LOGGER;
 
 public class GameMenuState extends ApplicationState {
 
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
+
     private GameMenu gameMenu;
 
     //-------------------------------------------------

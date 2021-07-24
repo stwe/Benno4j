@@ -37,6 +37,10 @@ import static org.lwjgl.opengl.GL12.GL_UNSIGNED_INT_8_8_8_8_REV;
  */
 public class BshFile extends BinaryFile {
 
+    //-------------------------------------------------
+    // Types
+    //-------------------------------------------------
+
     /**
      * Represents the type of an Bsh image.
      */

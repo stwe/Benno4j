@@ -12,28 +12,21 @@ import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.Camera;
 import de.sg.benno.debug.DebugUi;
 import de.sg.benno.file.GamFile;
-import de.sg.benno.file.ImageFile;
 import de.sg.benno.renderer.Zoom;
-import de.sg.ogl.buffer.Fbo;
 import de.sg.ogl.input.KeyInput;
-import de.sg.ogl.input.MouseInput;
-import de.sg.ogl.renderer.TileRenderer;
-import de.sg.ogl.resource.Texture;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
-import org.joml.Vector2f;
-import org.joml.Vector2i;
-import org.lwjgl.BufferUtils;
 
 import java.nio.file.Path;
 
 import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
-import static org.lwjgl.opengl.GL30.*;
 
 public class GameState extends ApplicationState {
+
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
 
     private GamFile gamFile;
 
@@ -43,19 +36,7 @@ public class GameState extends ApplicationState {
 
     public Zoom currentZoom = Zoom.GFX;
 
-    private Texture rectangle;
-    private Texture highlight;
-    private ImageFile corner;
-    private TileRenderer tileRenderer;
-    public Vector2i cell = new Vector2i(0, 0);
-    public Vector2i offset = new Vector2i(0, 0);
-    public Vector2i selected = new Vector2i(0, 0);
     private DebugUi debugUi;
-    public String debugText = "";
-
-    private Fbo fbo;
-    private int rbo;
-    private Texture text;
 
     //-------------------------------------------------
     // Ctors.
@@ -78,105 +59,15 @@ public class GameState extends ApplicationState {
         }
 
         var path = params[0];
-
-        //var context = (Context)getStateMachine().getStateContext();
-        //var files = context.bennoFiles;
-
-        //var buildings = files.getDataFiles().getBuildings();
-        //var water = buildings.get(1201);
-
-        /*
-        id = 1201
-        gfx = 758
-        rotate = 0
-        randAnz = -1
-        animAnz = 6
-        animTime = 130
-        animFrame = 0
-        animAdd = 1
-        */
-
-
-        /*
-        2622 (Ruine):    673    Rot: 0   AnimAnz:  -   AnimAdd:  -
-        1383 (Wald):     674    Rot: 0   AnimAnz:  5   AnimAdd:  1
-               ?         679
-        ----------------------------------------------------------
-        1253 (Meer):     680    Rot: 0   AnimAnz:  6   AnimAdd:  1
-        1203 (Meer):     686    Rot: 0   AnimAnz:  6   AnimAdd:  1
-        1252 (Meer):     692    Rot: 1   AnimAnz:  6   AnimAdd:  4
-        1202 (Meer):     716    Rot: 1   AnimAnz:  6   AnimAdd:  4
-        1254 (Meer):     740    Rot: 0   AnimAnz:  6   AnimAdd:  1
-        1204 (Meer):     746    Rot: 0   AnimAnz:  6   AnimAdd:  1
-        1251 (Meer):     752    Rot: 0   AnimAnz:  6   AnimAdd:  1
-        1201 (Meer):     758    Rot: 0   AnimAnz:  6   AnimAdd:  1
-        1259 (Meer):     764    Rot: 1   AnimAnz:  6   AnimAdd:  4
-        1209 (Meer):     788    Rot: 1   AnimAnz:  6   AnimAdd:  4
-        ----------------------------------------------------------
-        1205 (Brandung)  812
-
-        1206 (Brandeck)  836
-        1207 (Brandeck)  860
-        1208 (Mündung)   884
-
-                                1210, 1211, 1212, 1213 fehlen
-        1214 (Mündung)   908
-
-        901 (Fluss):    1576    Rot: 1   AnimAnz:  6   AnimAdd:  4
-        902 (Fluss):    1600    Rot: 1   AnimAnz:  6   AnimAdd:  4
-        903 (Fluss):    1624    Rot: 1   AnimAnz:  6   AnimAdd:  4
-        904 (Flusseck): 1648    Rot: 4   AnimAnz:  6   AnimAdd: 16
-        905 (Flusseck): 1744    Rot: 4   AnimAnz: 16   AnimAdd: 16
-        */
-
-
         if (path instanceof Path) {
             loadSavegame((Path)path);
         } else {
             throw new BennoRuntimeException("Invalid parameter type.");
         }
 
-        //camera = new Camera(World.WORLD_WIDTH / 2, World.WORLD_HEIGHT / 2, currentZoom);
         camera = new Camera(-2, -2, currentZoom);
 
-        var context = (Context)getStateMachine().getStateContext();
-        rectangle = context.engine.getResourceManager().loadResource(Texture.class, "/debug/frame.png");
-        highlight = context.engine.getResourceManager().loadResource(Texture.class, "/debug/red.png");
-        corner = new ImageFile("/debug/corner.png");
-        tileRenderer = new TileRenderer(context.engine);
         debugUi = new DebugUi(this);
-
-
-
-        fbo = new Fbo(
-                ((Context) getStateMachine().getStateContext()).engine,
-        250, 175);
-
-        fbo.bind();
-
-        text = new Texture();
-        Texture.bind(text.getId());
-        text.setNrChannels(4);
-        text.setFormat(GL_RGBA);
-
-        var ib = BufferUtils.createIntBuffer(250 * 175);
-        BufferUtils.zeroBuffer(ib);
-        ib.flip();
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 250, 175, 0, text.getFormat(), GL_UNSIGNED_BYTE, ib);
-        Texture.useBilinearFilter();
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, text.getId(), 0);
-
-        rbo = glGenRenderbuffers();
-        glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 250, 175);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            LOGGER.debug("Fehler");
-        }
-
-        fbo.unbind();
     }
 
     @Override
@@ -187,12 +78,12 @@ public class GameState extends ApplicationState {
             glfwSetWindowShouldClose(context.engine.getWindow().getWindowHandle(), true);
         }
 
-        // wireframe
+        // wireframe flag
         if (KeyInput.isKeyPressed(GLFW_KEY_G)) {
             wireframe = !wireframe;
         }
 
-        // zoom
+        // change zoom
         if (KeyInput.isKeyPressed(GLFW_KEY_1)) {
             currentZoom = Zoom.SGFX;
             camera.resetPosition(currentZoom);
@@ -216,73 +107,7 @@ public class GameState extends ApplicationState {
 
     @Override
     public void render() {
-        fbo.bindAsRenderTarget();
-        //glEnable(GL_DEPTH_TEST);
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        gamFile.render(camera, wireframe, currentZoom);
-
-        fbo.unbindRenderTarget();
-        //glDisable(GL_DEPTH_TEST);
-
-        tileRenderer.render(text.getId(), new Vector2f(0), new Vector2f(250, 175));
-
-        // todo: Baustelle / hardcoded tile selector für GFX
-
-        // work out active cell in screen space
-        cell.x = (int)MouseInput.getX() / currentZoom.defaultTileWidth;        // 64
-        cell.y = (int)MouseInput.getY() / (currentZoom.defaultTileHeight + 1); // 31 + 1
-
-        // work out mouse offset into cell in screen space
-        offset.x = (int)MouseInput.getX() % currentZoom.defaultTileWidth;
-        offset.y = (int)MouseInput.getY() % (currentZoom.defaultTileHeight + 1);
-
-        // work out selected tile in world space
-        var origin = new Vector2i(0);
-        origin.x = (int)camera.position.x / 64;
-        origin.y = (int)camera.position.y / 32;
-
-        selected.x = (cell.y + origin.y) + (cell.x + origin.x);
-        selected.y = (cell.y + origin.y) - (cell.x + origin.x);
-
-        selected.x += 1;
-        selected.y -= 1;
-
-        // selected cell by sampling corners
-        var pixel = corner.getRGB(offset.x, offset.y);
-        if (pixel[0] == 255 && pixel[1] == 0 && pixel[2] == 0) {
-            debugText = "red | selected.x - 1";
-            selected.x -= 1;
-        } else if (pixel[0] == 0 && pixel[1] == 255 && pixel[2] == 0) {
-            debugText = "green | selected.y - 1";
-            selected.y -= 1;
-        } else  if (pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 255) {
-            debugText = "blue | selected.y + 1";
-            selected.y += 1;
-        } else if (pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 0) {
-            debugText = "yellow | selected.x + 1";
-            selected.x += 1;
-        } else {
-            debugText = "";
-        }
-
-        /*
-        tileRenderer.render(
-                rectangle.getId(),
-                new Vector2f(cell.x * 64.0f, cell.y * 32.0f),
-                new Vector2f(64.0f, 32.0f)
-        );
-
-        tileRenderer.render(
-                highlight.getId(),
-                new Vector2f(cell.x * 64.0f, cell.y * 32.0f),
-                new Vector2f(64.0f, 32.0f)
-        );
-        */
-
-        // update vbo
-        //gamFile.updateSelectedWaterTile(selected);
     }
 
     @Override

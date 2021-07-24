@@ -12,6 +12,11 @@ package de.sg.benno.data;
  * Represents a Widget.
  */
 public class Widget {
+
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
+
     public int id = -1;
     public int gfx = -1;
     public int blocknr = -1;

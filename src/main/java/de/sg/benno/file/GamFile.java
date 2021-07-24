@@ -256,7 +256,7 @@ public class GamFile extends BinaryFile {
         for (int y = 0; y < WORLD_HEIGHT; y++) {
             for (int x = 0; x < WORLD_WIDTH; x++) {
                 // only consider deep water tiles here
-                var isWater = isIslandOnPosition(x, y, island5List).isEmpty();
+                var isWater = Island5.isIslandOnPosition(x, y, island5List).isEmpty();
                 if (isWater) {
                     var deepWaterTile = new TileGraphic();
                     deepWaterTile.tileGfxInfo.gfxIndex = water.gfx;
