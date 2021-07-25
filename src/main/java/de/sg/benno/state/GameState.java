@@ -31,9 +31,9 @@ public class GameState extends ApplicationState {
 
     public Camera camera;
 
-    private boolean wireframe = false;
-
     public Zoom currentZoom = Zoom.GFX;
+
+    private boolean wireframe = false;
 
     private DebugUi debugUi;
 

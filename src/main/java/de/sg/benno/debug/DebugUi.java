@@ -8,23 +8,42 @@
 
 package de.sg.benno.debug;
 
+import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.GameState;
+import de.sg.ogl.Config;
 import de.sg.ogl.input.MouseInput;
 import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.internal.ImGui;
+import imgui.type.ImBoolean;
 
 /**
  * An ImGui for debug output.
  */
 public class DebugUi {
 
+    //-------------------------------------------------
+    // Constants
+    //-------------------------------------------------
+
+    /**
+     * The menu width.
+     */
+    private static final int WIDTH = 300;
+
+    /**
+     * The menu height.
+     */
+    private static final int HEIGHT = 300;
+
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
+
     /**
      * The parent {@link GameState}.
      */
     private final GameState gameState;
-
-    private static int corner = 0;
 
     //-------------------------------------------------
     // Ctors.
@@ -47,8 +66,8 @@ public class DebugUi {
      * Render debug menu.
      */
     public void render() {
-        ImGui.setNextWindowSize(250, 300, ImGuiCond.Once);
-        ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 1024 - 250, ImGui.getMainViewport().getPosY(), ImGuiCond.Once);
+        ImGui.setNextWindowSize(WIDTH, HEIGHT, ImGuiCond.Once);
+        ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + Config.WIDTH - WIDTH, ImGui.getMainViewport().getPosY(), ImGuiCond.Once);
 
         final int windowFlags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize
                 | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoNavFocus | ImGuiWindowFlags.NoBackground;
@@ -65,10 +84,24 @@ public class DebugUi {
         ImGui.text("Zoom");
         ImGui.text("Current zoom: " + gameState.currentZoom);
 
+        if (ImGui.beginCombo("Change zoom", gameState.currentZoom.toString(), 0)) {
+            for (var zoom : Zoom.values()) {
+                ImBoolean isSelect = new ImBoolean();
+                if (ImGui.selectable(zoom.toString(), isSelect, 0)) {
+                    gameState.currentZoom = zoom;
+                    gameState.camera.resetPosition(zoom);
+                }
+            }
+
+            ImGui.endCombo();
+        }
+
         ImGui.separator();
         ImGui.text("Mouse position");
         ImGui.text("Mouse x: " + MouseInput.getX());
         ImGui.text("Mouse y: " + MouseInput.getY());
+
+        ImGui.separator();
 
         ImGui.end();
     }
