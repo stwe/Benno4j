@@ -68,6 +68,11 @@ public class WaterRenderer {
      */
     private static final int WATER_TILE_IS_SELECTED = 2;
 
+    /**
+     * The name of the used shader.
+     */
+    private static final String SHADER_NAME = "deepWater";
+
     //-------------------------------------------------
     // Member
     //-------------------------------------------------
@@ -179,7 +184,7 @@ public class WaterRenderer {
         this.building = building;
         this.context = context;
         this.zoom = zoom;
-        this.shader = context.engine.getResourceManager().loadResource(Shader.class, "deepWater");
+        this.shader = context.engine.getResourceManager().loadResource(Shader.class, SHADER_NAME);
         this.vao = new Vao();
         this.vao.setDrawCount(DRAW_COUNT);
         this.instances = modelMatrices.size();
@@ -221,7 +226,7 @@ public class WaterRenderer {
 
         Texture.bindForReading(textureArrayId, GL_TEXTURE0, GL_TEXTURE_2D_ARRAY);
 
-        shader.setUniform("projection", new Matrix4f(context.engine.getWindow().getOrthographicProjectionMatrix()));
+        shader.setUniform("projection", context.engine.getWindow().getOrthographicProjectionMatrix());
         shader.setUniform("view", camera.getViewMatrix());
         shader.setUniform("sampler", 0);
 
@@ -312,7 +317,7 @@ public class WaterRenderer {
     /**
      * Every tile has a flag indicating whether it has been selected.
      * Add this data to a new {@link de.sg.ogl.buffer.Vbo}.
-     * 1 = WATER_TILE_IS_UNSELECTED; 2 = selected (results in a darker color)
+     * 1 = {@link #WATER_TILE_IS_UNSELECTED}; 2 = {@link #WATER_TILE_IS_SELECTED} (results in a darker color)
      */
     private void addSelectedVbo() {
         // set default values (unselected = 1)

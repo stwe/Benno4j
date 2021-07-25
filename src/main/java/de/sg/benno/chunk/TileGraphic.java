@@ -68,6 +68,11 @@ public class TileGraphic {
      */
     public Vector2f size = new Vector2f();
 
+    /**
+     * The color of this tile.
+     */
+    public Vector3f color = new Vector3f();
+
     //-------------------------------------------------
     // Getter
     //-------------------------------------------------
