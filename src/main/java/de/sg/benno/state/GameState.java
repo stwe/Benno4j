@@ -58,7 +58,9 @@ public class GameState extends ApplicationState {
         }
 
         if (params[0] instanceof WorldData) {
-            world = new World((WorldData)params[0]);
+            //                 GAM file,            context
+            world = new World((WorldData)params[0], (Context)getStateMachine().getStateContext());
+            world.init();
         } else {
             throw new BennoRuntimeException("Invalid world data provider type.");
         }
@@ -105,7 +107,7 @@ public class GameState extends ApplicationState {
 
     @Override
     public void render() {
-
+        world.render(camera, wireframe, currentZoom);
     }
 
     @Override

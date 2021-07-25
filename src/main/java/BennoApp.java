@@ -75,6 +75,7 @@ public class BennoApp extends SgOglApplication {
 
         //this.stateMachine.change("main_menu");
         if (!bennoFiles.getSavegameFilePaths().isEmpty()) {
+            // the GAM file is the data provider for the world, which the GameState is created
             var gamFile = new GamFile(bennoFiles.getSavegameFilePaths().get(0), stateContext);
             this.stateMachine.change("game", gamFile);
         } else {

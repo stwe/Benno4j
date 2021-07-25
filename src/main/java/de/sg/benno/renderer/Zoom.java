@@ -34,8 +34,8 @@ public enum Zoom {
     // Member
     //-------------------------------------------------
 
-    public int xRaster;
-    public int yRaster;
+    public int defaultTileWidthHalf;
+    public int defaultTileHeightHalf;
     public int elevation;
     public int defaultTileWidth;
     public int defaultTileHeight;
@@ -48,13 +48,13 @@ public enum Zoom {
     //-------------------------------------------------
 
     Zoom(
-            int xRaster, int yRaster,
+            int defaultTileWidthHalf, int defaultTileHeightHalf,
             int elevation,
             int defaultTileWidth, int defaultTileHeight,
             int speedFactor
     ) {
-        this.xRaster = xRaster;
-        this.yRaster = yRaster;
+        this.defaultTileWidthHalf = defaultTileWidthHalf;
+        this.defaultTileHeightHalf = defaultTileHeightHalf;
         this.elevation = elevation;
         this.defaultTileWidth = defaultTileWidth;
         this.defaultTileHeight = defaultTileHeight;
