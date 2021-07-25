@@ -8,6 +8,7 @@
 
 package de.sg.benno.debug;
 
+import de.sg.benno.World;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.GameState;
 import de.sg.ogl.Config;
@@ -29,7 +30,7 @@ public class DebugUi {
     /**
      * The menu width.
      */
-    private static final int WIDTH = 300;
+    private static final int WIDTH = 320;
 
     /**
      * The menu height.
@@ -77,8 +78,10 @@ public class DebugUi {
         ImGui.text("Camera position");
         ImGui.text("Camera screen space x: " + gameState.camera.position.x);
         ImGui.text("Camera screen space y: " + gameState.camera.position.y);
-        ImGui.text("Camera origin x: " + gameState.camera.origin.x);
-        ImGui.text("Camera origin y: " + gameState.camera.origin.y);
+        ImGui.text("Camera origin in world space x: " + gameState.camera.origin.x);
+        ImGui.text("Camera origin in world space y: " + gameState.camera.origin.y);
+
+        cameraSlider();
 
         ImGui.separator();
         ImGui.text("Zoom");
@@ -104,5 +107,29 @@ public class DebugUi {
         ImGui.separator();
 
         ImGui.end();
+    }
+
+    /**
+     * Add camera slider for faster movement.
+     */
+    private void cameraSlider() {
+        ImGui.separator();
+        ImGui.text("Camera fast world space change");
+
+        int[] camX = new int[1];
+        camX[0] = gameState.camera.origin.x;
+        if (ImGui.sliderInt("x", camX, 0, World.WORLD_WIDTH)) {
+            camX[0] += camX[0] % gameState.currentZoom.speedFactor;
+            gameState.camera.origin.x = camX[0];
+            gameState.camera.resetPosition(gameState.currentZoom);
+        }
+
+        int[] camY = new int[1];
+        camY[0] = gameState.camera.origin.y;
+        if (ImGui.sliderInt("y", camY, 0, World.WORLD_HEIGHT)) {
+            camY[0] += camY[0] % gameState.currentZoom.speedFactor;
+            gameState.camera.origin.y = camY[0];
+            gameState.camera.resetPosition(gameState.currentZoom);
+        }
     }
 }

@@ -64,7 +64,7 @@ public class Camera extends OrthographicCamera {
     //-------------------------------------------------
 
     /**
-     * Reset the camera position after the {@link Zoom} was changed.
+     * Reset the camera {@link #position} in screen space after the {@link Zoom} was changed.
      *
      * @param zoom The current {@link Zoom}
      */
@@ -89,19 +89,19 @@ public class Camera extends OrthographicCamera {
      */
     public void update(Zoom zoom) {
         if (KeyInput.isKeyPressed(GLFW.GLFW_KEY_W) || KeyInput.isKeyPressed(GLFW_KEY_UP)) {
-            processKeyboard(Direction.UP, zoom);
+            processUpdate(Direction.UP, zoom);
         }
 
         if (KeyInput.isKeyPressed(GLFW.GLFW_KEY_S) || KeyInput.isKeyPressed(GLFW_KEY_DOWN)) {
-            processKeyboard(Direction.DOWN, zoom);
+            processUpdate(Direction.DOWN, zoom);
         }
 
         if (KeyInput.isKeyPressed(GLFW.GLFW_KEY_A) || KeyInput.isKeyPressed(GLFW_KEY_LEFT)) {
-            processKeyboard(Direction.LEFT, zoom);
+            processUpdate(Direction.LEFT, zoom);
         }
 
         if (KeyInput.isKeyPressed(GLFW.GLFW_KEY_D) || KeyInput.isKeyPressed(GLFW_KEY_RIGHT)) {
-            processKeyboard(Direction.RIGHT, zoom);
+            processUpdate(Direction.RIGHT, zoom);
         }
     }
 
@@ -110,12 +110,12 @@ public class Camera extends OrthographicCamera {
     //-------------------------------------------------
 
     /**
-     * Handle keyboard input.
+     * Update positions by given {@link de.sg.ogl.camera.OrthographicCamera.Direction}.
      *
      * @param direction {@link de.sg.ogl.camera.OrthographicCamera.Direction}
      * @param zoom {@link Zoom}
      */
-    protected void processKeyboard(Direction direction, Zoom zoom) {
+    private void processUpdate(Direction direction, Zoom zoom) {
         if (direction == Direction.UP) {
             origin.y += zoom.speedFactor;
             position.y += zoom.getCameraSpeed().y;
