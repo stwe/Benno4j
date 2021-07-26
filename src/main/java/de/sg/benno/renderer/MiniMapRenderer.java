@@ -12,7 +12,6 @@ import de.sg.benno.state.Context;
 import de.sg.ogl.OpenGL;
 import de.sg.ogl.buffer.Vao;
 import de.sg.ogl.buffer.Vertex2D;
-import de.sg.ogl.camera.OrthographicCamera;
 import de.sg.ogl.resource.Geometry;
 import de.sg.ogl.resource.Shader;
 import org.joml.Matrix4f;
@@ -106,16 +105,11 @@ public class MiniMapRenderer {
 
     /**
      * Renders the map.
-     *
-     * @param camera {@link OrthographicCamera}
      */
-    public void render(OrthographicCamera camera) {
+    public void render() {
         OpenGL.enableAlphaBlending();
 
         shader.bind();
-
-        shader.setUniform("projection", context.engine.getWindow().getOrthographicProjectionMatrix());
-        shader.setUniform("view", camera.getViewMatrix());
 
         vao.bind();
         vao.drawInstanced(GL_TRIANGLES, instances);
