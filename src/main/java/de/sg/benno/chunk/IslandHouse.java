@@ -12,6 +12,7 @@ import de.sg.benno.BennoRuntimeException;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Optional;
 
 import static de.sg.benno.Util.*;
 import static de.sg.benno.chunk.Tile.BYTES_PER_TILE;
@@ -154,6 +155,24 @@ public class IslandHouse {
     //-------------------------------------------------
     // Layer Tiles
     //-------------------------------------------------
+
+    /**
+     * Returns the {@link Tile} object from the given position.
+     *
+     * @param x The x position on a island in world space.
+     * @param y The y position on a island in world space.
+     *
+     * @return A nullable {@link Tile} Optional.
+     */
+    public Optional<Tile> getTile(int x, int y) {
+        Tile result = null;
+
+        if (isValidTilePosition(x, y)) {
+            result = layerTiles.get(y * parentIsland.width + x);
+        }
+
+        return Optional.ofNullable(result);
+    }
 
     /**
      * Creates the layer tiles using raw tiles.

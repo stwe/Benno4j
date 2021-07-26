@@ -17,6 +17,7 @@ import de.sg.benno.renderer.MiniMapRenderer;
 import de.sg.benno.renderer.WaterRenderer;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
+import de.sg.ogl.Color;
 import de.sg.ogl.Config;
 import de.sg.ogl.OpenGL;
 import de.sg.ogl.buffer.Fbo;
@@ -129,7 +130,6 @@ public class World {
     private MiniMapRenderer miniMapRenderer;
 
     private Fbo fbo;
-    private int rboId;
     private Texture miniMapTexture;
     private TileRenderer tileRenderer;
     private boolean renderToFbo = true;
@@ -376,6 +376,8 @@ public class World {
     // Minimap
     //-------------------------------------------------
 
+    // todo: gfxIndex, graphicId
+
     /**
      * Creates the tiles for a minimap.
      */
@@ -392,11 +394,28 @@ public class World {
                 tile.screenPosition.y -= 1.0f;
                 tile.size = new Vector2f(1.0f);
 
-                var isWater = Island5.isIslandOnPosition(x, y, provider.getIsland5List()).isEmpty();
-                if (isWater) {
-                    tile.color = new Vector3f(0.1f, 0.1f, 0.8f); // blue = water
+                var island5Optional = Island5.isIslandOnPosition(x, y, provider.getIsland5List());
+                if (island5Optional.isEmpty()) {
+                    // water were found: blue color
+                    tile.color = Color.CORNFLOWER_BLUE.toVector3f();
                 } else {
-                    tile.color = new Vector3f(0.7f, 0.7f, 0.1f); // yellow = island
+                    // an island were found
+                    var island5 = island5Optional.get();
+
+                    // get tile
+                    var island5TileOptional = island5.getTileFromBottomLayer(x - island5.xPos, y - island5.yPos);
+                    if (island5TileOptional.isPresent()) {
+                        var island5Tile = island5TileOptional.get();
+                        if (!((island5Tile.graphicId >= 1201 && island5Tile.graphicId <= 1221) ||
+                                (island5Tile.graphicId >= 1251 && island5Tile.graphicId <= 1259))
+                        ) {
+                            tile.color = new Vector3f(0.5f, 0.35f, 0.05f); // brown = island
+                        } else {
+                            tile.color = Color.CORNFLOWER_BLUE.toVector3f(); // blue = use also color of water
+                        }
+                    } else {
+                        throw new BennoRuntimeException("Unexpected error: No tile were found.");
+                    }
                 }
 
                 miniMapTiles.add(tile);
@@ -437,7 +456,7 @@ public class World {
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, miniMapTexture.getId(), 0);
 
-        rboId = glGenRenderbuffers();
+        int rboId = glGenRenderbuffers();
         glBindRenderbuffer(GL_RENDERBUFFER, rboId);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, MINIMAP_WIDTH, MINIMAP_HEIGHT);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboId);

@@ -195,6 +195,24 @@ public class Island5 {
         return bottomLayer;
     }
 
+    /**
+     * Returns the {@link Tile} object from the given position of the {@link #bottomLayer}.
+     *
+     * @param x The x position on a island in world space.
+     * @param y The y position on a island in world space.
+     *
+     * @return A nullable {@link Tile} Optional.
+     */
+    public Optional<Tile> getTileFromBottomLayer(int x, int y) {
+        Tile result = null;
+
+        if (getBottomLayer().getTile(x, y).isPresent()) {
+            result = getBottomLayer().getTile(x, y).get();
+        }
+
+        return Optional.ofNullable(result);
+    }
+
     //-------------------------------------------------
     // Setter
     //-------------------------------------------------
