@@ -42,4 +42,5 @@ out/
 .code-workspace
 
 
-!/lib/sgogl-java.jar
+!/lib/linux/sgogl-java.jar
+!/lib/win/sgogl-java.jar
