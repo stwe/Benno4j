@@ -10,12 +10,6 @@ The project works with Anno 1602:
 - NINA ("Neue Inseln, Neue Abenteuer")
 - History Edition
 
-## Requirements
-
-
-## Build instructions
-
-
 ## License
 
 Benno4j is licensed under the GPL-2.0 License, see [LICENSE](https://github.com/stwe/Benno4j/blob/master/LICENSE) for more information.
