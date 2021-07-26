@@ -194,7 +194,7 @@ public class World {
         }
 
         // render deep water
-        //waterRenderers.get(zoom).render(camera, wireframe);
+        waterRenderers.get(zoom).render(camera, wireframe);
 
         // render minimap as texture
         // todo: the TileRenderer use a projection matrix, so we need to transform it this screen space
@@ -386,9 +386,8 @@ public class World {
                 tile.tileGfxInfo.gfxIndex = 0;
                 tile.worldPosition.x = x;
                 tile.worldPosition.y = y;
-                // values in range [0, 1]
-                tile.screenPosition = new Vector2f(x / (float)WORLD_WIDTH * 2, y / (float)WORLD_HEIGHT * 2);
                 // todo
+                tile.screenPosition = new Vector2f(x / (float)WORLD_WIDTH * 2.0f, y / (float)WORLD_HEIGHT * 2.0f);
                 tile.screenPosition.x -= 1.0f;
                 tile.screenPosition.y -= 1.0f;
                 tile.size = new Vector2f(1.0f);
