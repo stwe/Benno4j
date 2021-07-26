@@ -406,7 +406,7 @@ public class World {
                     var island5TileOptional = island5.getTileFromBottomLayer(x - island5.xPos, y - island5.yPos);
                     if (island5TileOptional.isPresent()) {
                         var island5Tile = island5TileOptional.get();
-                        if (!((island5Tile.graphicId >= 1201 && island5Tile.graphicId <= 1221) ||
+                        if (!((island5Tile.graphicId >= 1201 && island5Tile.graphicId <= 1209) ||
                                 (island5Tile.graphicId >= 1251 && island5Tile.graphicId <= 1259))
                         ) {
                             tile.color = new Vector3f(0.5f, 0.35f, 0.05f); // brown = island
