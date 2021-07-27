@@ -125,4 +125,20 @@ public class Tile {
         this.randomNumber = tile.randomNumber;
         this.playerNumber = tile.playerNumber;
     }
+
+    //-------------------------------------------------
+    // Helper
+    //-------------------------------------------------
+
+    /**
+     * Checks whether the {@link #graphicId} of a {@link Tile} object is a water graphic.
+     *
+     * @param tile {@link Tile}
+     *
+     * @return true if water graphic was detected
+     */
+    public static boolean isWaterTile(Tile tile) {
+        return (tile.graphicId >= 1201 && tile.graphicId <= 1209) ||
+                (tile.graphicId >= 1251 && tile.graphicId <= 1259);
+    }
 }

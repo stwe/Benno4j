@@ -21,9 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Objects;
+import java.util.*;
 
 import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL11.*;
@@ -48,19 +46,36 @@ public class BshFile extends BinaryFile {
         NORMAL(1),
         NEW(13);
 
-        public final int value;
+        private final int typeValue;
+        private static final HashMap<Integer, BshType> map = new HashMap<>();
 
-        BshType(int value) {
-            this.value = value;
+        BshType(int typeValue) {
+            this.typeValue = typeValue;
         }
 
-        public static BshType fromInt(int value) {
-            switch (value) {
-                case 1 : return NORMAL;
-                case 13 : return NEW;
+        static {
+            for (var bshType : BshType.values()) {
+                map.put(bshType.typeValue, bshType);
             }
+        }
 
-            return null; // todo
+        /**
+         * Get {@link BshType} from int.
+         *
+         * @param typeValue the value of the type.
+         * @return {@link BshType}
+         */
+        public static BshType valueOf(int typeValue) {
+            return map.get(typeValue);
+        }
+
+        /**
+         * Get int from {@link BshType}.
+         *
+         * @return the value of the type.
+         */
+        public int getTypeValue() {
+            return typeValue;
         }
     }
 
@@ -71,6 +86,7 @@ public class BshFile extends BinaryFile {
         final BufferedImage image;
         final BshType type;
         final int offset;
+        final int gfxIndex;
 
         /**
          * Constructs a new {@link BufferedBshImage} object.
@@ -78,11 +94,13 @@ public class BshFile extends BinaryFile {
          * @param image A {@link BufferedImage}
          * @param type A {@link BshType}
          * @param offset The offset of the Bsh image.
+         * @param gfxIndex The gfx index of Bsh image.
          */
-        BufferedBshImage(BufferedImage image, BshType type, int offset) {
-            this.image = image;
-            this.type = type;
+        BufferedBshImage(BufferedImage image, BshType type, int offset, int gfxIndex) {
+            this.image = Objects.requireNonNull(image, "image must not be null");
+            this.type = Objects.requireNonNull(type, "type must not be null");
             this.offset = offset;
+            this.gfxIndex = gfxIndex;
         }
     }
 
@@ -288,7 +306,7 @@ public class BshFile extends BinaryFile {
     }
 
     /**
-     * Stores presumably invalid offsets.
+     * Stores probably invalid offsets.
      * The offset is probably invalid if the difference between two offsets is 20 bytes.
      */
     private void validateOffsets() {
@@ -318,17 +336,20 @@ public class BshFile extends BinaryFile {
      * @throws IOException If an I/O error is thrown.
      */
     private void decodeTextures() throws IOException {
+        var gfxIndex = 0;
         for (var offset : offsets) {
             if (!possibleInvalidOffsets.contains(offset)) {
                 chunk0.getData().position(offset);
 
-                var textureHeader = readTextureHeader(offset);
-                if (textureHeader.type == BshType.NEW) {
-                    decodeTexture13(textureHeader);
+                var bufferedBshImage = createBufferedBshImage(offset, gfxIndex);
+                if (bufferedBshImage.type == BshType.NEW) {
+                    decodeTexture13(bufferedBshImage);
                 } else {
-                    decodeTexture(textureHeader);
+                    decodeTexture(bufferedBshImage);
                 }
             }
+
+            gfxIndex++;
         }
 
         LOGGER.debug("A total of {} bsh textures were created.", bshTextures.size());
@@ -337,10 +358,10 @@ public class BshFile extends BinaryFile {
     /**
      * Reads the pixel data from the {@link #chunk0} and uses it to create a {@link BshTexture} object.
      *
-     * @param textureHeader {@link BufferedBshImage}
+     * @param bufferedBshImage {@link BufferedBshImage}
      * @throws IOException If an I/O error is thrown.
      */
-    private void decodeTexture13(BufferedBshImage textureHeader) throws IOException {
+    private void decodeTexture13(BufferedBshImage bufferedBshImage) throws IOException {
         int x = 0;
         int y = 0;
 
@@ -358,7 +379,7 @@ public class BshFile extends BinaryFile {
             }
 
             for (int i = 0; i < numAlpha; i++) {
-                textureHeader.image.setRGB(x, y, 0);
+                bufferedBshImage.image.setRGB(x, y, 0);
                 x++;
             }
 
@@ -371,26 +392,24 @@ public class BshFile extends BinaryFile {
 
                 var color = Util.rgbToInt(Util.byteToInt(r), Util.byteToInt(g), Util.byteToInt(b));
 
-                textureHeader.image.setRGB(x, y, color);
+                bufferedBshImage.image.setRGB(x, y, color);
                 x++;
             }
         }
 
+        bshTextures.add(new BshTexture(bufferedBshImage.image));
         if (saveAsPng) {
-            saveAsPng(textureHeader.image, textureHeader.offset);
+            saveAsPng(bufferedBshImage);
         }
-
-        var bshTexture = new BshTexture(textureHeader.image);
-        bshTextures.add(bshTexture);
     }
 
     /**
      * Reads the pixel data from the {@link #chunk0} and uses it to create a {@link BshTexture} object.
      *
-     * @param textureHeader {@link BufferedBshImage}
+     * @param bufferedBshImage {@link BufferedBshImage}
      * @throws IOException If an I/O error is thrown.
      */
-    private void decodeTexture(BufferedBshImage textureHeader) throws IOException {
+    private void decodeTexture(BufferedBshImage bufferedBshImage) throws IOException {
         int x = 0;
         int y = 0;
 
@@ -412,7 +431,7 @@ public class BshFile extends BinaryFile {
             // ... else it’s an Texture Chunk
             // number of pixels to skip / number of transparent pixels
             for (int i = 0; i < numAlpha; i++) {
-                textureHeader.image.setRGB(x, y, 0);
+                bufferedBshImage.image.setRGB(x, y, 0);
                 x++;
             }
 
@@ -422,17 +441,15 @@ public class BshFile extends BinaryFile {
                 // pixels to insert at current position
                 var colorIndex = Util.byteToInt(chunk0.getData().get());
                 var color = palette[colorIndex];
-                textureHeader.image.setRGB(x, y, color);
+                bufferedBshImage.image.setRGB(x, y, color);
                 x++;
             }
         }
 
+        bshTextures.add(new BshTexture(bufferedBshImage.image));
         if (saveAsPng) {
-            saveAsPng(textureHeader.image, textureHeader.offset);
+            saveAsPng(bufferedBshImage);
         }
-
-        var bshTexture = new BshTexture(textureHeader.image);
-        bshTextures.add(bshTexture);
     }
 
     /**
@@ -468,13 +485,14 @@ public class BshFile extends BinaryFile {
 
     /**
      * Reads width, height, type and length of a Bsh image from {@link #chunk0}.
-     * A {@link BufferedBshImage} object is created from this.
+     * A {@link BufferedBshImage} with an empty {@link BufferedImage} is created from this.
      *
      * @param offset The offset in {@link #chunk0}.
+     * @param gfxIndex The gfx index.
      *
      * @return {@link BufferedBshImage}
      */
-    private BufferedBshImage readTextureHeader(int offset) {
+    private BufferedBshImage createBufferedBshImage(int offset, int gfxIndex) {
         var width = chunk0.getData().getInt();
         var height = chunk0.getData().getInt();
 
@@ -485,7 +503,14 @@ public class BshFile extends BinaryFile {
         var type = chunk0.getData().getInt();
         var length = chunk0.getData().getInt();
 
-        return new BufferedBshImage(new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB), BshType.fromInt(type), offset);
+        // create a width x height pixel image with support for transparency
+        // now we are ready to set pixels on BufferedImage and eventually save it to disk in a standard image format such as PNG
+        return new BufferedBshImage(
+                new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB),
+                BshType.valueOf(type),
+                offset,
+                gfxIndex
+        );
     }
 
     //-------------------------------------------------
@@ -493,20 +518,21 @@ public class BshFile extends BinaryFile {
     //-------------------------------------------------
 
     /**
-     * Saves a {@link BufferedImage} as a Png.
+     * Saves the {@link BufferedImage} from {@link BufferedBshImage} as a Png.
      *
-     * @param image {@link BufferedImage}
-     * @param offset The offset in {@link #chunk0} used as file name.
+     * @param bufferedBshImage {@link BufferedBshImage}
      * @throws IOException If an I/O error is thrown.
      */
-    private void saveAsPng(BufferedImage image, int offset) throws IOException {
-        Files.createDirectories(Paths.get(OUTPUT_DIR));
-
+    private void saveAsPng(BufferedBshImage bufferedBshImage) throws IOException {
         var bshFilename = getPath().getFileName().toString().toLowerCase();
+        var preName = bshFilename.substring(0, bshFilename.lastIndexOf("."));
+        var outDir = OUTPUT_DIR + "/bsh/"+ preName;
 
-        String filename = OUTPUT_DIR + "/" +
-                bshFilename.substring(0, bshFilename.lastIndexOf(".")) + "_" +
-                offset + ".png";
+        Files.createDirectories(Paths.get(outDir));
+
+        String filename = outDir + "/" +
+                preName + "_" +
+                bufferedBshImage.gfxIndex + ".png";
 
         File file = new File(filename);
         if (!file.exists()) {
@@ -516,7 +542,7 @@ public class BshFile extends BinaryFile {
             }
         }
 
-        ImageIO.write(image, "PNG", file);
+        ImageIO.write(bufferedBshImage.image, "PNG", file);
     }
 
     /**

@@ -9,6 +9,7 @@
 package de.sg.benno;
 
 import de.sg.benno.chunk.Island5;
+import de.sg.benno.chunk.Tile;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.data.Building;
@@ -406,12 +407,11 @@ public class World {
                     var island5TileOptional = island5.getTileFromBottomLayer(x - island5.xPos, y - island5.yPos);
                     if (island5TileOptional.isPresent()) {
                         var island5Tile = island5TileOptional.get();
-                        if (!((island5Tile.graphicId >= 1201 && island5Tile.graphicId <= 1209) ||
-                                (island5Tile.graphicId >= 1251 && island5Tile.graphicId <= 1259))
-                        ) {
-                            tile.color = new Vector3f(0.5f, 0.35f, 0.05f); // brown = island
-                        } else {
+                        // the island also has water tiles
+                        if (Tile.isWaterTile(island5Tile)) {
                             tile.color = Color.CORNFLOWER_BLUE.toVector3f(); // blue = use also color of water
+                        } else {
+                            tile.color = new Vector3f(0.5f, 0.35f, 0.05f); // brown = island
                         }
                     } else {
                         throw new BennoRuntimeException("Unexpected error: No tile were found.");
