@@ -174,8 +174,6 @@ public class World {
 
     }
 
-    // todo
-
     /**
      * Renders the world.
      *
@@ -299,7 +297,8 @@ public class World {
                 var isWater = Island5.isIslandOnPosition(x, y, provider.getIsland5List()).isEmpty();
                 if (isWater) {
                     var waterTile = new TileGraphic();
-                    waterTile.tileGfxInfo.gfxIndex = water.gfx;
+                    waterTile.gfx = 0; // is not needed here because the same gfx is always used
+                    waterTile.tileHeight = TileGraphic.TileHeight.SEA_LEVEL;
                     waterTile.worldPosition.x = x;
                     waterTile.worldPosition.y = y;
 
@@ -310,6 +309,7 @@ public class World {
 
                     waterTile.screenPosition = new Vector2f(screenPosition);
                     waterTile.size = new Vector2f(waterBshTexture.getWidth(), waterBshTexture.getHeight());
+                    waterTile.color = new Vector3f();
 
                     tiles.add(waterTile);
 
@@ -377,8 +377,6 @@ public class World {
     // Minimap
     //-------------------------------------------------
 
-    // todo: gfxIndex, graphicId
-
     /**
      * Creates the tiles for a minimap.
      */
@@ -386,7 +384,8 @@ public class World {
         for (int y = 0; y < WORLD_HEIGHT; y++) {
             for (int x = 0; x < WORLD_WIDTH; x++) {
                 var tile = new TileGraphic();
-                tile.tileGfxInfo.gfxIndex = 0;
+                tile.gfx = 0; // no gfx is used
+                tile.tileHeight = TileGraphic.TileHeight.SEA_LEVEL;
                 tile.worldPosition.x = x;
                 tile.worldPosition.y = y;
                 // todo

@@ -253,7 +253,7 @@ public class WaterRenderer {
     private void initVao() {
         addMeshVbo();
         addModelMatricesVbo();
-        addTextureIdsVbo();
+        addTextureStartIndexVbo();
         addSelectedVbo();
 
         createTextureArray();
@@ -297,7 +297,7 @@ public class WaterRenderer {
     /**
      * Add {@link #waterGfxStartIndex} to a new {@link de.sg.ogl.buffer.Vbo}.
      */
-    private void addTextureIdsVbo() {
+    private void addTextureStartIndexVbo() {
         // bind vao
         vao.bind();
 

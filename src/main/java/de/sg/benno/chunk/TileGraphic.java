@@ -36,22 +36,19 @@ public class TileGraphic {
         }
     }
 
-    /**
-     * Combines gfxIndex and {@link TileHeight} into one type.
-     */
-    public static class TileGfxInfo {
-        public int gfxIndex;
-        public TileHeight tileHeight = TileHeight.SEA_LEVEL;
-    }
-
     //-------------------------------------------------
     // Member
     //-------------------------------------------------
 
     /**
-     * The gfx info.
+     * The gfx, see haeuser.cod or {@link de.sg.benno.data.Building} for reference.
      */
-    public TileGfxInfo tileGfxInfo = new TileGfxInfo();
+    public int gfx;
+
+    /**
+     * {@link TileHeight}
+     */
+    public TileHeight tileHeight = TileHeight.SEA_LEVEL;
 
     /**
      * The position in world space.
