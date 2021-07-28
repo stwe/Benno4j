@@ -10,6 +10,7 @@ package de.sg.benno.file;
 
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.IslandHouse;
+import de.sg.benno.chunk.Ship4;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.state.Context;
 
@@ -37,6 +38,11 @@ public class GamFile extends BinaryFile implements WorldData {
      * The list with all {@link Island5} objects.
      */
     private final ArrayList<Island5> island5List = new ArrayList<>();
+
+    /**
+     * The list with all {@link Ship4} objects.
+     */
+    private final ArrayList<Ship4> ship4sList = new ArrayList<>();
 
     // todo: load other content
 
@@ -80,6 +86,11 @@ public class GamFile extends BinaryFile implements WorldData {
                 var islandHouse = new IslandHouse(chunk, currentIsland5);
                 currentIsland5.addIslandHouse(islandHouse);
             }
+
+            if (chunk.getId().equals("SHIP4")) {
+                var ship4 = new Ship4(chunk);
+                ship4sList.add(ship4);
+            }
         }
 
         initIsland5Layer();
@@ -94,6 +105,11 @@ public class GamFile extends BinaryFile implements WorldData {
     @Override
     public ArrayList<Island5> getIsland5List() {
         return island5List;
+    }
+
+    @Override
+    public ArrayList<Ship4> getShips4List() {
+        return ship4sList;
     }
 
     @Override

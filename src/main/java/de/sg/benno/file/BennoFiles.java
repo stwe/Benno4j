@@ -407,6 +407,11 @@ public class BennoFiles {
         loadBshFile(getZoomableBshFilePath(Zoom.MGFX, ZoomableBshFileName.STADTFLD_BSH), false);
         loadBshFile(getZoomableBshFilePath(Zoom.SGFX, ZoomableBshFileName.STADTFLD_BSH), false);
 
+        LOGGER.debug("Preload ships.");
+        loadBshFile(getZoomableBshFilePath(Zoom.GFX, ZoomableBshFileName.SHIP_BSH), false);
+        loadBshFile(getZoomableBshFilePath(Zoom.MGFX, ZoomableBshFileName.SHIP_BSH), false);
+        loadBshFile(getZoomableBshFilePath(Zoom.SGFX, ZoomableBshFileName.SHIP_BSH), false);
+
         LOGGER.debug("Successfully preload files.");
     }
 

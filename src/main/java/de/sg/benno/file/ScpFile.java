@@ -9,6 +9,7 @@
 package de.sg.benno.file;
 
 import de.sg.benno.chunk.Island5;
+import de.sg.benno.chunk.Ship4;
 import de.sg.benno.chunk.WorldData;
 
 import java.io.IOException;
@@ -89,6 +90,11 @@ public class ScpFile extends BinaryFile implements WorldData {
 
     @Override
     public ArrayList<Island5> getIsland5List() {
+        return null;
+    }
+
+    @Override
+    public ArrayList<Ship4> getShips4List() {
         return null;
     }
 
