@@ -118,7 +118,7 @@ public class DebugUi {
 
         int[] camX = new int[1];
         camX[0] = gameState.camera.origin.x;
-        if (ImGui.sliderInt("x", camX, 0, World.WORLD_WIDTH)) {
+        if (ImGui.sliderInt("x", camX, -World.WORLD_WIDTH, World.WORLD_WIDTH)) {
             camX[0] += camX[0] % gameState.currentZoom.speedFactor;
             gameState.camera.origin.x = camX[0];
             gameState.camera.resetPosition(gameState.currentZoom);
@@ -126,7 +126,7 @@ public class DebugUi {
 
         int[] camY = new int[1];
         camY[0] = gameState.camera.origin.y;
-        if (ImGui.sliderInt("y", camY, 0, World.WORLD_HEIGHT)) {
+        if (ImGui.sliderInt("y", camY, -World.WORLD_HEIGHT, World.WORLD_HEIGHT)) {
             camY[0] += camY[0] % gameState.currentZoom.speedFactor;
             gameState.camera.origin.y = camY[0];
             gameState.camera.resetPosition(gameState.currentZoom);
