@@ -88,6 +88,8 @@ public class MiniMapRenderer {
      * @throws Exception If an error is thrown.
      */
     public MiniMapRenderer(ArrayList<Matrix4f> modelMatrices, float[] colors, Context context) throws Exception {
+        LOGGER.debug("Creates MiniMapRenderer object.");
+
         this.modelMatrices = modelMatrices;
         this.colors = colors;
         this.context = context;

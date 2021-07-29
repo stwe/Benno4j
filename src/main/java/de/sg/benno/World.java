@@ -9,7 +9,6 @@
 package de.sg.benno;
 
 import de.sg.benno.chunk.Island5;
-import de.sg.benno.chunk.Tile;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.data.Building;
@@ -17,16 +16,10 @@ import de.sg.benno.file.BennoFiles;
 import de.sg.benno.file.BshFile;
 import de.sg.benno.renderer.*;
 import de.sg.benno.state.Context;
-import de.sg.ogl.Color;
-import de.sg.ogl.Config;
-import de.sg.ogl.OpenGL;
-import de.sg.ogl.buffer.Fbo;
-import de.sg.ogl.resource.Texture;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
-import org.lwjgl.BufferUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,8 +28,6 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import static de.sg.ogl.Log.LOGGER;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL30.*;
 
 /**
  * Represents a complete game world.
@@ -61,16 +52,6 @@ public class World {
      * Indicates that there is no water tile in one place.
      */
     public static final int NO_WATER = -1;
-
-    /**
-     * The width of the minimap.
-     */
-    private static final int MINIMAP_WIDTH = Config.WIDTH / 4;
-
-    /**
-     * The height of the minimap.
-     */
-    private static final int MINIMAP_HEIGHT = Config.HEIGHT / 4;
 
     //-------------------------------------------------
     // Member
@@ -124,19 +105,9 @@ public class World {
     private final HashMap<Zoom, WaterRenderer> waterRenderers = new HashMap<>();
 
     /**
-     * A {@link TileGraphic} for each map cell.
+     * The {@link MiniMap} of this world.
      */
-    private final ArrayList<TileGraphic> miniMapTiles = new ArrayList<>();
-
-    /**
-     * A {@link MiniMapRenderer} to render the minimap to a Fbo.
-     */
-    private MiniMapRenderer miniMapRenderer;
-
-    /**
-     * A {@link SimpleTextureRenderer} to render the minimap texture on the screen.
-     */
-    private SimpleTextureRenderer simpleTextureRenderer;
+    private MiniMap miniMap;
 
 
     // todo: new member
@@ -144,10 +115,6 @@ public class World {
     private final HashMap<Zoom, ArrayList<TileGraphic>> shipTiles = new HashMap<>();
     private TileGraphicRenderer tileGraphicRenderer;
     private BshFile shipBshFile;
-
-    private Fbo fbo;
-    private Texture miniMapTexture;
-    private boolean renderToFbo = true;
 
     //-------------------------------------------------
     // Ctors.
@@ -159,8 +126,9 @@ public class World {
      * @param provider A {@link WorldData} object (e.g. {@link de.sg.benno.file.GamFile}).
      * @param context The {@link Context} object.
      * @param camera The {@link Camera} object.
+     * @throws Exception If an error is thrown.
      */
-    public World(WorldData provider, Context context, Camera camera) {
+    public World(WorldData provider, Context context, Camera camera) throws Exception {
         LOGGER.debug("Creates World object from provider class {}.", provider.getClass());
 
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
@@ -169,10 +137,12 @@ public class World {
 
         this.bennoFiles = this.context.bennoFiles;
         this.buildings = this.bennoFiles.getDataFiles().getBuildings();
+
+        init();
     }
 
     //-------------------------------------------------
-    // Logic
+    // Init
     //-------------------------------------------------
 
     /**
@@ -180,17 +150,22 @@ public class World {
      *
      * @throws Exception If an error is thrown.
      */
-    public void init() throws Exception {
+    private void init() throws Exception {
+        // todo tmp code
         shipBshFile = this.bennoFiles.getShipBshFile(Zoom.GFX);
         tileGraphicRenderer = new TileGraphicRenderer(context);
         initShips(Zoom.GFX);
 
+        // to render deep water
         initWaterRenderer();
-        initMiniMapRenderer();
 
-        initFbo();
-        simpleTextureRenderer = new SimpleTextureRenderer(context);
+        // create minimap
+        miniMap = new MiniMap(provider, context);
     }
+
+    //-------------------------------------------------
+    // Logic
+    //-------------------------------------------------
 
     /**
      * Update object.
@@ -208,23 +183,13 @@ public class World {
      * @param zoom The current {@link Zoom}.
      */
     public void render(boolean wireframe, Zoom zoom) {
-        // render minimap to texture once only
-        if (renderToFbo) {
-            fbo.bindAsRenderTarget();
-            OpenGL.setClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            OpenGL.clear();
-            miniMapRenderer.render();
-            fbo.unbindRenderTarget();
-            renderToFbo = false;
-        }
-
         // render deep water
         waterRenderers.get(zoom).render(camera, wireframe);
 
-        // render minimap as texture
-        simpleTextureRenderer.render(miniMapTexture, new Vector2f(0.4f, -0.3f), new Vector2f(0.5f, 0.5f));
+        // render texture with the mininmap
+        miniMap.render(new Vector2f(0.4f, -0.3f), new Vector2f(0.5f, 0.5f));
 
-        // 93, 240
+        // todo tmp code 93, 240
         var t = shipTiles.get(Zoom.GFX).get(0);
         tileGraphicRenderer.render(camera, t, shipBshFile);
     }
@@ -439,113 +404,6 @@ public class World {
     }
 
     //-------------------------------------------------
-    // Minimap
-    //-------------------------------------------------
-
-    /**
-     * Creates the tiles for a minimap.
-     */
-    private void initMiniMapRenderer() throws Exception {
-        for (int y = 0; y < WORLD_HEIGHT; y++) {
-            for (int x = 0; x < WORLD_WIDTH; x++) {
-                var tile = new TileGraphic();
-                tile.gfx = 0; // no gfx is used
-                tile.tileHeight = TileGraphic.TileHeight.SEA_LEVEL;
-                tile.worldPosition.x = x;
-                tile.worldPosition.y = y;
-                // todo
-                tile.screenPosition = new Vector2f(x / (float)WORLD_WIDTH * 2.0f, y / (float)WORLD_HEIGHT * 2.0f);
-                tile.screenPosition.x -= 1.0f;
-                tile.screenPosition.y -= 1.0f;
-                tile.size = new Vector2f(1.0f);
-
-                var island5Optional = Island5.isIslandOnPosition(x, y, provider.getIsland5List());
-                if (island5Optional.isEmpty()) {
-                    // water were found: blue color
-                    tile.color = Color.CORNFLOWER_BLUE.toVector3f();
-                } else {
-                    // an island were found
-                    var island5 = island5Optional.get();
-
-                    // get tile
-                    var island5TileOptional = island5.getTileFromBottomLayer(x - island5.xPos, y - island5.yPos);
-                    if (island5TileOptional.isPresent()) {
-                        var island5Tile = island5TileOptional.get();
-                        // the island also has water tiles
-                        if (Tile.isWaterTile(island5Tile)) {
-                            tile.color = Color.CORNFLOWER_BLUE.toVector3f(); // blue = use also color of water
-                        } else {
-                            tile.color = new Vector3f(0.5f, 0.35f, 0.05f); // brown = island
-                        }
-                    } else {
-                        throw new BennoRuntimeException("Unexpected error: No tile were found.");
-                    }
-                }
-
-                // todo
-
-                // the position of the ships is the same for all zoom levels
-                for (var ship : shipTiles.get(Zoom.GFX)) {
-                    if ((x >= ship.worldPosition.x && x <= ship.worldPosition.x + 5) &&
-                        (y >= ship.worldPosition.y && y <= ship.worldPosition.y + 5)) {
-
-                        // ship world:   93, 240
-                        // ship screen: -4704, 5328
-
-                        tile.color = new Vector3f(1.0f, 0.0f, 0.0f);
-                    }
-                }
-
-                miniMapTiles.add(tile);
-            }
-        }
-
-        ArrayList<Matrix4f> modelMatrices = new ArrayList<>();
-        var colors = new float[miniMapTiles.size() * 3];
-
-        var i = 0;
-        for (var tile : miniMapTiles) {
-            modelMatrices.add(tile.getModelMatrix());
-            colors[i++] = tile.color.x;
-            colors[i++] = tile.color.y;
-            colors[i++] = tile.color.z;
-        }
-
-        miniMapRenderer = new MiniMapRenderer(modelMatrices, colors, context);
-    }
-
-    // todo:
-
-    private void initFbo() {
-        fbo = new Fbo(context.engine, MINIMAP_WIDTH, MINIMAP_HEIGHT);
-        fbo.bind();
-
-        miniMapTexture = new Texture();
-        Texture.bind(miniMapTexture.getId());
-        Texture.useBilinearFilter();
-        miniMapTexture.setNrChannels(4);
-        miniMapTexture.setFormat(GL_RGBA);
-
-        var ib = BufferUtils.createIntBuffer(MINIMAP_WIDTH * MINIMAP_HEIGHT);
-        BufferUtils.zeroBuffer(ib);
-        ib.flip();
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, MINIMAP_WIDTH, MINIMAP_HEIGHT, 0, miniMapTexture.getFormat(), GL_UNSIGNED_BYTE, ib);
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, miniMapTexture.getId(), 0);
-
-        int rboId = glGenRenderbuffers();
-        glBindRenderbuffer(GL_RENDERBUFFER, rboId);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, MINIMAP_WIDTH, MINIMAP_HEIGHT);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboId);
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            throw new BennoRuntimeException("Error while creating renderbuffer.");
-        }
-
-        fbo.unbind();
-    }
-
-    //-------------------------------------------------
     // Clean up
     //-------------------------------------------------
 
@@ -556,9 +414,8 @@ public class World {
         LOGGER.debug("Start clean up for the World.");
 
         waterRenderers.forEach((k, v) -> v.cleanUp());
-        miniMapRenderer.cleanUp();
-        simpleTextureRenderer.cleanUp();
         tileGraphicRenderer.cleanUp();
+        miniMap.cleanUp();
 
         // clean up passed data provider object (gamFile)
         provider.cleanUp();
