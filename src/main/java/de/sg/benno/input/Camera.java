@@ -6,7 +6,7 @@
  * License: GPLv2
  */
 
-package de.sg.benno;
+package de.sg.benno.input;
 
 import de.sg.benno.renderer.Zoom;
 import de.sg.ogl.camera.OrthographicCamera;

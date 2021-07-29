@@ -8,7 +8,7 @@
 
 package de.sg.benno.renderer;
 
-import de.sg.benno.Camera;
+import de.sg.benno.input.Camera;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.file.BshFile;
 import de.sg.benno.state.Context;

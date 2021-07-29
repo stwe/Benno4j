@@ -13,6 +13,7 @@ import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.data.Building;
 import de.sg.benno.file.BennoFiles;
+import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.WaterRenderer;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;

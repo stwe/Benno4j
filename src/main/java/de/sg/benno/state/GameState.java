@@ -9,7 +9,7 @@
 package de.sg.benno.state;
 
 import de.sg.benno.BennoRuntimeException;
-import de.sg.benno.Camera;
+import de.sg.benno.input.Camera;
 import de.sg.benno.World;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.debug.DebugUi;
