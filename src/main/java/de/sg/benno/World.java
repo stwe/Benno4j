@@ -15,16 +15,12 @@ import de.sg.benno.chunk.WorldData;
 import de.sg.benno.data.Building;
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.file.BshFile;
-import de.sg.benno.renderer.MiniMapRenderer;
-import de.sg.benno.renderer.TileGraphicRenderer;
-import de.sg.benno.renderer.WaterRenderer;
-import de.sg.benno.renderer.Zoom;
+import de.sg.benno.renderer.*;
 import de.sg.benno.state.Context;
 import de.sg.ogl.Color;
 import de.sg.ogl.Config;
 import de.sg.ogl.OpenGL;
 import de.sg.ogl.buffer.Fbo;
-import de.sg.ogl.renderer.TileRenderer;
 import de.sg.ogl.resource.Texture;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
@@ -133,9 +129,15 @@ public class World {
     private final ArrayList<TileGraphic> miniMapTiles = new ArrayList<>();
 
     /**
-     * A {@link MiniMapRenderer} to render the mini-map.
+     * A {@link MiniMapRenderer} to render the minimap to a Fbo.
      */
     private MiniMapRenderer miniMapRenderer;
+
+    /**
+     * A {@link SimpleTextureRenderer} to render the minimap texture on the screen.
+     */
+    private SimpleTextureRenderer simpleTextureRenderer;
+
 
     // todo: new member
 
@@ -145,7 +147,6 @@ public class World {
 
     private Fbo fbo;
     private Texture miniMapTexture;
-    private TileRenderer tileRenderer;
     private boolean renderToFbo = true;
 
     //-------------------------------------------------
@@ -188,7 +189,7 @@ public class World {
         initMiniMapRenderer();
 
         initFbo();
-        tileRenderer = new TileRenderer(context.engine);
+        simpleTextureRenderer = new SimpleTextureRenderer(context);
     }
 
     /**
@@ -221,12 +222,7 @@ public class World {
         waterRenderers.get(zoom).render(camera, wireframe);
 
         // render minimap as texture
-        // todo: the TileRenderer use a projection matrix, so we need to transform it this screen space
-        tileRenderer.render(
-                miniMapTexture.getId(),
-                new Vector2f(Config.WIDTH - MINIMAP_WIDTH - 10, 350.0f),
-                new Vector2f(MINIMAP_WIDTH, MINIMAP_HEIGHT)
-        );
+        simpleTextureRenderer.render(miniMapTexture, new Vector2f(0.4f, -0.3f), new Vector2f(0.5f, 0.5f));
 
         // 93, 240
         var t = shipTiles.get(Zoom.GFX).get(0);
@@ -553,14 +549,16 @@ public class World {
     // Clean up
     //-------------------------------------------------
 
+    /**
+     * Clean up.
+     */
     public void cleanUp() {
         LOGGER.debug("Start clean up for the World.");
 
-        // clean up created WaterRender objects
         waterRenderers.forEach((k, v) -> v.cleanUp());
-
-        // clean up MiniMapRenderer
         miniMapRenderer.cleanUp();
+        simpleTextureRenderer.cleanUp();
+        tileGraphicRenderer.cleanUp();
 
         // clean up passed data provider object (gamFile)
         provider.cleanUp();

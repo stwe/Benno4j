@@ -1,14 +1,22 @@
+/*
+ * This file is part of the Benno4j project.
+ *
+ * Copyright (c) 2021. stwe <https://github.com/stwe/Benno4j>
+ *
+ * License: GPLv2
+ */
+
 package de.sg.benno.renderer;
 
-import de.sg.benno.Camera;
-import de.sg.benno.chunk.TileGraphic;
-import de.sg.benno.file.BshFile;
 import de.sg.benno.state.Context;
 import de.sg.ogl.OpenGL;
 import de.sg.ogl.buffer.Vao;
 import de.sg.ogl.resource.Geometry;
 import de.sg.ogl.resource.Shader;
 import de.sg.ogl.resource.Texture;
+import org.joml.Matrix4f;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 
 import java.util.Objects;
 
@@ -17,10 +25,10 @@ import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 
 /**
- * Represents a TileGraphicRenderer.
- * Renders a single {@link de.sg.benno.chunk.TileGraphic}.
+ * Represents a SimpleTextureRenderer.
+ * Renders a {@link Texture}.
  */
-public class TileGraphicRenderer {
+public class SimpleTextureRenderer {
 
     //-------------------------------------------------
     // Constants
@@ -29,16 +37,11 @@ public class TileGraphicRenderer {
     /**
      * The name of the used shader.
      */
-    private static final String SHADER_NAME = "sprite";
+    private static final String SHADER_NAME = "simpleTexture";
 
     //-------------------------------------------------
     // Member
     //-------------------------------------------------
-
-    /**
-     * The {@link Context} object.
-     */
-    private final Context context;
 
     /**
      * The {@link Geometry} object.
@@ -60,15 +63,16 @@ public class TileGraphicRenderer {
     //-------------------------------------------------
 
     /**
-     * Constructs a new {@link TileGraphicRenderer} object.
+     * Constructs a new {@link SimpleTextureRenderer} object.
      *
      * @param context The {@link Context} object.
      * @throws Exception If an error is thrown.
      */
-    public TileGraphicRenderer(Context context) throws Exception {
-        LOGGER.debug("Creates TileGraphicRenderer object.");
+    public SimpleTextureRenderer(Context context) throws Exception {
+        LOGGER.debug("Creates SimpleTextureRenderer object.");
 
-        this.context = Objects.requireNonNull(context, "context must not be null");
+        Objects.requireNonNull(context, "context must not be null");
+
         this.quadGeometry = context.engine.getResourceManager().loadGeometry(Geometry.GeometryId.QUAD_2D);
         this.shader = context.engine.getResourceManager().loadResource(Shader.class, SHADER_NAME);
         this.vao = new Vao();
@@ -92,24 +96,26 @@ public class TileGraphicRenderer {
     //-------------------------------------------------
 
     /**
-     * Renders a single {@link TileGraphic}.
+     * Renders a {@link Texture}.
+     * The texture is flipped in y direction.
      *
-     * @param camera The {@link Camera} object.
-     * @param tileGraphic The {@link TileGraphic} to render.
-     * @param bshFile The {@link BshFile} to get the texture.
+     * @param texture The {@link Texture} to render.
+     * @param position The position of the texture.
+     * @param size The size of the texture.
      */
-    public void render(Camera camera, TileGraphic tileGraphic, BshFile bshFile) {
-        var bshTexture = bshFile.getBshTextures().get(tileGraphic.gfx);
-        var textureId = bshTexture.getTexture().getId();
-
+    public void render(Texture texture, Vector2f position, Vector2f size) {
         OpenGL.enableAlphaBlending();
 
         shader.bind();
-        Texture.bindForReading(textureId, GL_TEXTURE0);
+        Texture.bindForReading(texture.getId(), GL_TEXTURE0);
 
-        shader.setUniform("projection", context.engine.getWindow().getOrthographicProjectionMatrix());
-        shader.setUniform("view", camera.getViewMatrix());
-        shader.setUniform("model", tileGraphic.getModelMatrix());
+        Matrix4f modelMatrix = new Matrix4f();
+        modelMatrix
+                .identity()
+                .translate(new Vector3f(position, 0.0f))
+                .scale(new Vector3f(size, 1.0f));
+
+        shader.setUniform("model", modelMatrix);
         shader.setUniform("diffuseMap", 0);
 
         vao.bind();
@@ -130,7 +136,7 @@ public class TileGraphicRenderer {
      * Clean up.
      */
     public void cleanUp() {
-        LOGGER.debug("Clean up TileGraphicRenderer.");
+        LOGGER.debug("Clean up SimpleTextureRenderer.");
 
         this.vao.cleanUp();
     }
