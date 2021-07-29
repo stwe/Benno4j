@@ -14,7 +14,9 @@ import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.data.Building;
 import de.sg.benno.file.BennoFiles;
+import de.sg.benno.file.BshFile;
 import de.sg.benno.renderer.MiniMapRenderer;
+import de.sg.benno.renderer.TileGraphicRenderer;
 import de.sg.benno.renderer.WaterRenderer;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
@@ -22,7 +24,6 @@ import de.sg.ogl.Color;
 import de.sg.ogl.Config;
 import de.sg.ogl.OpenGL;
 import de.sg.ogl.buffer.Fbo;
-import de.sg.ogl.camera.OrthographicCamera;
 import de.sg.ogl.renderer.TileRenderer;
 import de.sg.ogl.resource.Texture;
 import org.joml.Matrix4f;
@@ -31,6 +32,7 @@ import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -89,6 +91,11 @@ public class World {
     private final Context context;
 
     /**
+     * The {@link Camera} object.
+     */
+    private final Camera camera;
+
+    /**
      * The {@link BennoFiles} object.
      */
     private final BennoFiles bennoFiles;
@@ -130,6 +137,12 @@ public class World {
      */
     private MiniMapRenderer miniMapRenderer;
 
+    // todo: new member
+
+    private final HashMap<Zoom, ArrayList<TileGraphic>> shipTiles = new HashMap<>();
+    private TileGraphicRenderer tileGraphicRenderer;
+    private BshFile shipBshFile;
+
     private Fbo fbo;
     private Texture miniMapTexture;
     private TileRenderer tileRenderer;
@@ -139,11 +152,20 @@ public class World {
     // Ctors.
     //-------------------------------------------------
 
-    public World(WorldData provider, Context context) {
+    /**
+     * Constructs a new {@link World} object.
+     *
+     * @param provider A {@link WorldData} object (e.g. {@link de.sg.benno.file.GamFile}).
+     * @param context The {@link Context} object.
+     * @param camera The {@link Camera} object.
+     */
+    public World(WorldData provider, Context context, Camera camera) {
         LOGGER.debug("Creates World object from provider class {}.", provider.getClass());
 
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
         this.context = Objects.requireNonNull(context, "context must not be null");
+        this.camera = Objects.requireNonNull(camera, "camera must not be null");
+
         this.bennoFiles = this.context.bennoFiles;
         this.buildings = this.bennoFiles.getDataFiles().getBuildings();
     }
@@ -158,6 +180,10 @@ public class World {
      * @throws Exception If an error is thrown.
      */
     public void init() throws Exception {
+        shipBshFile = this.bennoFiles.getShipBshFile(Zoom.GFX);
+        tileGraphicRenderer = new TileGraphicRenderer(context);
+        initShips(Zoom.GFX);
+
         initWaterRenderer();
         initMiniMapRenderer();
 
@@ -177,11 +203,10 @@ public class World {
     /**
      * Renders the world.
      *
-     * @param camera The {@link OrthographicCamera} object.
      * @param wireframe Boolean flag for wireframe rendering.
      * @param zoom The current {@link Zoom}.
      */
-    public void render(OrthographicCamera camera, boolean wireframe, Zoom zoom) {
+    public void render(boolean wireframe, Zoom zoom) {
         // render minimap to texture once only
         if (renderToFbo) {
             fbo.bindAsRenderTarget();
@@ -202,6 +227,10 @@ public class World {
                 new Vector2f(Config.WIDTH - MINIMAP_WIDTH - 10, 350.0f),
                 new Vector2f(MINIMAP_WIDTH, MINIMAP_HEIGHT)
         );
+
+        // 93, 240
+        var t = shipTiles.get(Zoom.GFX).get(0);
+        tileGraphicRenderer.render(camera, t, shipBshFile);
     }
 
     /**
@@ -215,6 +244,46 @@ public class World {
         if (index > NO_WATER) {
             waterRenderers.forEach((k, v) -> v.updateSelectedVbo(index));
         }
+    }
+
+    //-------------------------------------------------
+    // Ship
+    //-------------------------------------------------
+
+    void initShips(Zoom zoom) throws IOException {
+        LOGGER.debug("Create ship tiles for {}.", zoom.toString());
+
+        var ship = provider.getShips4List().get(0);
+
+        var shipBshTexture = shipBshFile.getBshTextures().get(ship.gfx);
+
+        var water = buildings.get(BennoConfig.DEEP_WATER_BUILDING_ID);
+        var bshFile = this.bennoFiles.getStadtfldBshFile(zoom);
+        var waterBshTexture = bshFile.getBshTextures().get(water.gfx);
+
+        var adjustHeight = TileUtil.adjustHeight(zoom.defaultTileHeightHalf, TileGraphic.TileHeight.SEA_LEVEL.value, zoom.elevation);
+
+        var tile = new TileGraphic();
+        tile.gfx = ship.gfx;
+        tile.tileHeight = TileGraphic.TileHeight.SEA_LEVEL;
+        tile.worldPosition.x = ship.xPos;
+        tile.worldPosition.y = ship.yPos;
+
+        var screenPosition = TileUtil.worldToScreen(ship.xPos, ship.yPos, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf);
+        //screenPosition.y += adjustHeight;
+        //screenPosition.x -= waterBshTexture.getWidth();
+        //screenPosition.y -= waterBshTexture.getHeight();
+
+        tile.screenPosition = new Vector2f(screenPosition);
+        tile.size = new Vector2f(shipBshTexture.getWidth(), shipBshTexture.getHeight());
+        tile.color = new Vector3f();
+
+        var tiles = new ArrayList<TileGraphic>();
+        tiles.add(tile);
+
+        shipTiles.put(zoom, tiles);
+
+        camera.position = new Vector2f(tile.screenPosition);
     }
 
     //-------------------------------------------------
@@ -414,6 +483,20 @@ public class World {
                         }
                     } else {
                         throw new BennoRuntimeException("Unexpected error: No tile were found.");
+                    }
+                }
+
+                // todo
+
+                // the position of the ships is the same for all zoom levels
+                for (var ship : shipTiles.get(Zoom.GFX)) {
+                    if ((x >= ship.worldPosition.x && x <= ship.worldPosition.x + 5) &&
+                        (y >= ship.worldPosition.y && y <= ship.worldPosition.y + 5)) {
+
+                        // ship world:   93, 240
+                        // ship screen: -4704, 5328
+
+                        tile.color = new Vector3f(1.0f, 0.0f, 0.0f);
                     }
                 }
 

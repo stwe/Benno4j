@@ -19,6 +19,13 @@ public class TileUtil {
         );
     }
 
+    public static Vector2i screenToWorld(int screenX, int screenY, int tileWidth, int tileHeight) {
+        return new Vector2i(
+                (screenX / tileWidth + screenY / tileHeight),
+                (screenY / tileHeight - screenX / tileWidth)
+        );
+    }
+
     public static int adjustHeight(int tileHeightHalf, int tileHeight, int elevation) {
         return 2 * tileHeightHalf - tileHeight / elevation;
     }

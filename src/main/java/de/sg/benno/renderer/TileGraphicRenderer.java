@@ -1,12 +1,12 @@
 package de.sg.benno.renderer;
 
+import de.sg.benno.Camera;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.file.BshFile;
 import de.sg.benno.state.Context;
 import de.sg.ogl.Log;
 import de.sg.ogl.OpenGL;
 import de.sg.ogl.buffer.Vao;
-import de.sg.ogl.camera.OrthographicCamera;
 import de.sg.ogl.resource.Geometry;
 import de.sg.ogl.resource.Shader;
 import de.sg.ogl.resource.Texture;
@@ -95,11 +95,11 @@ public class TileGraphicRenderer {
     /**
      * Renders a single {@link TileGraphic}.
      *
-     * @param camera The {@link OrthographicCamera} object.
+     * @param camera The {@link Camera} object.
      * @param tileGraphic The {@link TileGraphic} to render.
      * @param bshFile The {@link BshFile} to get the texture.
      */
-    public void render(OrthographicCamera camera, TileGraphic tileGraphic, BshFile bshFile) {
+    public void render(Camera camera, TileGraphic tileGraphic, BshFile bshFile) {
         var bshTexture = bshFile.getBshTextures().get(tileGraphic.gfx);
         var textureId = bshTexture.getTexture().getId();
 

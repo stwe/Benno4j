@@ -76,10 +76,8 @@ public class DebugUi {
         ImGui.begin("Debug", windowFlags);
 
         ImGui.text("Camera position");
-        ImGui.text("Camera screen space x: " + gameState.camera.position.x);
-        ImGui.text("Camera screen space y: " + gameState.camera.position.y);
-        ImGui.text("Camera origin in world space x: " + gameState.camera.origin.x);
-        ImGui.text("Camera origin in world space y: " + gameState.camera.origin.y);
+        ImGui.text("Camera screen space x: " + gameState.camera.position.x + " (" + gameState.camera.positionInTileUnits.x+")");
+        ImGui.text("Camera screen space y: " + gameState.camera.position.y + " (" + gameState.camera.positionInTileUnits.y+")");
 
         cameraSlider();
 
@@ -114,21 +112,21 @@ public class DebugUi {
      */
     private void cameraSlider() {
         ImGui.separator();
-        ImGui.text("Camera fast world space change");
+        ImGui.text("Camera fast screen space change");
 
         int[] camX = new int[1];
-        camX[0] = gameState.camera.origin.x;
+        camX[0] = gameState.camera.positionInTileUnits.x;
         if (ImGui.sliderInt("x", camX, -World.WORLD_WIDTH, World.WORLD_WIDTH)) {
             camX[0] += camX[0] % gameState.currentZoom.speedFactor;
-            gameState.camera.origin.x = camX[0];
+            gameState.camera.positionInTileUnits.x = camX[0];
             gameState.camera.resetPosition(gameState.currentZoom);
         }
 
         int[] camY = new int[1];
-        camY[0] = gameState.camera.origin.y;
+        camY[0] = gameState.camera.positionInTileUnits.y;
         if (ImGui.sliderInt("y", camY, -World.WORLD_HEIGHT, World.WORLD_HEIGHT)) {
             camY[0] += camY[0] % gameState.currentZoom.speedFactor;
-            gameState.camera.origin.y = camY[0];
+            gameState.camera.positionInTileUnits.y = camY[0];
             gameState.camera.resetPosition(gameState.currentZoom);
         }
     }

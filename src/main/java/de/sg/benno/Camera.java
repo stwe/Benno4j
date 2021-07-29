@@ -28,9 +28,9 @@ public class Camera extends OrthographicCamera {
     //-------------------------------------------------
 
     /**
-     * The origin or startposition of the camera.
+     * The screen space position of the camera in tile units.
      */
-    public final Vector2i origin = new Vector2i(0, 0);
+    public final Vector2i positionInTileUnits = new Vector2i(0, 0);
 
     //-------------------------------------------------
     // Ctors.
@@ -40,21 +40,21 @@ public class Camera extends OrthographicCamera {
      * Constructs a new {@link Camera} object.
      */
     public Camera(Zoom zoom) {
-        LOGGER.debug("Creates Camera object at (0, 0) in world space.");
+        LOGGER.debug("Creates Camera object at (0, 0) in screen space.");
         resetPosition(zoom);
     }
 
     /**
      * Constructs a new {@link Camera} object.
      *
-     * @param x The start x position in world space.
-     * @param y The start y position in world space.
+     * @param x The start x screen space position in tile units.
+     * @param y The start y screen space position in tile units.
      */
     public Camera(int x, int y, Zoom zoom) {
-        LOGGER.debug("Creates Camera object at ({}, {}) in world space.", x, y);
+        LOGGER.debug("Creates Camera object at ({}, {}) in screen space.", x, y);
 
-        origin.x = x;
-        origin.y = y;
+        positionInTileUnits.x = x;
+        positionInTileUnits.y = y;
 
         resetPosition(zoom);
     }
@@ -69,13 +69,13 @@ public class Camera extends OrthographicCamera {
      * @param zoom The current {@link Zoom}
      */
     public void resetPosition(Zoom zoom) {
-        position.x = zoom.defaultTileWidth * origin.x;
+        position.x = zoom.defaultTileWidth * positionInTileUnits.x;
 
         var height = zoom.defaultTileHeight;
         if (height == 31) {
             height = 32;
         }
-        position.y = height * origin.y;
+        position.y = height * positionInTileUnits.y;
     }
 
     //-------------------------------------------------
@@ -117,22 +117,22 @@ public class Camera extends OrthographicCamera {
      */
     private void processUpdate(Direction direction, Zoom zoom) {
         if (direction == Direction.UP) {
-            origin.y += zoom.speedFactor;
+            positionInTileUnits.y += zoom.speedFactor;
             position.y += zoom.getCameraSpeed().y;
         }
 
         if (direction == Direction.DOWN) {
-            origin.y -= zoom.speedFactor;
+            positionInTileUnits.y -= zoom.speedFactor;
             position.y -= zoom.getCameraSpeed().y;
         }
 
         if (direction == Direction.LEFT) {
-            origin.x -= zoom.speedFactor;
+            positionInTileUnits.x -= zoom.speedFactor;
             position.x -= zoom.getCameraSpeed().x;
         }
 
         if (direction == Direction.RIGHT) {
-            origin.x += zoom.speedFactor;
+            positionInTileUnits.x += zoom.speedFactor;
             position.x += zoom.getCameraSpeed().x;
         }
     }

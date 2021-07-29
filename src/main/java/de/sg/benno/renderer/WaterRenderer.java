@@ -9,6 +9,7 @@
 package de.sg.benno.renderer;
 
 import de.sg.benno.BennoRuntimeException;
+import de.sg.benno.Camera;
 import de.sg.benno.data.Building;
 import de.sg.benno.file.BshFile;
 import de.sg.benno.state.Context;
@@ -16,7 +17,6 @@ import de.sg.ogl.OpenGL;
 import de.sg.ogl.buffer.Vao;
 import de.sg.ogl.buffer.Vbo;
 import de.sg.ogl.buffer.Vertex2D;
-import de.sg.ogl.camera.OrthographicCamera;
 import de.sg.ogl.resource.Geometry;
 import de.sg.ogl.resource.Shader;
 import de.sg.ogl.resource.Texture;
@@ -204,9 +204,9 @@ public class WaterRenderer {
     /**
      * Renders the whole water area.
      *
-     * @param camera {@link OrthographicCamera}
+     * @param camera {@link Camera}
      */
-    public void render(OrthographicCamera camera, boolean wireframe) {
+    public void render(Camera camera, boolean wireframe) {
         // todo: tmp code
         var now = System.currentTimeMillis();
         var delta = now - last;
