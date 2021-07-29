@@ -11,7 +11,6 @@ package de.sg.benno;
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;
-import de.sg.benno.data.Building;
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.file.BshFile;
 import de.sg.benno.renderer.*;
@@ -70,11 +69,6 @@ public class World {
     private final BennoFiles bennoFiles;
 
     /**
-     * The map with all {@link Building} objects.
-     */
-    private final HashMap<Integer, Building> buildings;
-
-    /**
      * The {@link Water} object.
      */
     private Water water;
@@ -111,7 +105,6 @@ public class World {
         this.camera = Objects.requireNonNull(camera, "camera must not be null");
 
         this.bennoFiles = this.context.bennoFiles;
-        this.buildings = this.bennoFiles.getDataFiles().getBuildings();
 
         init();
     }
@@ -180,12 +173,6 @@ public class World {
 
         var shipBshTexture = shipBshFile.getBshTextures().get(ship.gfx);
 
-        var water = buildings.get(BennoConfig.DEEP_WATER_BUILDING_ID);
-        var bshFile = this.bennoFiles.getStadtfldBshFile(zoom);
-        var waterBshTexture = bshFile.getBshTextures().get(water.gfx);
-
-        var adjustHeight = TileUtil.adjustHeight(zoom.defaultTileHeightHalf, TileGraphic.TileHeight.SEA_LEVEL.value, zoom.elevation);
-
         var tile = new TileGraphic();
         tile.gfx = ship.gfx;
         tile.tileHeight = TileGraphic.TileHeight.SEA_LEVEL;
@@ -193,10 +180,6 @@ public class World {
         tile.worldPosition.y = ship.yPos;
 
         var screenPosition = TileUtil.worldToScreen(ship.xPos, ship.yPos, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf);
-        //screenPosition.y += adjustHeight;
-        //screenPosition.x -= waterBshTexture.getWidth();
-        //screenPosition.y -= waterBshTexture.getHeight();
-
         tile.screenPosition = new Vector2f(screenPosition);
         tile.size = new Vector2f(shipBshTexture.getWidth(), shipBshTexture.getHeight());
         tile.color = new Vector3f();
@@ -205,8 +188,6 @@ public class World {
         tiles.add(tile);
 
         shipTiles.put(zoom, tiles);
-
-        camera.position = new Vector2f(tile.screenPosition);
     }
 
     //-------------------------------------------------
