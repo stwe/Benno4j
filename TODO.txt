@@ -20,6 +20,5 @@ Brainstorming
 - Schiffe von a nach b bewegen (A* Path Finding)
 - Schiffe auf der Minimap anzeigen
 
-- Inseln rendern - Frage, ob die Texturen immer mit dem richten gfxIndex
-  gespeichert sind, momentan liegen die Texturen in einer ArrayList
+- Inseln rendern
 

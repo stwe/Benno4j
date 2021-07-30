@@ -14,11 +14,13 @@ import de.sg.benno.chunk.WorldData;
 import de.sg.benno.data.Building;
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.input.Camera;
+import de.sg.benno.renderer.TileGraphicRenderer;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
@@ -69,6 +71,11 @@ public class Terrain {
      */
     private final HashMap<Island5, HashMap<Zoom, ArrayList<TileGraphic>>> islandTiles = new HashMap<>();
 
+    /**
+     * For brute force rendering.
+     */
+    private TileGraphicRenderer tileGraphicRenderer;
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -90,6 +97,8 @@ public class Terrain {
         this.buildings = this.bennoFiles.getDataFiles().getBuildings();
 
         init();
+
+        tileGraphicRenderer = new TileGraphicRenderer(context);
     }
 
     //-------------------------------------------------
@@ -105,6 +114,21 @@ public class Terrain {
      */
     public void render(Camera camera, boolean wireframe, Zoom zoom) {
         // terrainRenderers.get(zoom).render(camera, wireframe);
+
+        // todo: testcase -> brute force GFX rendering of th first island for testing - sloooooow
+        // todo: camera 40, 264 (2560, 8448)
+        var island0 = provider.getIsland5List().get(0);
+        var island0Tiles = islandTiles.get(island0);
+        var gfxTiles = island0Tiles.get(Zoom.GFX);
+
+        try {
+            var bshFile = this.bennoFiles.getStadtfldBshFile(Zoom.GFX);
+            for (var tile : gfxTiles) {
+                tileGraphicRenderer.render(camera, tile, bshFile);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     //-------------------------------------------------
