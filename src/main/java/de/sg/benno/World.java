@@ -75,6 +75,11 @@ public class World {
     private Water water;
 
     /**
+     * The {@link Terrain} object.
+     */
+    private Terrain terrain;
+
+    /**
      * The {@link MiniMap} of this world.
      */
     private MiniMap miniMap;
@@ -128,6 +133,9 @@ public class World {
         // create water
         water = new Water(provider, context);
 
+        // create terrain
+        terrain = new Terrain(provider, context);
+
         // create minimap
         miniMap = new MiniMap(provider, context);
     }
@@ -154,6 +162,9 @@ public class World {
     public void render(boolean wireframe, Zoom zoom) {
         // render water
         water.render(camera, wireframe, zoom);
+
+        // render terrain
+        terrain.render(camera, wireframe, zoom);
 
         // render mininmap
         miniMap.render(new Vector2f(0.4f, -0.3f), new Vector2f(0.5f, 0.5f));
@@ -202,6 +213,7 @@ public class World {
         LOGGER.debug("Start clean up for the World.");
 
         water.cleanUp();
+        terrain.cleanUp();
         miniMap.cleanUp();
 
         tileGraphicRenderer.cleanUp();

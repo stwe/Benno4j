@@ -43,7 +43,19 @@ public class BshFile extends BinaryFile {
      * Represents the type of an Bsh image.
      */
     private enum BshType {
+        /**
+         * Custom Benno4j type used for placeholder images.
+         */
+        PLACEHOLDER(0),
+
+        /**
+         * A common type used by all game types.
+         */
         NORMAL(1),
+
+        /**
+         * Used by the new History Edition.
+         */
         NEW(13);
 
         private final int typeValue;
@@ -76,6 +88,39 @@ public class BshFile extends BinaryFile {
          */
         public int getTypeValue() {
             return typeValue;
+        }
+    }
+
+    /**
+     * Stores info about a placeholder offset.
+     */
+    private static class Placeholder {
+        private final int offset;
+        private int width;
+        private int height;
+
+        public Placeholder(int offset) {
+            this.offset = offset;
+        }
+
+        public int getOffset() {
+            return offset;
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        public void setWidth(int width) {
+            this.width = width;
+        }
+
+        public void setHeight(int height) {
+            this.height = height;
         }
     }
 
@@ -154,9 +199,9 @@ public class BshFile extends BinaryFile {
     private final ArrayList<Integer> offsets = new ArrayList<>();
 
     /**
-     * The possible invalid offsets to the Bsh images.
+     * To store all placeholder offsets.
      */
-    private final HashSet<Integer> possibleInvalidOffsets = new HashSet<>();
+    private final HashMap<Integer, Placeholder> placeholders = new HashMap<>();
 
     /**
      * A list with {@link BshTexture} objects.
@@ -174,7 +219,7 @@ public class BshFile extends BinaryFile {
     private int maxY = -999;
 
     /**
-     * Shortcut to the {@link Chunk}.
+     * Shortcut to the first {@link Chunk}.
      */
     private final Chunk chunk0;
 
@@ -209,17 +254,6 @@ public class BshFile extends BinaryFile {
         chunk0 = getChunk(0);
 
         readDataFromChunks();
-    }
-
-    /**
-     * Constructs a new {@link BshFile} object.
-     *
-     * @param path The {@link Path} to the Bsh file.
-     * @param palette The color values from the <i>stadtfld.col</i> file.
-     * @throws IOException If an I/O error is thrown.
-     */
-    BshFile(Path path, int[] palette) throws IOException {
-        this(path, palette, false);
     }
 
     //-------------------------------------------------
@@ -291,6 +325,7 @@ public class BshFile extends BinaryFile {
 
     /**
      * Reads and saves all offsets of the Bsh images.
+     * Stores in {@link #offsets}.
      */
     private void readOffsets() {
         // get offset of the first texture
@@ -306,8 +341,8 @@ public class BshFile extends BinaryFile {
     }
 
     /**
-     * Stores probably invalid offsets.
-     * The offset is probably invalid if the difference between two offsets is 20 bytes.
+     * Stores {@link #placeholders}.
+     * The offset is a placeholder offset if the difference between two offsets is 20 bytes.
      */
     private void validateOffsets() {
         for (int i = 0; i < offsets.size(); i++) {
@@ -315,13 +350,14 @@ public class BshFile extends BinaryFile {
                 var offset = offsets.get(i);
                 var nextOffset = offsets.get(i + 1);
                 if (nextOffset - offset == 20) {
-                    possibleInvalidOffsets.add(offset);
+                    var placeholder = new Placeholder(offset);
+                    placeholders.put(offset, placeholder);
                 }
             }
         }
 
-        if (!possibleInvalidOffsets.isEmpty()) {
-            LOGGER.warn("Detected {} possible invalid texture offsets.", possibleInvalidOffsets.size());
+        if (!placeholders.isEmpty()) {
+            LOGGER.debug("Detected {} placeholder offsets.", placeholders.size());
         }
     }
 
@@ -338,18 +374,29 @@ public class BshFile extends BinaryFile {
     private void decodeTextures() throws IOException {
         var gfxIndex = 0;
         for (var offset : offsets) {
-            if (!possibleInvalidOffsets.contains(offset)) {
-                chunk0.getData().position(offset);
-
+            if (!placeholders.containsKey(offset)) {
                 var bufferedBshImage = createBufferedBshImage(offset, gfxIndex);
                 if (bufferedBshImage.type == BshType.NEW) {
                     decodeTexture13(bufferedBshImage);
                 } else {
                     decodeTexture(bufferedBshImage);
                 }
+            } else {
+                var bufferedBshImage = createPlaceholderBufferedBshImage(
+                        placeholders.get(offset),
+                        gfxIndex
+                );
+                bshTextures.add(new BshTexture(bufferedBshImage.image));
+                if (saveAsPng) {
+                    saveAsPng(bufferedBshImage);
+                }
             }
 
             gfxIndex++;
+        }
+
+        if (bshTextures.isEmpty() || (bshTextures.size() != gfxIndex)) {
+            throw new BennoRuntimeException("Unexpected error.");
         }
 
         LOGGER.debug("A total of {} bsh textures were created.", bshTextures.size());
@@ -493,13 +540,21 @@ public class BshFile extends BinaryFile {
      * @return {@link BufferedBshImage}
      */
     private BufferedBshImage createBufferedBshImage(int offset, int gfxIndex) {
+        Objects.requireNonNull(chunk0, "chunk0 must not be null");
+
+        // new position
+        chunk0.getData().position(offset);
+
+        // read width and height
         var width = chunk0.getData().getInt();
         var height = chunk0.getData().getInt();
 
+        // check values
         if (width <= 0 || height <= 0) {
             throw new BennoRuntimeException("Invalid width or height.");
         }
 
+        // read type and length
         var type = chunk0.getData().getInt();
         var length = chunk0.getData().getInt();
 
@@ -509,6 +564,38 @@ public class BshFile extends BinaryFile {
                 new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB),
                 BshType.valueOf(type),
                 offset,
+                gfxIndex
+        );
+    }
+
+    /**
+     * Creates an {@link BufferedBshImage} with an empty {@link BufferedImage}.
+     *
+     * @param placeholder The {@link Placeholder} object to change.
+     * @param gfxIndex The gfx index.
+     *
+     * @return {@link BufferedBshImage}
+     */
+    private BufferedBshImage createPlaceholderBufferedBshImage(Placeholder placeholder, int gfxIndex) {
+        Objects.requireNonNull(chunk0, "chunk0 must not be null");
+
+        // new position
+        chunk0.getData().position(placeholder.offset);
+
+        // read width and height
+        placeholder.width = chunk0.getData().getInt();
+        placeholder.height = chunk0.getData().getInt();
+
+        // check values
+        if (placeholder.width <= 0 || placeholder.height <= 0) {
+            throw new BennoRuntimeException("Invalid width or height.");
+        }
+
+        // create a width x height pixel image with support for transparency
+        return new BufferedBshImage(
+                new BufferedImage(placeholder.width, placeholder.height, BufferedImage.TYPE_INT_ARGB),
+                BshType.PLACEHOLDER,
+                placeholder.offset,
                 gfxIndex
         );
     }

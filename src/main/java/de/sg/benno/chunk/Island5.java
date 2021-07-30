@@ -419,6 +419,53 @@ public class Island5 {
     //-------------------------------------------------
 
     /**
+     * Work out the gfx and {@link TileGraphic.TileHeight} and set the result in
+     * the given {@link TileGraphic}.
+     *
+     * @param tile A {@link Tile} of this island with the graphicId and some other info.
+     * @param tileGraphic The {@link TileGraphic} to change.
+     */
+    public void setGfxInfo(Tile tile, TileGraphic tileGraphic) {
+        var building = buildings.get(tile.graphicId);
+
+        var gfx = building.gfx;
+
+        var directions = 1;
+        if (building.rotate > 0) {
+            directions = 4;
+        }
+
+        var aniSteps = 1;
+        if (building.animAnz > 0) {
+            aniSteps = building.animAnz;
+        }
+
+        gfx += building.rotate * (tile.orientation % directions);
+
+        switch (tile.orientation) {
+            case 0:
+                gfx += tile.yPosOnIsland * building.width + tile.xPosOnIsland;
+                break;
+            case 1:
+                gfx += (building.height - tile.xPosOnIsland - 1) * building.width + tile.yPosOnIsland;
+                break;
+            case 2:
+                gfx += (building.height - tile.yPosOnIsland - 1) * building.width + (building.width - tile.xPosOnIsland - 1);
+                break;
+            case 3:
+                gfx += tile.xPosOnIsland * building.width + (building.width - tile.yPosOnIsland - 1);
+                break;
+            default:
+                LOGGER.debug("Unknow rotation.");
+        }
+
+        gfx += building.width * building.height * directions * (tile.animationCount % aniSteps);
+
+        tileGraphic.gfx = gfx;
+        tileGraphic.tileHeight = building.posoffs == 0 ? TileGraphic.TileHeight.SEA_LEVEL : TileGraphic.TileHeight.CLIFF;
+    }
+
+    /**
      * Returns the name of the island SCP file.
      * A xxxyy.scp file is the "naked" island, where xxx is one of lar/big/med/mit/lit and yy is a two-digit number.
      *

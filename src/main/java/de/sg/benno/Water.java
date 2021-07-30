@@ -111,7 +111,7 @@ public class Water {
         this.bennoFiles = this.context.bennoFiles;
         this.buildings = this.bennoFiles.getDataFiles().getBuildings();
 
-        initWaterRenderer();
+        init();
     }
 
     //-------------------------------------------------
@@ -147,12 +147,12 @@ public class Water {
     //-------------------------------------------------
 
     /**
-     * Creates the {@link WaterRenderer} objects.
+     * Initializes the class.
      *
      * @throws Exception If an error is thrown.
      */
-    private void initWaterRenderer() throws Exception {
-        LOGGER.debug("Start init WaterRenderers...");
+    private void init() throws Exception {
+        LOGGER.debug("Start init Water...");
 
         /*
         2622 (Ruine):    673    Rot: 0   AnimAnz:  -   AnimAdd:  -
@@ -177,7 +177,7 @@ public class Water {
             createWaterGraphicTiles(zoom, BennoConfig.DEEP_WATER_BUILDING_ID);
         }
 
-        LOGGER.debug("The WaterRenderers have been successfully initialized and created.");
+        LOGGER.debug("The initialization process was completed successfully.");
     }
 
     /**
@@ -259,6 +259,8 @@ public class Water {
      * @throws Exception If an error is thrown.
      */
     private void createWaterRenderer(Zoom zoom, Building building) throws Exception {
+        LOGGER.debug("Create water renderer for {}.", zoom.toString());
+
         ArrayList<Matrix4f> modelMatrices = new ArrayList<>();
 
         for (var tile : waterTiles.get(zoom)) {
