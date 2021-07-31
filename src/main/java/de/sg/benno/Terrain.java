@@ -14,13 +14,12 @@ import de.sg.benno.chunk.WorldData;
 import de.sg.benno.data.Building;
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.input.Camera;
-import de.sg.benno.renderer.TileGraphicRenderer;
+import de.sg.benno.renderer.IslandRenderer;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
@@ -67,14 +66,14 @@ public class Terrain {
     private final HashMap<Integer, Building> buildings;
 
     /**
-     * {@link TileGraphic} objects for each {@link Island5} and in each {@link Zoom} level.
+     * {@link TileGraphic} objects of each {@link Island5} and in each {@link Zoom} level.
      */
-    private final HashMap<Island5, HashMap<Zoom, ArrayList<TileGraphic>>> islandTiles = new HashMap<>();
+    private final HashMap<Island5, HashMap<Zoom, ArrayList<TileGraphic>>> islandTileGraphics = new HashMap<>();
 
     /**
-     * For brute force rendering.
+     * A {@link IslandRenderer} for each {@link Island5}.
      */
-    private TileGraphicRenderer tileGraphicRenderer;
+    private final HashMap<Island5, IslandRenderer> islandRenderer = new HashMap<>();
 
     //-------------------------------------------------
     // Ctors.
@@ -97,8 +96,6 @@ public class Terrain {
         this.buildings = this.bennoFiles.getDataFiles().getBuildings();
 
         init();
-
-        tileGraphicRenderer = new TileGraphicRenderer(context);
     }
 
     //-------------------------------------------------
@@ -113,21 +110,9 @@ public class Terrain {
      * @param zoom The current {@link Zoom}.
      */
     public void render(Camera camera, boolean wireframe, Zoom zoom) {
-        // terrainRenderers.get(zoom).render(camera, wireframe);
-
-        // todo: testcase -> brute force GFX rendering of th first island for testing - sloooooow
-        // todo: camera 40, 264 (2560, 8448)
-        var island0 = provider.getIsland5List().get(0);
-        var island0Tiles = islandTiles.get(island0);
-        var gfxTiles = island0Tiles.get(Zoom.GFX);
-
-        try {
-            var bshFile = this.bennoFiles.getStadtfldBshFile(Zoom.GFX);
-            for (var tile : gfxTiles) {
-                tileGraphicRenderer.render(camera, tile, bshFile);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        for (var island5 : provider.getIsland5List()) {
+            var renderer = islandRenderer.get(island5);
+            renderer.render(camera, wireframe, zoom);
         }
     }
 
@@ -136,7 +121,7 @@ public class Terrain {
     //-------------------------------------------------
 
     /**
-     * Initializes the class.
+     * Initializes the terrain.
      *
      * @throws Exception If an error is thrown.
      */
@@ -144,9 +129,16 @@ public class Terrain {
         LOGGER.debug("Start init Terrain...");
 
         for (var island5 : provider.getIsland5List()) {
+            // create graphic tiles for each zoom
+            var zoomTiles = new HashMap<Zoom, ArrayList<TileGraphic>>();
             for (var zoom : Zoom.values()) {
-                createGraphicTiles(island5, zoom);
+                createGraphicTiles(island5, zoom, zoomTiles);
             }
+
+            islandTileGraphics.put(island5, zoomTiles);
+
+            // create a renderer for each island, so we can render the island in each zoom
+            islandRenderer.put(island5, new IslandRenderer(island5, islandTileGraphics.get(island5), context));
         }
 
         LOGGER.debug("The initialization process was completed successfully.");
@@ -157,14 +149,14 @@ public class Terrain {
      *
      * @param island5 The {@link Island5} from which the {@link TileGraphic} objects are created.
      * @param zoom {@link Zoom}
+     * @param zoomTiles To store the generated {@link TileGraphic} objects.
      * @throws Exception If an error is thrown.
      */
-    private void createGraphicTiles(Island5 island5, Zoom zoom) throws Exception {
-        LOGGER.debug("Create {} graphic tiles for island on position x: {}, y: {}.", zoom.toString(), island5.xPos, island5.yPos);
+    private void createGraphicTiles(Island5 island5, Zoom zoom, HashMap<Zoom, ArrayList<TileGraphic>> zoomTiles) throws Exception {
+        LOGGER.debug("Create {} graphic tiles and renderer for island on position x: {}, y: {}.", zoom.toString(), island5.xPos, island5.yPos);
 
         var bshFile = this.bennoFiles.getStadtfldBshFile(zoom);
         var tiles = new ArrayList<TileGraphic>();
-        var zoomTiles = new HashMap<Zoom, ArrayList<TileGraphic>>();
 
         for (var y = island5.yPos; y < island5.yPos + island5.height; y++) {
             for (var x = island5.xPos; x < island5.xPos + island5.width; x++) {
@@ -211,8 +203,6 @@ public class Terrain {
         }
 
         zoomTiles.put(zoom, tiles);
-
-        islandTiles.put(island5, zoomTiles);
     }
 
     //-------------------------------------------------
@@ -225,6 +215,6 @@ public class Terrain {
     public void cleanUp() {
         LOGGER.debug("Start clean up for the Terrain.");
 
-        // clean up renderer
+        islandRenderer.forEach((k, v) -> v.cleanUp());
     }
 }

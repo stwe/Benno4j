@@ -205,6 +205,7 @@ public class WaterRenderer {
      * Renders the whole water area.
      *
      * @param camera {@link Camera}
+     * @param wireframe True if a wireframe is to be rendered.
      */
     public void render(Camera camera, boolean wireframe) {
         // todo: tmp code
