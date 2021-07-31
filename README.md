@@ -4,7 +4,7 @@
 [![License: GPL v2](https://img.shields.io/badge/license-GPL--2.0-green)](https://github.com/stwe/Benno4j/blob/master/LICENSE)
 
 
-<img src="https://github.com/stwe/Benno4j/blob/master/devLog/30-07-2021.png" width="250" height="200" />
+<img src="https://github.com/stwe/Benno4j/blob/master/devLog/31-07-2021.png" width="250" height="200" />
 
 ## Supported versions
 
