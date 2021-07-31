@@ -8,7 +8,6 @@
 
 package de.sg.benno.renderer;
 
-import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.input.Camera;
 import de.sg.benno.state.Context;
@@ -58,11 +57,6 @@ public class IslandRenderer {
     //-------------------------------------------------
 
     /**
-     * The parent {@link Island5} object.
-     */
-    private final Island5 island5;
-
-    /**
      * The {@link TileGraphic} objects for each {@link Zoom}.
      */
     private final HashMap<Zoom, ArrayList<TileGraphic>> tileGraphics;
@@ -104,12 +98,7 @@ public class IslandRenderer {
     // Ctors.
     //-------------------------------------------------
 
-    public IslandRenderer(
-            Island5 island5,
-            HashMap<Zoom, ArrayList<TileGraphic>> tileGraphics,
-            Context context
-    ) throws Exception {
-        this.island5 = island5;
+    public IslandRenderer(HashMap<Zoom, ArrayList<TileGraphic>> tileGraphics, Context context) throws Exception {
         this.tileGraphics = tileGraphics;
         this.context = context;
 
@@ -139,11 +128,9 @@ public class IslandRenderer {
 
         Texture.bindForReading(textureArrayIds.get(zoom), GL_TEXTURE0, GL_TEXTURE_2D_ARRAY);
 
-        float ym = yHeight.get(zoom);
-
         shader.setUniform("projection", context.engine.getWindow().getOrthographicProjectionMatrix());
         shader.setUniform("view", camera.getViewMatrix());
-        shader.setUniform("maxY", ym);
+        shader.setUniform("maxY", yHeight.get(zoom));
         shader.setUniform("sampler", 0);
 
         var vao = vaos.get(zoom);
@@ -310,9 +297,6 @@ public class IslandRenderer {
         Arrays.fill(n, 0);
 
         for (var entry : gfxMap.entrySet()) {
-
-            var currentTexture = context.bennoFiles.getStadtfldBshFile(zoom).getBshTextures().get(entry.getKey());
-
             glTextureSubImage3D(
                     textureId,
                     0,
@@ -325,6 +309,7 @@ public class IslandRenderer {
                     n
             );
 
+            var currentTexture = context.bennoFiles.getStadtfldBshFile(zoom).getBshTextures().get(entry.getKey());
             var dbb = (DataBufferInt) currentTexture.getBufferedImage().getRaster().getDataBuffer();
 
             glTextureSubImage3D(

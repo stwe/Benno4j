@@ -11,7 +11,6 @@ package de.sg.benno;
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;
-import de.sg.benno.data.Building;
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.IslandRenderer;
@@ -61,11 +60,6 @@ public class Terrain {
     private final BennoFiles bennoFiles;
 
     /**
-     * The map with all {@link Building} objects.
-     */
-    private final HashMap<Integer, Building> buildings;
-
-    /**
      * {@link TileGraphic} objects of each {@link Island5} and in each {@link Zoom} level.
      */
     private final HashMap<Island5, HashMap<Zoom, ArrayList<TileGraphic>>> islandTileGraphics = new HashMap<>();
@@ -93,7 +87,6 @@ public class Terrain {
         this.context = Objects.requireNonNull(context, "context must not be null");
 
         this.bennoFiles = this.context.bennoFiles;
-        this.buildings = this.bennoFiles.getDataFiles().getBuildings();
 
         init();
     }
@@ -138,7 +131,7 @@ public class Terrain {
             islandTileGraphics.put(island5, zoomTiles);
 
             // create a renderer for each island, so we can render the island in each zoom
-            islandRenderer.put(island5, new IslandRenderer(island5, islandTileGraphics.get(island5), context));
+            islandRenderer.put(island5, new IslandRenderer(islandTileGraphics.get(island5), context));
         }
 
         LOGGER.debug("The initialization process was completed successfully.");
