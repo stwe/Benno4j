@@ -46,12 +46,12 @@ public class MiniMap {
     /**
      * The width of the minimap.
      */
-    private static final int MINIMAP_WIDTH = WORLD_WIDTH;
+    public static final int MINIMAP_WIDTH = WORLD_WIDTH;
 
     /**
      * The height of the minimap.
      */
-    private static final int MINIMAP_HEIGHT = WORLD_HEIGHT;
+    public static final int MINIMAP_HEIGHT = WORLD_HEIGHT;
 
     /**
      * The color for the water.
@@ -134,13 +134,26 @@ public class MiniMap {
     }
 
     //-------------------------------------------------
+    // Getter
+    //-------------------------------------------------
+
+    /**
+     * Get {@link #miniMapTexture}
+     *
+     * @return {@link #miniMapTexture}
+     */
+    public Texture getMiniMapTexture() {
+        return miniMapTexture;
+    }
+
+    //-------------------------------------------------
     // Logic
     //-------------------------------------------------
 
     /**
      * Renders the minimap to {@link #miniMapTexture}.
      */
-    private void renderToFbo() {
+    public void renderToFbo() {
         // render minimap to texture once only
         if (renderToFbo) {
             fbo.bindAsRenderTarget();

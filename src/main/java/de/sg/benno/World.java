@@ -116,6 +116,19 @@ public class World {
     }
 
     //-------------------------------------------------
+    // Getter
+    //-------------------------------------------------
+
+    /**
+     * Get {@link #miniMap}.
+     *
+     * @return {@link #miniMap}
+     */
+    public MiniMap getMiniMap() {
+        return miniMap;
+    }
+
+    //-------------------------------------------------
     // Init
     //-------------------------------------------------
 
@@ -138,6 +151,9 @@ public class World {
 
         // create minimap
         miniMap = new MiniMap(provider, context);
+
+        // render minimap to a Fbo (creates a texture)
+        miniMap.renderToFbo();
     }
 
     //-------------------------------------------------
@@ -166,9 +182,6 @@ public class World {
         // render terrain
         terrain.render(camera, wireframe, zoom);
 
-        // render mininmap
-        miniMap.render(new Vector2f(0.4f, -0.3f), new Vector2f(0.5f, 0.5f));
-
         // todo tmp code 93, 240
         var t = shipTiles.get(Zoom.GFX).get(0);
         tileGraphicRenderer.render(camera, t, shipBshFile);
@@ -178,7 +191,7 @@ public class World {
     // Ship
     //-------------------------------------------------
 
-    void initShips(Zoom zoom) throws IOException {
+    void initShips(Zoom zoom) {
         LOGGER.debug("Create ship tiles for {}.", zoom.toString());
 
         var ship = provider.getShips4List().get(0);

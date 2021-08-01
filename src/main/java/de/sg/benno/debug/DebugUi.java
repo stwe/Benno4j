@@ -19,6 +19,9 @@ import imgui.flag.ImGuiWindowFlags;
 import imgui.internal.ImGui;
 import imgui.type.ImBoolean;
 
+import static de.sg.benno.MiniMap.MINIMAP_HEIGHT;
+import static de.sg.benno.MiniMap.MINIMAP_WIDTH;
+
 /**
  * An ImGui for debug output.
  */
@@ -31,12 +34,12 @@ public class DebugUi {
     /**
      * The menu width.
      */
-    private static final int WIDTH = 320;
+    private static final int WIDTH = 260;
 
     /**
      * The menu height.
      */
-    private static final int HEIGHT = 300;
+    private static final int HEIGHT = 700;
 
     //-------------------------------------------------
     // Member
@@ -46,6 +49,11 @@ public class DebugUi {
      * The parent {@link GameState}.
      */
     private final GameState gameState;
+
+    /**
+     * The texture id of the minimap.
+     */
+    private int miniMapId = 0;
 
     //-------------------------------------------------
     // Ctors.
@@ -84,9 +92,7 @@ public class DebugUi {
 
         ImGui.separator();
         ImGui.text("Zoom");
-        ImGui.text("Current zoom: " + gameState.currentZoom);
-
-        if (ImGui.beginCombo("Change zoom", gameState.currentZoom.toString(), 0)) {
+        if (ImGui.beginCombo("", gameState.currentZoom.toString(), 0)) {
             for (var zoom : Zoom.values()) {
                 ImBoolean isSelect = new ImBoolean();
                 if (ImGui.selectable(zoom.toString(), isSelect, 0)) {
@@ -99,7 +105,7 @@ public class DebugUi {
         }
 
         ImGui.separator();
-        ImGui.text("Mouse position");
+        ImGui.text("Mouse position in Benno4j");
         ImGui.text("Mouse x: " + MouseInput.getX());
         ImGui.text("Mouse y: " + MouseInput.getY());
 
@@ -108,6 +114,12 @@ public class DebugUi {
         ImGui.text("Tile under mouse");
         ImGui.text("Tile x: " + selTile.x);
         ImGui.text("Tile y: " + selTile.y);
+
+        ImGui.separator();
+        showMiniMap();
+
+        ImGui.separator();
+        showImGuiInfo();
 
         ImGui.end();
     }
@@ -134,5 +146,43 @@ public class DebugUi {
             gameState.camera.positionInTileUnits.y = camY[0];
             gameState.camera.resetPosition(gameState.currentZoom);
         }
+    }
+
+    /**
+     * Shows the minimap.
+     */
+    private void showMiniMap() {
+        if (miniMapId == 0) {
+            miniMapId = gameState.world.getMiniMap().getMiniMapTexture().getId();
+        }
+
+        ImGui.text("For debug only");
+        ImGui.text("Next image pos x: " + ImGui.getCursorScreenPosX());
+        ImGui.text("Next image pos y: " + ImGui.getCursorScreenPosY());
+
+        ImGui.image(miniMapId,
+                MINIMAP_WIDTH * 0.5f, MINIMAP_HEIGHT * 0.5f,
+                0, 0, 1, 1
+        );
+    }
+
+    /**
+     * Info
+     */
+    private void showImGuiInfo() {
+        ImGui.text("Mouse position in OS");
+        ImGui.text("OS Mouse x: " + ImGui.getMousePosX());
+        ImGui.text("OS Mouse y: " + ImGui.getMousePosY());
+
+        ImGui.separator();
+        var io = ImGui.getIO();
+        ImGui.text("ImGui main viewport");
+        ImGui.text("main x: " + ImGui.getMainViewport().getPosX());
+        ImGui.text("main y: " + ImGui.getMainViewport().getPosY());
+
+        ImGui.separator();
+        ImGui.text("Benno4j display size");
+        ImGui.text("width: " + io.getDisplaySizeX());
+        ImGui.text("height: " + io.getDisplaySizeY());
     }
 }

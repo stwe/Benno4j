@@ -27,7 +27,7 @@ public class GameState extends ApplicationState {
     // Member
     //-------------------------------------------------
 
-    private World world;
+    public World world;
 
     public Camera camera;
 
