@@ -12,6 +12,7 @@ import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.Tile;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;
+import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.MiniMapRenderer;
 import de.sg.benno.renderer.SimpleTextureRenderer;
 import de.sg.benno.state.Context;
@@ -21,6 +22,7 @@ import de.sg.ogl.buffer.Fbo;
 import de.sg.ogl.resource.Texture;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
@@ -84,6 +86,11 @@ public class MiniMap {
     private final Context context;
 
     /**
+     * The {@link Camera} object.
+     */
+    private final Camera camera;
+
+    /**
      * A {@link TileGraphic} for each map cell.
      */
     private final ArrayList<TileGraphic> miniMapTiles = new ArrayList<>();
@@ -122,13 +129,15 @@ public class MiniMap {
      *
      * @param provider The {@link WorldData} object.
      * @param context The {@link Context} object.
+     * @param camera The {@link Camera} object to display in the minimap.
      * @throws Exception If an error is thrown.
      */
-    public MiniMap(WorldData provider, Context context) throws Exception {
+    public MiniMap(WorldData provider, Context context, Camera camera) throws Exception {
         LOGGER.debug("Creates MiniMap object.");
 
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
         this.context = Objects.requireNonNull(context, "context must not be null");
+        this.camera = Objects.requireNonNull(camera, "camera must not be null");
 
         init();
     }
@@ -195,6 +204,12 @@ public class MiniMap {
      * Creates tiles for the MiniMap.
      */
     private void createTiles() {
+        var cameraPosition = new Vector2i((int)camera.position.x, (int)camera.position.y);
+
+        // todo: temo code: get in SGFX
+        var cameraMapStart = TileUtil.screenToWorld(cameraPosition.x, cameraPosition.y, 8, 4);
+        var cameraMapEnd = TileUtil.screenToWorld(cameraPosition.x + (1024/4), cameraPosition.y + (768/2), 8, 4);
+
         for (int y = 0; y < WORLD_HEIGHT; y++) {
             for (int x = 0; x < WORLD_WIDTH; x++) {
                 var tile = new TileGraphic();
@@ -236,6 +251,28 @@ public class MiniMap {
                     if ((x >= ship.xPos && x <= ship.xPos + 5) && (y >= ship.yPos && y <= ship.yPos + 5)) {
                         tile.color = SHIP_COLOR;
                         break;
+                    }
+                }
+
+                // camera
+                // todo: Temp code
+                if ( ((x >= cameraMapStart.x) && (x <= cameraMapEnd.x)) &&
+                     ((y >= cameraMapStart.y) && (y <= cameraMapEnd.y))
+                ) {
+                    if (x == cameraMapStart.x) {
+                        tile.color = new Vector3f(1.0f, 0.0f, 0.0f);
+                    }
+
+                    if (x == cameraMapEnd.x) {
+                        tile.color = new Vector3f(1.0f, 0.0f, 0.0f);
+                    }
+
+                    if (y == cameraMapStart.y) {
+                        tile.color = new Vector3f(1.0f, 0.0f, 0.0f);
+                    }
+
+                    if (y == cameraMapEnd.y) {
+                        tile.color = new Vector3f(1.0f, 0.0f, 0.0f);
                     }
                 }
 

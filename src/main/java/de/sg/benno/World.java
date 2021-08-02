@@ -19,7 +19,6 @@ import de.sg.benno.state.Context;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
@@ -149,10 +148,8 @@ public class World {
         // create terrain
         terrain = new Terrain(provider, context);
 
-        // create minimap
-        miniMap = new MiniMap(provider, context);
-
-        // render minimap to a Fbo (creates a texture)
+        // create and render minimap to a Fbo (creates a texture)
+        miniMap = new MiniMap(provider, context, camera);
         miniMap.renderToFbo();
     }
 
