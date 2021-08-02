@@ -11,6 +11,7 @@ package de.sg.benno.file;
 import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.Util;
 import de.sg.benno.chunk.Chunk;
+import de.sg.benno.renderer.Zoom;
 import de.sg.ogl.resource.Texture;
 
 import javax.imageio.ImageIO;
@@ -40,7 +41,7 @@ public class BshFile extends BinaryFile {
     //-------------------------------------------------
 
     /**
-     * Represents the type of an Bsh image.
+     * Represents the type of Bsh image.
      */
     private enum BshType {
         /**
@@ -223,6 +224,12 @@ public class BshFile extends BinaryFile {
      */
     private final Chunk chunk0;
 
+    /**
+     * Store the {@link Zoom} if this a zoomable file.
+     * To generate a valid and readable output path for png files.
+     */
+    private final Zoom zoom;
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -232,14 +239,16 @@ public class BshFile extends BinaryFile {
      *
      * @param path The {@link Path} to the Bsh file.
      * @param palette The color values from the <i>stadtfld.col</i> file.
+     * @param zoom {@link Zoom}
      * @param saveAsPng If the variable is true, all images are saved as a Png in {@link #OUTPUT_DIR}.
      * @throws IOException If an I/O error is thrown.
      */
-    BshFile(Path path, int[] palette, boolean saveAsPng) throws IOException {
+    public BshFile(Path path, int[] palette, Zoom zoom, boolean saveAsPng) throws IOException {
         super(Objects.requireNonNull(path, "path must not be null"));
 
         LOGGER.debug("Creates BshFile object from file {}.", path);
 
+        this.zoom = zoom;
         this.palette = Objects.requireNonNull(palette, "palette must not be null");
         this.saveAsPng = saveAsPng;
 
@@ -254,6 +263,18 @@ public class BshFile extends BinaryFile {
         chunk0 = getChunk(0);
 
         readDataFromChunks();
+    }
+
+    /**
+     * Constructs a new {@link BshFile} object.
+     *
+     * @param path The {@link Path} to the Bsh file.
+     * @param palette The color values from the <i>stadtfld.col</i> file.
+     * @param saveAsPng If the variable is true, all images are saved as a Png in {@link #OUTPUT_DIR}.
+     * @throws IOException If an I/O error is thrown.
+     */
+    public BshFile(Path path, int[] palette, boolean saveAsPng) throws IOException {
+        this(path, palette, null, saveAsPng);
     }
 
     //-------------------------------------------------
@@ -312,10 +333,11 @@ public class BshFile extends BinaryFile {
      * Clean up {@link #bshTextures}.
      */
     public void cleanUp() {
-        LOGGER.debug("Clean up {} OpenGL textures.", bshTextures.size());
+        LOGGER.debug("Clean up {} bsh textures.", bshTextures.size());
 
         for (var bshTexture : bshTextures) {
             bshTexture.getTexture().cleanUp();
+            bshTexture.getBufferedImage().getGraphics().dispose();
         }
     }
 
@@ -613,7 +635,13 @@ public class BshFile extends BinaryFile {
     private void saveAsPng(BufferedBshImage bufferedBshImage) throws IOException {
         var bshFilename = getPath().getFileName().toString().toLowerCase();
         var preName = bshFilename.substring(0, bshFilename.lastIndexOf("."));
-        var outDir = OUTPUT_DIR + "/bsh/"+ preName;
+        var outDir = OUTPUT_DIR + "/bsh/";
+
+        if (zoom != null) {
+            outDir += zoom + "/" + preName;
+        } else {
+            outDir += preName;
+        }
 
         Files.createDirectories(Paths.get(outDir));
 

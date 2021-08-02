@@ -12,7 +12,26 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Objects;
 
+import static org.lwjgl.opengl.GL11.GL_MAX_TEXTURE_SIZE;
+import static org.lwjgl.opengl.GL11.glGetIntegerv;
+
 public class Util {
+
+    //-------------------------------------------------
+    // OpenGL
+    //-------------------------------------------------
+
+    /**
+     * The max width and height of a 1D or 2D texture that the GPU supports.
+     *
+     * @return The max width and height of a texture.
+     */
+    public static int getMaxTextureSize() {
+        int[] maxSize = new int[1];
+        glGetIntegerv(GL_MAX_TEXTURE_SIZE, maxSize);
+
+        return maxSize[0];
+    }
 
     //-------------------------------------------------
     // Load file

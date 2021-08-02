@@ -10,11 +10,15 @@ package de.sg.benno.file;
 
 import de.sg.benno.BennoConfig;
 import de.sg.benno.BennoRuntimeException;
+import de.sg.benno.Util;
 import de.sg.benno.chunk.Island;
 import de.sg.benno.data.DataFiles;
 import de.sg.benno.renderer.Zoom;
 
+import javax.imageio.ImageIO;
 import javax.swing.filechooser.FileSystemView;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -200,6 +204,11 @@ public class BennoFiles {
      */
     private final DataFiles dataFiles;
 
+    /**
+     * todo
+     */
+    private ArrayList<BufferedImage> atlasImages = new ArrayList<>();
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -223,6 +232,8 @@ public class BennoFiles {
         preloadFiles();
 
         dataFiles = new DataFiles();
+
+        //createAtlas();
     }
 
     //-------------------------------------------------
@@ -395,6 +406,10 @@ public class BennoFiles {
         LOGGER.debug("Successfully initialized filesystem.");
     }
 
+    //-------------------------------------------------
+    // Load
+    //-------------------------------------------------
+
     /**
      * Preloads some files.
      *
@@ -415,16 +430,37 @@ public class BennoFiles {
         //loadBshFile(InterfaceBshFileName.TOOLS); // 670
 
         LOGGER.debug("Preload buildings and terrain.");
-        loadBshFile(getZoomableBshFilePath(Zoom.GFX, ZoomableBshFileName.STADTFLD_BSH), false);
-        loadBshFile(getZoomableBshFilePath(Zoom.MGFX, ZoomableBshFileName.STADTFLD_BSH), false);
-        loadBshFile(getZoomableBshFilePath(Zoom.SGFX, ZoomableBshFileName.STADTFLD_BSH), false);
+        loadBshFile(getZoomableBshFilePath(Zoom.GFX, ZoomableBshFileName.STADTFLD_BSH), Zoom.GFX, BennoConfig.CREATE_STADTFLD_GFX_PNG);
+        loadBshFile(getZoomableBshFilePath(Zoom.MGFX, ZoomableBshFileName.STADTFLD_BSH), Zoom.MGFX, BennoConfig.CREATE_STADTFLD_MGFX_PNG);
+        loadBshFile(getZoomableBshFilePath(Zoom.SGFX, ZoomableBshFileName.STADTFLD_BSH), Zoom.SGFX, BennoConfig.CREATE_STADTFLD_SGFX_PNG);
 
         LOGGER.debug("Preload ships.");
-        loadBshFile(getZoomableBshFilePath(Zoom.GFX, ZoomableBshFileName.SHIP_BSH), false);
-        loadBshFile(getZoomableBshFilePath(Zoom.MGFX, ZoomableBshFileName.SHIP_BSH), false);
-        loadBshFile(getZoomableBshFilePath(Zoom.SGFX, ZoomableBshFileName.SHIP_BSH), false);
+        loadBshFile(getZoomableBshFilePath(Zoom.GFX, ZoomableBshFileName.SHIP_BSH), Zoom.GFX, BennoConfig.CREATE_SHIP_GFX_PNG);
+        loadBshFile(getZoomableBshFilePath(Zoom.MGFX, ZoomableBshFileName.SHIP_BSH), Zoom.MGFX, BennoConfig.CREATE_SHIP_MGFX_PNG);
+        loadBshFile(getZoomableBshFilePath(Zoom.SGFX, ZoomableBshFileName.SHIP_BSH), Zoom.SGFX, BennoConfig.CREATE_SHIP_SGFX_PNG);
 
         LOGGER.debug("Successfully preload files.");
+    }
+
+    /**
+     * Loads a BSH file from the given {@link Path} and creates a {@link BshFile} object.
+     * The loaded {@link BshFile} object is saved in {@link #bshFiles}.
+     *
+     * @param path The {@link Path} to the BSH file.
+     * @param zoom The {@link Zoom}
+     * @param saveAsPng Is true if the textures should also be saved as Png.
+     * @throws IOException If an I/O error is thrown.
+     */
+    private void loadBshFile(Path path, Zoom zoom, boolean saveAsPng) throws IOException {
+        bshFiles.put(
+                path,
+                new BshFile(
+                        path,
+                        Objects.requireNonNull(paletteFile, "paletteFile must not be null").getPalette(),
+                        zoom,
+                        saveAsPng
+                )
+        );
     }
 
     /**
@@ -436,14 +472,11 @@ public class BennoFiles {
      * @throws IOException If an I/O error is thrown.
      */
     private void loadBshFile(Path path, boolean saveAsPng) throws IOException {
-        bshFiles.put(
-                path,
-                new BshFile(path, Objects.requireNonNull(paletteFile, "paletteFile must not be null").getPalette(), saveAsPng)
-        );
+        loadBshFile(path, null, saveAsPng);
     }
 
     /**
-     * Loads a BSH file and creates a {@link BshFile} object.
+     * Loads a BSH file from the given {@link Path} and creates a {@link BshFile} object.
      * The loaded {@link BshFile} object is saved in {@link #bshFiles}.
      *
      * @param path The {@link Path} to the BSH file.
@@ -451,6 +484,80 @@ public class BennoFiles {
      */
     private void loadBshFile(Path path) throws IOException {
         loadBshFile(path, false);
+    }
+
+    //-------------------------------------------------
+    // Tile atlas
+    //-------------------------------------------------
+
+    private void createAtlas(/*Zoom zoom*/) throws IOException {
+        /*
+        32 * 143 MGFX
+        64 * 286 GFX
+        16 *  71 SGFX
+
+        Anzhal aller Bilder: 5964
+
+        ----------
+        x:  64 * 64 = 4096   = 1024 Bilder pro Textur = 6 Texturen für 5964
+        y: 286 * 16 = 4576
+        ----------
+
+        640 + 41 erstes Wasser tile 681
+        */
+
+        if (Util.getMaxTextureSize() < 286 * 16) {
+            throw new BennoRuntimeException("The supported texture size should be at least " + 286 * 16);
+        }
+
+        var stadtfldFile = getStadtfldBshFile(Zoom.GFX);
+        var bshTextures = stadtfldFile.getBshTextures();
+
+        // 6 atlas images
+        var c = 0;
+        for (var i = 0; i < 6; i++) {
+            // new image
+            var atlas = new BufferedImage(4096, 4576, BufferedImage.TYPE_INT_ARGB);
+
+            // draw bsh images
+            for (var y = 0; y < 16; y++) { // 16 * 286 Pixel
+                for (var x = 0; x < 64; x++) { // 64 * 64 Pixel
+                    var g = atlas.getGraphics();
+                    // if index exists
+                    if (c >= 0 && c < bshTextures.size()) {
+                        // draw in atlas
+                        g.drawImage(bshTextures.get(c).getBufferedImage(), x * 64, y * 286, null);
+                    }
+
+                    c++;
+                }
+            }
+
+            // store atlas
+            atlasImages.add(atlas);
+        }
+
+        if (!atlasImages.isEmpty()) {
+            c = 0;
+
+            Files.createDirectories(Paths.get("out/atlas/"));
+
+            for (var atlas : atlasImages) {
+                String filename = "out/atlas/" + c + ".png";
+
+                var file = new File(filename);
+                if (!file.exists()) {
+                    var result = file.createNewFile();
+                    if (!result) {
+                        throw new BennoRuntimeException("Unexpected error.");
+                    }
+                }
+
+                ImageIO.write(atlas, "PNG", file);
+
+                c++;
+            }
+        }
     }
 
     //-------------------------------------------------

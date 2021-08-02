@@ -22,4 +22,12 @@ public class BennoConfig {
     public static int SGFX_CAMERA_SPEED;
 
     public static int DEEP_WATER_BUILDING_ID;
+
+    public static boolean CREATE_STADTFLD_GFX_PNG;
+    public static boolean CREATE_STADTFLD_MGFX_PNG;
+    public static boolean CREATE_STADTFLD_SGFX_PNG;
+
+    public static boolean CREATE_SHIP_GFX_PNG;
+    public static boolean CREATE_SHIP_MGFX_PNG;
+    public static boolean CREATE_SHIP_SGFX_PNG;
 }
