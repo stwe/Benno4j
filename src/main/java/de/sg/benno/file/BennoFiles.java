@@ -207,7 +207,7 @@ public class BennoFiles {
     /**
      * todo
      */
-    private ArrayList<BufferedImage> atlasImages = new ArrayList<>();
+    private final ArrayList<BufferedImage> atlasImages = new ArrayList<>();
 
     //-------------------------------------------------
     // Ctors.
@@ -233,7 +233,7 @@ public class BennoFiles {
 
         dataFiles = new DataFiles();
 
-        //createAtlas();
+        //createGfxAtlas();
     }
 
     //-------------------------------------------------
@@ -371,6 +371,10 @@ public class BennoFiles {
         for (var bshFile : bshFiles.values()) {
             bshFile.cleanUp();
         }
+
+        for (var atlas : atlasImages) {
+            atlas.getGraphics().dispose();
+        }
     }
 
     //-------------------------------------------------
@@ -490,43 +494,42 @@ public class BennoFiles {
     // Tile atlas
     //-------------------------------------------------
 
-    private void createAtlas(/*Zoom zoom*/) throws IOException {
-        /*
-        32 * 143 MGFX
-        64 * 286 GFX
-        16 *  71 SGFX
+    public static float getGfxTextureXOffset(int textureIndex, int nrOfRows) {
+        int column = textureIndex % nrOfRows;
+        return (float)column / (float)nrOfRows;
+    }
 
-        Anzhal aller Bilder: 5964
+    public static float getGfxTextureYOffset(int textureIndex, int nrOfRows) {
+        int row = textureIndex / nrOfRows;
+        return (float)row / (float)nrOfRows;
+    }
 
-        ----------
-        x:  64 * 64 = 4096   = 1024 Bilder pro Textur = 6 Texturen für 5964
-        y: 286 * 16 = 4576
-        ----------
+    private void createGfxAtlas() throws IOException {
+        var nrOfAtlasImages = 24; // 24 textures a (16 * 16) pics = 6144
+        var nrOfRows = 16;
+        var maxWidth = 64;
+        var maxHeight = 286;
 
-        640 + 41 erstes Wasser tile 681
-        */
-
-        if (Util.getMaxTextureSize() < 286 * 16) {
-            throw new BennoRuntimeException("The supported texture size should be at least " + 286 * 16);
+        if (Util.getMaxTextureSize() < maxHeight * nrOfRows) {
+            throw new BennoRuntimeException("The supported texture size should be at least " + maxHeight * nrOfRows);
         }
 
         var stadtfldFile = getStadtfldBshFile(Zoom.GFX);
         var bshTextures = stadtfldFile.getBshTextures();
 
-        // 6 atlas images
         var c = 0;
-        for (var i = 0; i < 6; i++) {
-            // new image
-            var atlas = new BufferedImage(4096, 4576, BufferedImage.TYPE_INT_ARGB);
+        for (var i = 0; i < nrOfAtlasImages; i++) {
+            // new atlas
+            var atlas = new BufferedImage(maxWidth * nrOfRows, maxHeight * nrOfRows, BufferedImage.TYPE_INT_ARGB);
 
             // draw bsh images
-            for (var y = 0; y < 16; y++) { // 16 * 286 Pixel
-                for (var x = 0; x < 64; x++) { // 64 * 64 Pixel
+            for (var y = 0; y < nrOfRows; y++) {
+                for (var x = 0; x < nrOfRows; x++) {
                     var g = atlas.getGraphics();
-                    // if index exists
+                    // only if index exists
                     if (c >= 0 && c < bshTextures.size()) {
                         // draw in atlas
-                        g.drawImage(bshTextures.get(c).getBufferedImage(), x * 64, y * 286, null);
+                        g.drawImage(bshTextures.get(c).getBufferedImage(), x * maxWidth, y * maxHeight, null);
                     }
 
                     c++;
@@ -540,10 +543,10 @@ public class BennoFiles {
         if (!atlasImages.isEmpty()) {
             c = 0;
 
-            Files.createDirectories(Paths.get("out/atlas/"));
+            Files.createDirectories(Paths.get("out/atlas/GFX/"));
 
             for (var atlas : atlasImages) {
-                String filename = "out/atlas/" + c + ".png";
+                String filename = "out/atlas/GFX/" + c + ".png";
 
                 var file = new File(filename);
                 if (!file.exists()) {
