@@ -176,7 +176,7 @@ public class World {
      * @param zoom The current {@link Zoom}.
      */
     public void render(boolean wireframe, Zoom zoom) {
-        islandAtlasRenderer.render(camera, new Vector2f(0.0f, 0.0f), new Vector2f(64.0f, 286.0f));
+        islandAtlasRenderer.render(camera, new Vector2f(0.0f, 0.0f), new Vector2f(64.0f, 32.0f));
 
         // render water
         //water.render(camera, wireframe, zoom);

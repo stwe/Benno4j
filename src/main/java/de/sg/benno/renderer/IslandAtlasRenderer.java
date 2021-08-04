@@ -129,7 +129,8 @@ public class IslandAtlasRenderer {
      * @param size The size of the texture.
      */
     public void render(Camera camera, Vector2f position, Vector2f size) {
-        OpenGL.enableAlphaBlending();
+        //OpenGL.enableAlphaBlending();
+        //OpenGL.enableWireframeMode();
 
         shader.bind();
         Texture.bindForReading(textureArrayId, GL_TEXTURE0, GL_TEXTURE_2D_ARRAY);
@@ -147,7 +148,7 @@ public class IslandAtlasRenderer {
         shader.setUniform("nrOfRows", 16.0f);
 
         // example offset
-        shader.setUniform("offset", BennoFiles.getGfxTextureOffset(30, 16));
+        shader.setUniform("offset", BennoFiles.getGfxTextureOffset(1, 16));
 
         vao.bind();
         vao.drawPrimitives(GL_TRIANGLES);
@@ -156,7 +157,7 @@ public class IslandAtlasRenderer {
         Shader.unbind();
         Texture.unbind();
 
-        OpenGL.disableBlending();
+        //OpenGL.disableBlending();
     }
 
     //-------------------------------------------------

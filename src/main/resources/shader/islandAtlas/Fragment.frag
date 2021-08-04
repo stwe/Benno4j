@@ -6,15 +6,6 @@ in vec2 vUv;
 
 uniform sampler2DArray sampler;
 
-/*
-(0, 1) --------- (1, 1)
-  |                |
-  |                |
-  |                |
-  |                |
-(0, 0) --------- (1, 0)
-*/
-
 void main()
 {
     // index = 0
