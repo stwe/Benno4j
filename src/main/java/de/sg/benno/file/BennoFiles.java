@@ -14,6 +14,7 @@ import de.sg.benno.Util;
 import de.sg.benno.chunk.Island;
 import de.sg.benno.data.DataFiles;
 import de.sg.benno.renderer.Zoom;
+import org.joml.Vector2f;
 
 import javax.imageio.ImageIO;
 import javax.swing.filechooser.FileSystemView;
@@ -205,7 +206,7 @@ public class BennoFiles {
     private final DataFiles dataFiles;
 
     /**
-     * todo
+     * todo temp var
      */
     private final ArrayList<BufferedImage> atlasImages = new ArrayList<>();
 
@@ -493,6 +494,13 @@ public class BennoFiles {
     //-------------------------------------------------
     // Tile atlas
     //-------------------------------------------------
+
+    public static Vector2f getGfxTextureOffset(int textureIndex, int nrOfRows) {
+        return new Vector2f(
+                getGfxTextureXOffset(textureIndex, nrOfRows),
+                getGfxTextureYOffset(textureIndex, nrOfRows)
+                );
+    }
 
     public static float getGfxTextureXOffset(int textureIndex, int nrOfRows) {
         int column = textureIndex % nrOfRows;

@@ -69,6 +69,10 @@ public class ImageFile {
         return image;
     }
 
+    public int[] getArgb() {
+        return image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
+    }
+
     public short[] getRGB(int x, int y) {
         int pos = (y * pixelLength * width) + (x * pixelLength);
         short[] rgb = new short[4];

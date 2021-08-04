@@ -89,6 +89,7 @@ public class World {
     private final HashMap<Zoom, ArrayList<TileGraphic>> shipTiles = new HashMap<>();
     private TileGraphicRenderer tileGraphicRenderer;
     private BshFile shipBshFile;
+    private IslandAtlasRenderer islandAtlasRenderer;
 
     //-------------------------------------------------
     // Ctors.
@@ -137,6 +138,8 @@ public class World {
      * @throws Exception If an error is thrown.
      */
     private void init() throws Exception {
+        islandAtlasRenderer = new IslandAtlasRenderer(context);
+
         // todo tmp code
         shipBshFile = this.bennoFiles.getShipBshFile(Zoom.GFX);
         tileGraphicRenderer = new TileGraphicRenderer(context);
@@ -173,15 +176,17 @@ public class World {
      * @param zoom The current {@link Zoom}.
      */
     public void render(boolean wireframe, Zoom zoom) {
+        islandAtlasRenderer.render(camera, new Vector2f(0.0f, 0.0f), new Vector2f(64.0f, 286.0f));
+
         // render water
-        water.render(camera, wireframe, zoom);
+        //water.render(camera, wireframe, zoom);
 
         // render terrain
-        terrain.render(camera, wireframe, zoom);
+        //terrain.render(camera, wireframe, zoom);
 
         // todo tmp code 93, 240
-        var t = shipTiles.get(Zoom.GFX).get(0);
-        tileGraphicRenderer.render(camera, t, shipBshFile);
+        //var t = shipTiles.get(Zoom.GFX).get(0);
+        //tileGraphicRenderer.render(camera, t, shipBshFile);
     }
 
     //-------------------------------------------------
