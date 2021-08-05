@@ -85,19 +85,19 @@ public class DebugUi {
         ImGui.begin("Debug", windowFlags);
 
         ImGui.text("Camera position");
-        ImGui.text("Camera screen space x: " + gameState.camera.position.x + " (" + gameState.camera.positionInTileUnits.x+")");
-        ImGui.text("Camera screen space y: " + gameState.camera.position.y + " (" + gameState.camera.positionInTileUnits.y+")");
+        ImGui.text("Camera screen space x: " + gameState.getWorld().getCamera().position.x + " (" + gameState.getWorld().getCamera().positionInTileUnits.x+")");
+        ImGui.text("Camera screen space y: " + gameState.getWorld().getCamera().position.y + " (" + gameState.getWorld().getCamera().positionInTileUnits.y+")");
 
         cameraSlider();
 
         ImGui.separator();
         ImGui.text("Zoom");
-        if (ImGui.beginCombo("", gameState.currentZoom.toString(), 0)) {
+        if (ImGui.beginCombo("", gameState.getWorld().getCurrentZoom().toString(), 0)) {
             for (var zoom : Zoom.values()) {
                 ImBoolean isSelect = new ImBoolean();
                 if (ImGui.selectable(zoom.toString(), isSelect, 0)) {
-                    gameState.currentZoom = zoom;
-                    gameState.camera.resetPosition(zoom);
+                    gameState.getWorld().setCurrentZoom(zoom);
+                    gameState.getWorld().getCamera().resetPosition(zoom);
                 }
             }
 
@@ -109,7 +109,7 @@ public class DebugUi {
         ImGui.text("Mouse x: " + MouseInput.getX());
         ImGui.text("Mouse y: " + MouseInput.getY());
 
-        var selTile = MousePicker.getSelectedTile(gameState.camera, gameState.currentZoom);
+        var selTile = MousePicker.getSelectedTile(gameState.getWorld().getCamera(), gameState.getWorld().getCurrentZoom());
         ImGui.separator();
         ImGui.text("Tile under mouse");
         ImGui.text("Tile x: " + selTile.x);
@@ -132,19 +132,19 @@ public class DebugUi {
         ImGui.text("Camera fast screen space change");
 
         int[] camX = new int[1];
-        camX[0] = gameState.camera.positionInTileUnits.x;
+        camX[0] = gameState.getWorld().getCamera().positionInTileUnits.x;
         if (ImGui.sliderInt("x", camX, -World.WORLD_WIDTH, World.WORLD_WIDTH)) {
-            camX[0] += camX[0] % gameState.currentZoom.speedFactor;
-            gameState.camera.positionInTileUnits.x = camX[0];
-            gameState.camera.resetPosition(gameState.currentZoom);
+            camX[0] += camX[0] % gameState.getWorld().getCurrentZoom().speedFactor;
+            gameState.getWorld().getCamera().positionInTileUnits.x = camX[0];
+            gameState.getWorld().getCamera().resetPosition(gameState.getWorld().getCurrentZoom());
         }
 
         int[] camY = new int[1];
-        camY[0] = gameState.camera.positionInTileUnits.y;
+        camY[0] = gameState.getWorld().getCamera().positionInTileUnits.y;
         if (ImGui.sliderInt("y", camY, -World.WORLD_HEIGHT, World.WORLD_HEIGHT)) {
-            camY[0] += camY[0] % gameState.currentZoom.speedFactor;
-            gameState.camera.positionInTileUnits.y = camY[0];
-            gameState.camera.resetPosition(gameState.currentZoom);
+            camY[0] += camY[0] % gameState.getWorld().getCurrentZoom().speedFactor;
+            gameState.getWorld().getCamera().positionInTileUnits.y = camY[0];
+            gameState.getWorld().getCamera().resetPosition(gameState.getWorld().getCurrentZoom());
         }
     }
 

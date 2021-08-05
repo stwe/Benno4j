@@ -10,14 +10,16 @@ package de.sg.benno;
 
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.WorldData;
-import de.sg.benno.file.BennoFiles;
 import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.*;
 import de.sg.benno.state.Context;
+import de.sg.ogl.input.KeyInput;
 
 import java.util.Objects;
 
 import static de.sg.ogl.Log.LOGGER;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_3;
 
 /**
  * Represents a complete game world.
@@ -58,9 +60,14 @@ public class World {
     private final Camera camera;
 
     /**
-     * The {@link BennoFiles} object.
+     * The current {@link Zoom}.
      */
-    private final BennoFiles bennoFiles;
+    private Zoom currentZoom = Zoom.GFX;
+
+    /**
+     * Enable and disable wireframe mode.
+     */
+    private boolean wireframe = false;
 
     /**
      * The {@link Water} object.
@@ -86,17 +93,14 @@ public class World {
      *
      * @param provider A {@link WorldData} object (e.g. {@link de.sg.benno.file.GamFile}).
      * @param context The {@link Context} object.
-     * @param camera The {@link Camera} object.
      * @throws Exception If an error is thrown.
      */
-    public World(WorldData provider, Context context, Camera camera) throws Exception {
+    public World(WorldData provider, Context context) throws Exception {
         LOGGER.debug("Creates World object from provider class {}.", provider.getClass());
 
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
         this.context = Objects.requireNonNull(context, "context must not be null");
-        this.camera = Objects.requireNonNull(camera, "camera must not be null");
-
-        this.bennoFiles = this.context.bennoFiles;
+        this.camera = new Camera(40, 260, currentZoom);
 
         init();
     }
@@ -106,12 +110,43 @@ public class World {
     //-------------------------------------------------
 
     /**
+     * Get {@link #camera}.
+     *
+     * @return {@link #camera}
+     */
+    public Camera getCamera() {
+        return camera;
+    }
+
+    /**
+     * Get {@link #currentZoom}.
+     *
+     * @return {@link #currentZoom}
+     */
+    public Zoom getCurrentZoom() {
+        return currentZoom;
+    }
+
+    /**
      * Get {@link #miniMap}.
      *
      * @return {@link #miniMap}
      */
     public MiniMap getMiniMap() {
         return miniMap;
+    }
+
+    //-------------------------------------------------
+    // Setter
+    //-------------------------------------------------
+
+    /**
+     * Set {@link #currentZoom}.
+     *
+     * @param currentZoom {@link #currentZoom}
+     */
+    public void setCurrentZoom(Zoom currentZoom) {
+        this.currentZoom = currentZoom;
     }
 
     //-------------------------------------------------
@@ -140,26 +175,49 @@ public class World {
     //-------------------------------------------------
 
     /**
+     * Handle mouse and keyboard input.
+     */
+    public void input() {
+        // wireframe flag
+        if (KeyInput.isKeyPressed(GLFW_KEY_G)) {
+            wireframe = !wireframe;
+        }
+
+        // change zoom
+        if (KeyInput.isKeyPressed(GLFW_KEY_1)) {
+            currentZoom = Zoom.SGFX;
+            camera.resetPosition(currentZoom);
+        }
+
+        if (KeyInput.isKeyPressed(GLFW_KEY_2)) {
+            currentZoom = Zoom.MGFX;
+            camera.resetPosition(currentZoom);
+        }
+
+        if (KeyInput.isKeyPressed(GLFW_KEY_3)) {
+            currentZoom = Zoom.GFX;
+            camera.resetPosition(currentZoom);
+        }
+    }
+
+    /**
      * Update world.
      *
      * @param dt The delta time.
      */
     public void update(float dt) {
-
+        camera.update(currentZoom);
     }
 
     /**
      * Renders the world.
-     *
-     * @param wireframe Boolean flag for wireframe rendering.
-     * @param zoom The current {@link Zoom}.
      */
-    public void render(boolean wireframe, Zoom zoom) {
+    public void render() {
         // render water
-        water.render(camera, wireframe, zoom);
+        water.render(camera, wireframe, currentZoom);
 
         // render terrain
-        terrain.render(camera, wireframe, zoom);
+        terrain.render(camera, wireframe, currentZoom);
     }
 
     //-------------------------------------------------
@@ -175,8 +233,5 @@ public class World {
         water.cleanUp();
         terrain.cleanUp();
         miniMap.cleanUp();
-
-        // clean up passed data provider object (gamFile)
-        provider.cleanUp();
     }
 }

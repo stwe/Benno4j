@@ -9,11 +9,9 @@
 package de.sg.benno.state;
 
 import de.sg.benno.BennoRuntimeException;
-import de.sg.benno.input.Camera;
 import de.sg.benno.World;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.debug.DebugUi;
-import de.sg.benno.renderer.Zoom;
 import de.sg.ogl.input.KeyInput;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
@@ -27,24 +25,42 @@ public class GameState extends ApplicationState {
     // Member
     //-------------------------------------------------
 
+    /**
+     * The {@link World}.
+     */
     public World world;
 
-    public Camera camera;
-
-    public Zoom currentZoom = Zoom.GFX;
-
-    private boolean wireframe = false;
-
+    /**
+     * An ImGui with some debug info.
+     */
     private DebugUi debugUi;
 
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
+    /**
+     * Constructs a new {@link GameState} object.
+     *
+     * @param stateMachine The parent {@link StateMachine}.
+     */
     public GameState(StateMachine stateMachine) {
         super(stateMachine);
 
         LOGGER.debug("Creates GameState object.");
+    }
+
+    //-------------------------------------------------
+    // Getter
+    //-------------------------------------------------
+
+    /**
+     * Get {@link #world}.
+     *
+     * @return {@link #world}
+     */
+    public World getWorld() {
+        return world;
     }
 
     //-------------------------------------------------
@@ -58,8 +74,7 @@ public class GameState extends ApplicationState {
         }
 
         if (params[0] instanceof WorldData) {
-            camera = new Camera(40, 260, currentZoom);
-            world = new World((WorldData)params[0], (Context)getStateMachine().getStateContext(), camera);
+            world = new World((WorldData)params[0], (Context)getStateMachine().getStateContext());
         } else {
             throw new BennoRuntimeException("Invalid world data provider type.");
         }
@@ -69,42 +84,22 @@ public class GameState extends ApplicationState {
 
     @Override
     public void input() {
-        // exit game
         if (KeyInput.isKeyPressed(GLFW_KEY_ESCAPE)) {
             var context = (Context)getStateMachine().getStateContext();
             glfwSetWindowShouldClose(context.engine.getWindow().getWindowHandle(), true);
         }
 
-        // wireframe flag
-        if (KeyInput.isKeyPressed(GLFW_KEY_G)) {
-            wireframe = !wireframe;
-        }
-
-        // change zoom
-        if (KeyInput.isKeyPressed(GLFW_KEY_1)) {
-            currentZoom = Zoom.SGFX;
-            camera.resetPosition(currentZoom);
-        }
-
-        if (KeyInput.isKeyPressed(GLFW_KEY_2)) {
-            currentZoom = Zoom.MGFX;
-            camera.resetPosition(currentZoom);
-        }
-
-        if (KeyInput.isKeyPressed(GLFW_KEY_3)) {
-            currentZoom = Zoom.GFX;
-            camera.resetPosition(currentZoom);
-        }
+        world.input();
     }
 
     @Override
     public void update(float dt) {
-        camera.update(currentZoom);
+        world.update(dt);
     }
 
     @Override
     public void render() {
-        world.render(wireframe, currentZoom);
+        world.render();
     }
 
     @Override

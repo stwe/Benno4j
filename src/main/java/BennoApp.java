@@ -38,6 +38,11 @@ public class BennoApp extends SgOglApplication {
      */
     private StateMachine stateMachine;
 
+    /**
+     * A {@link GamFile} object.
+     */
+    private GamFile gamFile;
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -76,7 +81,7 @@ public class BennoApp extends SgOglApplication {
         //this.stateMachine.change("main_menu");
         if (!bennoFiles.getSavegameFilePaths().isEmpty()) {
             // the GAM file is the data provider for the world, which the GameState is created
-            var gamFile = new GamFile(bennoFiles.getSavegameFilePaths().get(0), stateContext);
+            gamFile = new GamFile(bennoFiles.getSavegameFilePaths().get(0), stateContext);
             this.stateMachine.change("game", gamFile);
         } else {
             throw new BennoRuntimeException("No savegame found.");
@@ -115,9 +120,15 @@ public class BennoApp extends SgOglApplication {
 
     @Override
     public void cleanUp() {
-        bennoFiles.cleanUp();
+        if (bennoFiles != null) {
+            bennoFiles.cleanUp();
+        }
 
         // clean up current state
         stateMachine.cleanUp();
+
+        if (gamFile != null) {
+            gamFile.cleanUp();
+        }
     }
 }

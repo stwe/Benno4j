@@ -41,6 +41,15 @@ out/
 .vscode/
 .code-workspace
 
+##############################
+## Atlas
+##############################
+
+/src/main/resources/atlas/GFX/
+
+##############################
+## Add libs
+##############################
 
 !/lib/linux/sgogl-java.jar
 !/lib/win/sgogl-java.jar
