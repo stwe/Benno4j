@@ -9,18 +9,12 @@
 package de.sg.benno;
 
 import de.sg.benno.chunk.Island5;
-import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.file.BennoFiles;
-import de.sg.benno.file.BshFile;
 import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.*;
 import de.sg.benno.state.Context;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Objects;
 
 import static de.sg.ogl.Log.LOGGER;
@@ -83,14 +77,6 @@ public class World {
      */
     private MiniMap miniMap;
 
-
-    // todo: new member
-
-    private final HashMap<Zoom, ArrayList<TileGraphic>> shipTiles = new HashMap<>();
-    private TileGraphicRenderer tileGraphicRenderer;
-    private BshFile shipBshFile;
-    private IslandAtlasRenderer islandAtlasRenderer;
-
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -138,13 +124,6 @@ public class World {
      * @throws Exception If an error is thrown.
      */
     private void init() throws Exception {
-        islandAtlasRenderer = new IslandAtlasRenderer(context);
-
-        // todo tmp code
-        shipBshFile = this.bennoFiles.getShipBshFile(Zoom.GFX);
-        tileGraphicRenderer = new TileGraphicRenderer(context);
-        initShips(Zoom.GFX);
-
         // create water
         water = new Water(provider, context);
 
@@ -176,45 +155,11 @@ public class World {
      * @param zoom The current {@link Zoom}.
      */
     public void render(boolean wireframe, Zoom zoom) {
-        islandAtlasRenderer.render(camera, new Vector2f(0.0f, 0.0f), new Vector2f(64.0f, 32.0f));
-
         // render water
-        //water.render(camera, wireframe, zoom);
+        water.render(camera, wireframe, zoom);
 
         // render terrain
-        //terrain.render(camera, wireframe, zoom);
-
-        // todo tmp code 93, 240
-        //var t = shipTiles.get(Zoom.GFX).get(0);
-        //tileGraphicRenderer.render(camera, t, shipBshFile);
-    }
-
-    //-------------------------------------------------
-    // Ship
-    //-------------------------------------------------
-
-    void initShips(Zoom zoom) {
-        LOGGER.debug("Create ship tiles for {}.", zoom.toString());
-
-        var ship = provider.getShips4List().get(0);
-
-        var shipBshTexture = shipBshFile.getBshTextures().get(ship.gfx);
-
-        var tile = new TileGraphic();
-        tile.gfx = ship.gfx;
-        tile.tileHeight = TileGraphic.TileHeight.SEA_LEVEL;
-        tile.worldPosition.x = ship.xPos;
-        tile.worldPosition.y = ship.yPos;
-
-        var screenPosition = TileUtil.worldToScreen(ship.xPos, ship.yPos, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf);
-        tile.screenPosition = new Vector2f(screenPosition);
-        tile.size = new Vector2f(shipBshTexture.getWidth(), shipBshTexture.getHeight());
-        tile.color = new Vector3f();
-
-        var tiles = new ArrayList<TileGraphic>();
-        tiles.add(tile);
-
-        shipTiles.put(zoom, tiles);
+        terrain.render(camera, wireframe, zoom);
     }
 
     //-------------------------------------------------
@@ -230,8 +175,6 @@ public class World {
         water.cleanUp();
         terrain.cleanUp();
         miniMap.cleanUp();
-
-        tileGraphicRenderer.cleanUp();
 
         // clean up passed data provider object (gamFile)
         provider.cleanUp();

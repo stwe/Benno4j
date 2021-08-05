@@ -103,10 +103,17 @@ public class Terrain {
      * @param zoom The current {@link Zoom}.
      */
     public void render(Camera camera, boolean wireframe, Zoom zoom) {
+        /*
         for (var island5 : provider.getIsland5List()) {
             var renderer = islandRenderer.get(island5);
             renderer.render(camera, wireframe, zoom);
         }
+        */
+
+        var island = provider.getIsland5List().get(0);
+        var renderer = islandRenderer.get(island);
+
+        renderer.render(camera, wireframe, Zoom.GFX);
     }
 
     //-------------------------------------------------
@@ -129,10 +136,11 @@ public class Terrain {
             }
 
             islandTileGraphics.put(island5, zoomTiles);
-
-            // create a renderer for each island, so we can render the island in each zoom
-            islandRenderer.put(island5, new IslandRenderer(islandTileGraphics.get(island5), context));
         }
+
+        var island = provider.getIsland5List().get(0);
+        var tiles = islandTileGraphics.get(island);
+        islandRenderer.put(island, new IslandRenderer(tiles, context));
 
         LOGGER.debug("The initialization process was completed successfully.");
     }

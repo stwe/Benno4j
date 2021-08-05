@@ -9,6 +9,8 @@
 package de.sg.benno.renderer;
 
 import de.sg.benno.chunk.TileGraphic;
+import de.sg.benno.file.BennoFiles;
+import de.sg.benno.file.ImageFile;
 import de.sg.benno.input.Camera;
 import de.sg.benno.state.Context;
 import de.sg.ogl.OpenGL;
@@ -19,12 +21,8 @@ import de.sg.ogl.resource.Shader;
 import de.sg.ogl.resource.Texture;
 import org.joml.Matrix4f;
 
-import java.awt.image.DataBufferInt;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL11.*;
@@ -52,6 +50,10 @@ public class IslandRenderer {
      */
     private static final String SHADER_NAME = "island";
 
+    private static final int NR_OF_GFX_ATLAS_IMAGES = 24; // 24 textures a (16 * 16) pics = 6144
+
+    private static final int NR_OF_GFX_ROWS = 16;
+
     //-------------------------------------------------
     // Member
     //-------------------------------------------------
@@ -72,6 +74,16 @@ public class IslandRenderer {
     private final Shader shader;
 
     /**
+     * The max x value for each {@link Zoom}.
+     */
+    private final HashMap<Zoom, Float> maxXList = new HashMap<>();
+
+    /**
+     * The max y value for each {@link Zoom}.
+     */
+    private final HashMap<Zoom, Float> maxYList = new HashMap<>();
+
+    /**
      * The model matrices for each {@link Zoom}.
      */
     private final HashMap<Zoom, ArrayList<Matrix4f>> modelMatrices = new HashMap<>();
@@ -81,18 +93,40 @@ public class IslandRenderer {
      */
     private int instances = 0;
 
-    private final HashMap<Zoom, Float> xWidth = new HashMap<>();
-    private final HashMap<Zoom, Float> yHeight = new HashMap<>();
+    /**
+     * Specifies from which atlas the texture is to be taken.
+     */
+    private final ArrayList<Integer> textureAtlasIndex = new ArrayList<>();
+
+    /**
+     * Specifies the index of the texture on the atlas.
+     */
+    private final ArrayList<Integer> textureIndex = new ArrayList<>();
+
+    /**
+     * Precalculated offsets.
+     */
+    private final ArrayList<Float> offsets = new ArrayList<>();
+
+    /**
+     * THe height of each texture.
+     */
+    private final HashMap<Zoom, ArrayList<Float>> yBuffer = new HashMap<>();
 
     /**
      * The {@link Vao} objects for each {@link Zoom}.
      */
     private final HashMap<Zoom, Vao> vaos = new HashMap<>();
 
-    private final HashMap<Zoom, ArrayList<Integer>> textureBuffer = new HashMap<>();
-    private final HashMap<Zoom, ArrayList<Float>> yBuffer = new HashMap<>();
-    private final HashMap<Zoom, HashMap<Integer, Integer>> gfxIndexMap = new HashMap<>();
-    private final HashMap<Zoom, Integer> textureArrayIds = new HashMap<>();
+    /**
+     * The texture array Id.
+     */
+    private int textureArrayId;
+
+    /**
+     * A list of GFX tile atlas images.
+     */
+    private final ArrayList<ImageFile> gfxAtlasTextures = new ArrayList<>();
 
     //-------------------------------------------------
     // Ctors.
@@ -101,56 +135,32 @@ public class IslandRenderer {
     public IslandRenderer(HashMap<Zoom, ArrayList<TileGraphic>> tileGraphics, Context context) throws Exception {
         this.tileGraphics = tileGraphics;
         this.context = context;
-
         this.shader = context.engine.getResourceManager().loadResource(Shader.class, SHADER_NAME);
 
         for (var zoom: Zoom.values()) {
-            xWidth.put(zoom, (float)context.bennoFiles.getStadtfldBshFile(zoom).getMaxX());
-            yHeight.put(zoom, (float)context.bennoFiles.getStadtfldBshFile(zoom).getMaxY());
+            // prepare data
+            maxXList.put(zoom, (float)context.bennoFiles.getStadtfldBshFile(zoom).getMaxX());
+            maxYList.put(zoom, (float)context.bennoFiles.getStadtfldBshFile(zoom).getMaxY());
             createModelMatrices(zoom);
-            createTextureIndex(zoom);
+            createTextureInfo(zoom);
+
+            // load data into gpu
             addVao(zoom);
         }
+
+        // load atlas textures into Gpu
+        createTextureArray();
     }
 
     //-------------------------------------------------
-    // Logic
+    // Prepare data
     //-------------------------------------------------
 
-    public void render(Camera camera, boolean wireframe, Zoom zoom) {
-        if (!wireframe) {
-            OpenGL.enableAlphaBlending();
-        } else {
-            OpenGL.enableWireframeMode();
-        }
-
-        shader.bind();
-
-        Texture.bindForReading(textureArrayIds.get(zoom), GL_TEXTURE0, GL_TEXTURE_2D_ARRAY);
-
-        shader.setUniform("projection", context.engine.getWindow().getOrthographicProjectionMatrix());
-        shader.setUniform("view", camera.getViewMatrix());
-        shader.setUniform("maxY", yHeight.get(zoom));
-        shader.setUniform("sampler", 0);
-
-        var vao = vaos.get(zoom);
-        vao.bind();
-        vao.drawInstanced(GL_TRIANGLES, instances);
-        vao.unbind();
-
-        Shader.unbind();
-
-        if (!wireframe) {
-            OpenGL.disableBlending();
-        } else {
-            OpenGL.disableWireframeMode();
-        }
-    }
-
-    //-------------------------------------------------
-    // Init
-    //-------------------------------------------------
-
+    /**
+     * Stores the model matrix of the {@link TileGraphic} objects in each zoom level for each instance.
+     *
+     * @param zoom {@link Zoom}
+     */
     private void createModelMatrices(Zoom zoom) {
         var matrices = new ArrayList<Matrix4f>();
         for (var tile : tileGraphics.get(zoom)) {
@@ -164,61 +174,76 @@ public class IslandRenderer {
         }
     }
 
-    private void createTextureIndex(Zoom zoom) {
-        var texturesToLoad = new HashSet<Integer>();
-        for (var tile : tileGraphics.get(zoom)) {
-            texturesToLoad.add(tile.gfx);
+    /**
+     * Stores the information about which texture is used.
+     *
+     * @param zoom {@link Zoom}
+     */
+    private void createTextureInfo(Zoom zoom) {
+        // todo: hardcoded for GFX
+        if (zoom == Zoom.GFX) {
+            for (var tile : tileGraphics.get(zoom)) {
+                var index = tile.gfx % (NR_OF_GFX_ROWS * NR_OF_GFX_ROWS);
+                textureIndex.add(index);
+
+                var offset = BennoFiles.getGfxTextureOffset(index, NR_OF_GFX_ROWS);
+                offsets.add(offset.x);
+                offsets.add(offset.y);
+
+                textureAtlasIndex.add(tile.gfx / (NR_OF_GFX_ROWS * NR_OF_GFX_ROWS));
+            }
         }
 
-        /*
-        529 = 0
-        679 = 1
-        200 = 2
-        800 = 3
-        etc
-        */
-        var zOffset = 0;
-        var indexMap = new HashMap<Integer, Integer>();
-        for (var texture : texturesToLoad) {
-            indexMap.put(texture, zOffset);
-            zOffset++;
-        }
-        gfxIndexMap.put(zoom, indexMap); // todo: immer gleich
-
-        var instance = 0;
-        var texBuffer = new ArrayList<Integer>();
+        // store for each zoom
         var heightBuffer = new ArrayList<Float>();
         for (var tile : tileGraphics.get(zoom)) {
-            var gfxMap = gfxIndexMap.get(zoom);
-            texBuffer.add(instance, gfxMap.get(tile.gfx));
-            heightBuffer.add(instance, tile.size.y);
-            instance++;
+            heightBuffer.add(tile.size.y);
         }
-        textureBuffer.put(zoom, texBuffer);
+
         yBuffer.put(zoom, heightBuffer);
     }
 
-    private void addVao(Zoom zoom) throws IOException {
+    //-------------------------------------------------
+    // Data into Gpu
+    //-------------------------------------------------
+
+    private void addVao(Zoom zoom) {
         createVao(zoom);
         addMeshVbo(zoom);
         addModelMatricesVbo(zoom);
         addTextureIndexVbo(zoom);
+        addTextureAtlasIndexVbo(zoom);
+        addTextureOffsetsVbo(zoom);
         addYVbo(zoom);
-        createTextureArray(zoom);
     }
 
+    /**
+     * Creates a new {@link Vao} for a given {@link Zoom}.
+     *
+     * @param zoom {@link Zoom}.
+     */
     private void createVao(Zoom zoom) {
         var vao = new Vao();
         vao.setDrawCount(DRAW_COUNT);
         vaos.put(zoom, vao);
     }
 
+    /**
+     * Stores a new 2D Quad to the {@link Vao} of the given {@link Zoom}.
+     *
+     * @param zoom {@link Zoom}.
+     */
     private void addMeshVbo(Zoom zoom) {
         var quadGeometry = context.engine.getResourceManager().loadGeometry(Geometry.GeometryId.QUAD_2D);
         var vao = vaos.get(zoom);
         vao.addVbo(Vertex2D.toFloatArray(quadGeometry.vertices), quadGeometry.defaultBufferLayout);
     }
 
+    /**
+     * Stores the model matrices of the given {@link Zoom} to the {@link Vao}.
+     *
+     * @param zoom {@link Zoom}.
+     */
     private void addModelMatricesVbo(Zoom zoom) {
         var vao = vaos.get(zoom);
         var matrices = modelMatrices.get(zoom);
@@ -252,10 +277,48 @@ public class IslandRenderer {
         var vbo = vao.addVbo();
 
         // store index (static draw)
-        vbo.storeIntegerInstances(textureBuffer.get(zoom), instances, GL_STATIC_DRAW);
+        vbo.storeIntegerInstances(textureIndex, instances, GL_STATIC_DRAW);
 
         // set buffer layout
         vbo.addIntAttribute(7, 1, 1, 0, true);
+
+        // unbind vao
+        vao.unbind();
+    }
+
+    private void addTextureAtlasIndexVbo(Zoom zoom) {
+        var vao = vaos.get(zoom);
+
+        // bind vao
+        vao.bind();
+
+        // create and add new vbo
+        var vbo = vao.addVbo();
+
+        // store index (static draw)
+        vbo.storeIntegerInstances(textureAtlasIndex, instances, GL_STATIC_DRAW);
+
+        // set buffer layout
+        vbo.addIntAttribute(8, 1, 1, 0, true);
+
+        // unbind vao
+        vao.unbind();
+    }
+
+    private void addTextureOffsetsVbo(Zoom zoom) {
+        var vao = vaos.get(zoom);
+
+        // bind vao
+        vao.bind();
+
+        // create and add new vbo
+        var vbo = vao.addVbo();
+
+        // store offsets (static draw)
+        vbo.storeFloatArrayList(offsets, GL_STATIC_DRAW);
+
+        // set buffer layout
+        vbo.addFloatAttribute(9, 2, 2, 0, true);
 
         // unbind vao
         vao.unbind();
@@ -274,58 +337,95 @@ public class IslandRenderer {
         vbo.storeFloatArrayList(yBuffer.get(zoom), GL_STATIC_DRAW);
 
         // set buffer layout
-        vbo.addFloatAttribute(8, 1, 1, 0, true);
+        vbo.addFloatAttribute(10, 1, 1, 0, true);
 
         // unbind vao
         vao.unbind();
     }
 
-    private void createTextureArray(Zoom zoom) throws IOException {
-        var maxX = xWidth.get(zoom).intValue();
-        var maxY = yHeight.get(zoom).intValue();
+    //-------------------------------------------------
+    // Textures into Gpu
+    //-------------------------------------------------
 
-        var textureId = Texture.generateNewTextureId();
-        textureArrayIds.put(zoom, textureId);
+    private void loadGfxTextures() throws Exception {
+        for (var i = 0; i < NR_OF_GFX_ATLAS_IMAGES; i++) {
+            var path = "atlas/GFX/" + i + ".png";
+            var image = new ImageFile(path);
+            gfxAtlasTextures.add(image);
+        }
+    }
 
-        Texture.bind(textureId, GL_TEXTURE_2D_ARRAY);
+    private void createTextureArray() throws Exception {
+        textureArrayId = Texture.generateNewTextureId();
+        Texture.bind(textureArrayId, GL_TEXTURE_2D_ARRAY);
 
-        var gfxMap = gfxIndexMap.get(zoom);
+        loadGfxTextures();
+        glTextureStorage3D(
+                textureArrayId,
+                1,
+                GL_RGBA8,
+                64 * NR_OF_GFX_ROWS,
+                286 * NR_OF_GFX_ROWS,
+                NR_OF_GFX_ATLAS_IMAGES
+        );
 
-        glTextureStorage3D(textureId, 1, GL_RGBA8, maxX, maxY, gfxMap.size());
-
-        var n = new int[maxX * maxY];
-        Arrays.fill(n, 0);
-
-        for (var entry : gfxMap.entrySet()) {
+        var zOffset = 0;
+        for (var texture : gfxAtlasTextures) {
             glTextureSubImage3D(
-                    textureId,
+                    textureArrayId,
                     0,
                     0, 0,
-                    entry.getValue(), // zOffset
-                    maxX, maxY,
+                    zOffset,
+                    64 * NR_OF_GFX_ROWS,
+                    286 * NR_OF_GFX_ROWS,
                     1,
                     GL_BGRA,
                     GL_UNSIGNED_INT_8_8_8_8_REV,
-                    n
+                    texture.getArgb()
             );
 
-            var currentTexture = context.bennoFiles.getStadtfldBshFile(zoom).getBshTextures().get(entry.getKey());
-            var dbb = (DataBufferInt) currentTexture.getBufferedImage().getRaster().getDataBuffer();
-
-            glTextureSubImage3D(
-                    textureId,
-                    0,
-                    0, 0,
-                    entry.getValue(),
-                    currentTexture.getWidth(), currentTexture.getHeight(),
-                    1,
-                    GL_BGRA,
-                    GL_UNSIGNED_INT_8_8_8_8_REV,
-                    dbb.getData()
-            );
+            zOffset++;
         }
 
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+    }
+
+    //-------------------------------------------------
+    // Logic
+    //-------------------------------------------------
+
+    public void render(Camera camera, boolean wireframe, Zoom zoom) {
+        if (!wireframe) {
+            OpenGL.enableAlphaBlending();
+        } else {
+            OpenGL.enableWireframeMode();
+        }
+
+        shader.bind();
+
+        Texture.bindForReading(textureArrayId, GL_TEXTURE0, GL_TEXTURE_2D_ARRAY);
+
+        var my = maxYList.get(Zoom.GFX);
+
+        shader.setUniform("projection", context.engine.getWindow().getOrthographicProjectionMatrix());
+        shader.setUniform("view", camera.getViewMatrix());
+        shader.setUniform("maxY", 286.0f);
+        shader.setUniform("nrOfRows", (float)NR_OF_GFX_ROWS);
+        shader.setUniform("sampler", 0);
+
+        var vao = vaos.get(zoom);
+        vao.bind();
+        vao.drawInstanced(GL_TRIANGLES, instances);
+        vao.unbind();
+
+        Shader.unbind();
+        Texture.unbind();
+
+        if (!wireframe) {
+            OpenGL.disableBlending();
+        } else {
+            OpenGL.disableWireframeMode();
+        }
     }
 
     //-------------------------------------------------

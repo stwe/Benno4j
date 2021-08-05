@@ -58,7 +58,7 @@ public class GameState extends ApplicationState {
         }
 
         if (params[0] instanceof WorldData) {
-            camera = new Camera(0, 0, currentZoom);
+            camera = new Camera(40, 260, currentZoom);
             world = new World((WorldData)params[0], (Context)getStateMachine().getStateContext(), camera);
         } else {
             throw new BennoRuntimeException("Invalid world data provider type.");
