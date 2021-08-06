@@ -10,7 +10,6 @@ package de.sg.benno.renderer;
 
 import de.sg.benno.TileAtlas;
 import de.sg.benno.chunk.TileGraphic;
-import de.sg.benno.file.BennoFiles;
 import de.sg.benno.input.Camera;
 import de.sg.benno.state.Context;
 import de.sg.ogl.OpenGL;
@@ -24,14 +23,16 @@ import org.joml.Matrix4f;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static de.sg.benno.TileAtlas.MAX_GFX_HEIGHT;
-import static de.sg.benno.TileAtlas.NR_OF_GFX_ROWS;
+import static de.sg.benno.TileAtlas.*;
 import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
 import static org.lwjgl.opengl.GL30.GL_TEXTURE_2D_ARRAY;
 
+/**
+ * Represents an IslandRenderer.
+ */
 public class IslandRenderer {
 
     //-------------------------------------------------
@@ -80,18 +81,18 @@ public class IslandRenderer {
     /**
      * Specifies from which atlas image the texture is to be taken.
      */
-    private final ArrayList<Integer> textureAtlasIndex = new ArrayList<>();
+    private final HashMap<Zoom, ArrayList<Integer>> textureAtlasIndex = new HashMap<>();
 
     /**
      * Specifies the index of the texture on the atlas image.
      */
-    private final ArrayList<Integer> textureIndex = new ArrayList<>();
+    private final HashMap<Zoom, ArrayList<Integer>> textureIndex = new HashMap<>();
 
     /**
      * Precalculated texture offsets.
      * Specifies where the texture is on the atlas image (coordinates).
      */
-    private final ArrayList<Float> offsets = new ArrayList<>();
+    private final HashMap<Zoom, ArrayList<Float>> offsets = new HashMap<>();
 
     /**
      * The height of each texture.
@@ -158,29 +159,39 @@ public class IslandRenderer {
      * @param zoom {@link Zoom}
      */
     private void createTextureInfo(Zoom zoom) {
-        // todo: currently hardcoded for GFX only
-        if (zoom == Zoom.GFX) {
-            for (var tile : tileGraphics.get(zoom)) {
-                // texture index on an atlas image
-                var index = tile.gfx % (NR_OF_GFX_ROWS * NR_OF_GFX_ROWS);
-                textureIndex.add(index);
+        var textureIndexList = new ArrayList<Integer>();
+        var offsetList = new ArrayList<Float>();
+        var textureAtlasIndexList = new ArrayList<Integer>();
+        var heightBuffer = new ArrayList<Float>();
 
-                // coordinates on an atlas image
-                var offset = TileAtlas.getTextureOffset(index, NR_OF_GFX_ROWS);
-                offsets.add(offset.x);
-                offsets.add(offset.y);
-
-                // atlas image index
-                textureAtlasIndex.add(tile.gfx / (NR_OF_GFX_ROWS * NR_OF_GFX_ROWS));
-            }
+        var rows = 0;
+        switch (zoom) {
+            case GFX: rows = NR_OF_GFX_ROWS; break;
+            case MGFX: rows = NR_OF_MGFX_ROWS; break;
+            case SGFX: rows = NR_OF_SGFX_ROWS; break;
+            default:
         }
 
-        // store for each zoom
-        var heightBuffer = new ArrayList<Float>();
         for (var tile : tileGraphics.get(zoom)) {
+            // texture index
+            var index = tile.gfx % (rows * rows);
+            textureIndexList.add(index);
+
+            // offset
+            var offset = TileAtlas.getTextureOffset(index, rows);
+            offsetList.add(offset.x);
+            offsetList.add(offset.y);
+
+            // texture atlas index
+            textureAtlasIndexList.add(tile.gfx / (rows * rows));
+
+            // yBuffer (height of each tile graphic)
             heightBuffer.add(tile.size.y);
         }
 
+        textureIndex.put(zoom, textureIndexList);
+        offsets.put(zoom, offsetList);
+        textureAtlasIndex.put(zoom, textureAtlasIndexList);
         yBuffer.put(zoom, heightBuffer);
     }
 
@@ -268,7 +279,7 @@ public class IslandRenderer {
         var vbo = vao.addVbo();
 
         // store index (static draw)
-        vbo.storeIntegerInstances(textureIndex, instances, GL_STATIC_DRAW);
+        vbo.storeIntegerInstances(textureIndex.get(zoom), instances, GL_STATIC_DRAW);
 
         // set buffer layout
         vbo.addIntAttribute(7, 1, 1, 0, true);
@@ -292,7 +303,7 @@ public class IslandRenderer {
         var vbo = vao.addVbo();
 
         // store index (static draw)
-        vbo.storeIntegerInstances(textureAtlasIndex, instances, GL_STATIC_DRAW);
+        vbo.storeIntegerInstances(textureAtlasIndex.get(zoom), instances, GL_STATIC_DRAW);
 
         // set buffer layout
         vbo.addIntAttribute(8, 1, 1, 0, true);
@@ -316,7 +327,7 @@ public class IslandRenderer {
         var vbo = vao.addVbo();
 
         // store offsets (static draw)
-        vbo.storeFloatArrayList(offsets, GL_STATIC_DRAW);
+        vbo.storeFloatArrayList(offsets.get(zoom), GL_STATIC_DRAW);
 
         // set buffer layout
         vbo.addFloatAttribute(9, 2, 2, 0, true);
@@ -367,14 +378,36 @@ public class IslandRenderer {
             OpenGL.enableWireframeMode();
         }
 
+        var textureId = 0;
+        var maxYHeight = 0.0f;
+        var rows = 0.0f;
+        switch (zoom) {
+            case GFX:
+                textureId = TileAtlas.getGfxTextureArrayId();
+                maxYHeight = MAX_GFX_HEIGHT;
+                rows = (float)NR_OF_GFX_ROWS;
+                break;
+            case MGFX:
+                textureId = TileAtlas.getMgfxTextureArrayId();
+                maxYHeight = MAX_MGFX_HEIGHT;
+                rows = (float)NR_OF_MGFX_ROWS;
+                break;
+            case SGFX:
+                textureId = TileAtlas.getSgfxTextureArrayId();
+                maxYHeight = MAX_SGFX_HEIGHT;
+                rows = (float)NR_OF_SGFX_ROWS;
+                break;
+            default:
+        }
+
         shader.bind();
 
-        Texture.bindForReading(TileAtlas.getGfxTextureArrayId(), GL_TEXTURE0, GL_TEXTURE_2D_ARRAY);
+        Texture.bindForReading(textureId, GL_TEXTURE0, GL_TEXTURE_2D_ARRAY);
 
         shader.setUniform("projection", context.engine.getWindow().getOrthographicProjectionMatrix());
         shader.setUniform("view", camera.getViewMatrix());
-        shader.setUniform("maxY", MAX_GFX_HEIGHT);
-        shader.setUniform("nrOfRows", (float)NR_OF_GFX_ROWS);
+        shader.setUniform("maxY", maxYHeight);
+        shader.setUniform("nrOfRows", rows);
         shader.setUniform("sampler", 0);
 
         var vao = vaos.get(zoom);
