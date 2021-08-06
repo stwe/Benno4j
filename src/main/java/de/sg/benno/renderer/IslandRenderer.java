@@ -8,9 +8,9 @@
 
 package de.sg.benno.renderer;
 
+import de.sg.benno.TileAtlas;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.file.BennoFiles;
-import de.sg.benno.file.ImageFile;
 import de.sg.benno.input.Camera;
 import de.sg.benno.state.Context;
 import de.sg.ogl.OpenGL;
@@ -24,15 +24,13 @@ import org.joml.Matrix4f;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static de.sg.benno.TileAtlas.MAX_GFX_HEIGHT;
+import static de.sg.benno.TileAtlas.NR_OF_GFX_ROWS;
 import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.GL_BGRA;
-import static org.lwjgl.opengl.GL12.GL_UNSIGNED_INT_8_8_8_8_REV;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
 import static org.lwjgl.opengl.GL30.GL_TEXTURE_2D_ARRAY;
-import static org.lwjgl.opengl.GL45.glTextureStorage3D;
-import static org.lwjgl.opengl.GL45.glTextureSubImage3D;
 
 public class IslandRenderer {
 
@@ -49,10 +47,6 @@ public class IslandRenderer {
      * The name of the used shader.
      */
     private static final String SHADER_NAME = "island";
-
-    private static final int NR_OF_GFX_ATLAS_IMAGES = 24; // 24 textures a (16 * 16) pics = 6144
-
-    private static final int NR_OF_GFX_ROWS = 16;
 
     //-------------------------------------------------
     // Member
@@ -74,16 +68,6 @@ public class IslandRenderer {
     private final Shader shader;
 
     /**
-     * The max x value for each {@link Zoom}.
-     */
-    private final HashMap<Zoom, Float> maxXList = new HashMap<>();
-
-    /**
-     * The max y value for each {@link Zoom}.
-     */
-    private final HashMap<Zoom, Float> maxYList = new HashMap<>();
-
-    /**
      * The model matrices for each {@link Zoom}.
      */
     private final HashMap<Zoom, ArrayList<Matrix4f>> modelMatrices = new HashMap<>();
@@ -94,22 +78,23 @@ public class IslandRenderer {
     private int instances = 0;
 
     /**
-     * Specifies from which atlas the texture is to be taken.
+     * Specifies from which atlas image the texture is to be taken.
      */
     private final ArrayList<Integer> textureAtlasIndex = new ArrayList<>();
 
     /**
-     * Specifies the index of the texture on the atlas.
+     * Specifies the index of the texture on the atlas image.
      */
     private final ArrayList<Integer> textureIndex = new ArrayList<>();
 
     /**
-     * Precalculated offsets.
+     * Precalculated texture offsets.
+     * Specifies where the texture is on the atlas image (coordinates).
      */
     private final ArrayList<Float> offsets = new ArrayList<>();
 
     /**
-     * THe height of each texture.
+     * The height of each texture.
      */
     private final HashMap<Zoom, ArrayList<Float>> yBuffer = new HashMap<>();
 
@@ -118,38 +103,31 @@ public class IslandRenderer {
      */
     private final HashMap<Zoom, Vao> vaos = new HashMap<>();
 
-    /**
-     * The texture array Id.
-     */
-    private int textureArrayId;
-
-    /**
-     * A list of GFX tile atlas images.
-     */
-    private final ArrayList<ImageFile> gfxAtlasTextures = new ArrayList<>();
-
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
+    /**
+     * Constructs a new {@link IslandRenderer} object.
+     *
+     * @param tileGraphics The {@link TileGraphic} objects of an {@link de.sg.benno.chunk.Island5}.
+     * @param context The {@link Context} object.
+     * @throws Exception If an error is thrown.
+     */
     public IslandRenderer(HashMap<Zoom, ArrayList<TileGraphic>> tileGraphics, Context context) throws Exception {
         this.tileGraphics = tileGraphics;
         this.context = context;
         this.shader = context.engine.getResourceManager().loadResource(Shader.class, SHADER_NAME);
 
+        // for each zoom...
         for (var zoom: Zoom.values()) {
             // prepare data
-            maxXList.put(zoom, (float)context.bennoFiles.getStadtfldBshFile(zoom).getMaxX());
-            maxYList.put(zoom, (float)context.bennoFiles.getStadtfldBshFile(zoom).getMaxY());
             createModelMatrices(zoom);
             createTextureInfo(zoom);
 
             // load data into gpu
             addVao(zoom);
         }
-
-        // load atlas textures into Gpu
-        createTextureArray();
     }
 
     //-------------------------------------------------
@@ -157,7 +135,7 @@ public class IslandRenderer {
     //-------------------------------------------------
 
     /**
-     * Stores the model matrix of the {@link TileGraphic} objects in each zoom level for each instance.
+     * Stores the model matrix of the {@link TileGraphic} objects.
      *
      * @param zoom {@link Zoom}
      */
@@ -180,16 +158,19 @@ public class IslandRenderer {
      * @param zoom {@link Zoom}
      */
     private void createTextureInfo(Zoom zoom) {
-        // todo: hardcoded for GFX
+        // todo: currently hardcoded for GFX only
         if (zoom == Zoom.GFX) {
             for (var tile : tileGraphics.get(zoom)) {
+                // texture index on an atlas image
                 var index = tile.gfx % (NR_OF_GFX_ROWS * NR_OF_GFX_ROWS);
                 textureIndex.add(index);
 
+                // coordinates on an atlas image
                 var offset = BennoFiles.getGfxTextureOffset(index, NR_OF_GFX_ROWS);
                 offsets.add(offset.x);
                 offsets.add(offset.y);
 
+                // atlas image index
                 textureAtlasIndex.add(tile.gfx / (NR_OF_GFX_ROWS * NR_OF_GFX_ROWS));
             }
         }
@@ -207,6 +188,11 @@ public class IslandRenderer {
     // Data into Gpu
     //-------------------------------------------------
 
+    /**
+     * Creates a Vao and all Vbos.
+     *
+     * @param zoom {@link Zoom}
+     */
     private void addVao(Zoom zoom) {
         createVao(zoom);
         addMeshVbo(zoom);
@@ -229,7 +215,7 @@ public class IslandRenderer {
     }
 
     /**
-     * Stores a new 2D Quad to the {@link Vao} of the given {@link Zoom}.
+     * Stores a new 2D Quad to the {@link Vao} for the given {@link Zoom}.
      *
      * @param zoom {@link Zoom}.
      */
@@ -240,7 +226,7 @@ public class IslandRenderer {
     }
 
     /**
-     * Stores the model matrices of the given {@link Zoom} to the {@link Vao}.
+     * Stores the model matrices for the given {@link Zoom} to the {@link Vao}.
      *
      * @param zoom {@link Zoom}.
      */
@@ -267,6 +253,11 @@ public class IslandRenderer {
         vao.unbind();
     }
 
+    /**
+     * Stores the texture indices for the given {@link Zoom} to the {@link Vao}.
+     *
+     * @param zoom {@link Zoom}.
+     */
     private void addTextureIndexVbo(Zoom zoom) {
         var vao = vaos.get(zoom);
 
@@ -286,6 +277,11 @@ public class IslandRenderer {
         vao.unbind();
     }
 
+    /**
+     * Stores the atlas image indices for the given {@link Zoom} to the {@link Vao}.
+     *
+     * @param zoom {@link Zoom}.
+     */
     private void addTextureAtlasIndexVbo(Zoom zoom) {
         var vao = vaos.get(zoom);
 
@@ -305,6 +301,11 @@ public class IslandRenderer {
         vao.unbind();
     }
 
+    /**
+     * Stores the offsets for the given {@link Zoom} to the {@link Vao}.
+     *
+     * @param zoom {@link Zoom}.
+     */
     private void addTextureOffsetsVbo(Zoom zoom) {
         var vao = vaos.get(zoom);
 
@@ -324,6 +325,11 @@ public class IslandRenderer {
         vao.unbind();
     }
 
+    /**
+     * Stores the heights for the given {@link Zoom} to the {@link Vao}.
+     *
+     * @param zoom {@link Zoom}.
+     */
     private void addYVbo(Zoom zoom) {
         var vao = vaos.get(zoom);
 
@@ -344,56 +350,16 @@ public class IslandRenderer {
     }
 
     //-------------------------------------------------
-    // Textures into Gpu
-    //-------------------------------------------------
-
-    private void loadGfxTextures() throws Exception {
-        for (var i = 0; i < NR_OF_GFX_ATLAS_IMAGES; i++) {
-            var path = "atlas/GFX/" + i + ".png";
-            var image = new ImageFile(path);
-            gfxAtlasTextures.add(image);
-        }
-    }
-
-    private void createTextureArray() throws Exception {
-        textureArrayId = Texture.generateNewTextureId();
-        Texture.bind(textureArrayId, GL_TEXTURE_2D_ARRAY);
-
-        loadGfxTextures();
-        glTextureStorage3D(
-                textureArrayId,
-                1,
-                GL_RGBA8,
-                64 * NR_OF_GFX_ROWS,
-                286 * NR_OF_GFX_ROWS,
-                NR_OF_GFX_ATLAS_IMAGES
-        );
-
-        var zOffset = 0;
-        for (var texture : gfxAtlasTextures) {
-            glTextureSubImage3D(
-                    textureArrayId,
-                    0,
-                    0, 0,
-                    zOffset,
-                    64 * NR_OF_GFX_ROWS,
-                    286 * NR_OF_GFX_ROWS,
-                    1,
-                    GL_BGRA,
-                    GL_UNSIGNED_INT_8_8_8_8_REV,
-                    texture.getArgb()
-            );
-
-            zOffset++;
-        }
-
-        glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
-    }
-
-    //-------------------------------------------------
     // Logic
     //-------------------------------------------------
 
+    /**
+     * Render the {@link de.sg.benno.chunk.Island5}.
+     *
+     * @param camera {@link Camera} to get the view matrix.
+     * @param wireframe True or false whether to render a wireframe model.
+     * @param zoom {@link Zoom}
+     */
     public void render(Camera camera, boolean wireframe, Zoom zoom) {
         if (!wireframe) {
             OpenGL.enableAlphaBlending();
@@ -403,13 +369,11 @@ public class IslandRenderer {
 
         shader.bind();
 
-        Texture.bindForReading(textureArrayId, GL_TEXTURE0, GL_TEXTURE_2D_ARRAY);
-
-        var my = maxYList.get(Zoom.GFX);
+        Texture.bindForReading(TileAtlas.getGfxTextureArrayId(), GL_TEXTURE0, GL_TEXTURE_2D_ARRAY);
 
         shader.setUniform("projection", context.engine.getWindow().getOrthographicProjectionMatrix());
         shader.setUniform("view", camera.getViewMatrix());
-        shader.setUniform("maxY", 286.0f);
+        shader.setUniform("maxY", MAX_GFX_HEIGHT);
         shader.setUniform("nrOfRows", (float)NR_OF_GFX_ROWS);
         shader.setUniform("sampler", 0);
 

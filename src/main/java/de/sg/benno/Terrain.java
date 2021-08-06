@@ -110,6 +110,7 @@ public class Terrain {
         }
         */
 
+        // todo nur die erste Insel rendern
         var island = provider.getIsland5List().get(0);
         var renderer = islandRenderer.get(island);
 
@@ -138,6 +139,7 @@ public class Terrain {
             islandTileGraphics.put(island5, zoomTiles);
         }
 
+        // todo Renderer nur für die erste Insel erstellen
         var island = provider.getIsland5List().get(0);
         var tiles = islandTileGraphics.get(island);
         islandRenderer.put(island, new IslandRenderer(tiles, context));
@@ -154,8 +156,6 @@ public class Terrain {
      * @throws Exception If an error is thrown.
      */
     private void createGraphicTiles(Island5 island5, Zoom zoom, HashMap<Zoom, ArrayList<TileGraphic>> zoomTiles) throws Exception {
-        LOGGER.debug("Create {} graphic tiles and renderer for island on position x: {}, y: {}.", zoom.toString(), island5.xPos, island5.yPos);
-
         var bshFile = this.bennoFiles.getStadtfldBshFile(zoom);
         var tiles = new ArrayList<TileGraphic>();
 
