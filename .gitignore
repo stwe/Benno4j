@@ -45,6 +45,8 @@ out/
 ## Atlas
 ##############################
 
+/src/main/resources/atlas/SGFX/
+/src/main/resources/atlas/MGFX/
 /src/main/resources/atlas/GFX/
 
 ##############################

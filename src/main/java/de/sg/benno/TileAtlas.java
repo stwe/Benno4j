@@ -23,7 +23,7 @@ public final class TileAtlas {
 
     /**
      * Number of GFX atlas images.
-     * 24 images a (16 rows * 16 rows) pics = 6144
+     * 24 images a (16 rows * 16 rows)
      */
     public static final int NR_OF_GFX_ATLAS_IMAGES = 24;
 
@@ -53,8 +53,16 @@ public final class TileAtlas {
     // Constants MGFX
     //-------------------------------------------------
 
-    public static final int NR_OF_MGFX_ATLAS_IMAGES = 0;
-    public static final int NR_OF_MGFX_ROWS = 0;
+    /**
+     * Number of MGFX atlas images.
+     * 6 images a (32 rows * 32 rows)
+     */
+    public static final int NR_OF_MGFX_ATLAS_IMAGES = 6;
+
+    /**
+     * Number of rows in MGFX atlas image.
+     */
+    public static final int NR_OF_MGFX_ROWS = 32;
 
     /**
      * Width of the largest MGFX picture in the <i>stadtfld.bsh</i>.
@@ -77,8 +85,16 @@ public final class TileAtlas {
     // Constants SGFX
     //-------------------------------------------------
 
-    public static final int NR_OF_SGFX_ATLAS_IMAGES = 0;
-    public static final int NR_OF_SGFX_ROWS = 0;
+    /**
+     * Number of SGFX atlas images.
+     * 2 images a (64 rows * 64 rows)
+     */
+    public static final int NR_OF_SGFX_ATLAS_IMAGES = 2;
+
+    /**
+     * Number of rows in SGFX atlas image.
+     */
+    public static final int NR_OF_SGFX_ROWS = 64;
 
     /**
      * Width of the largest SGFX picture in the <i>stadtfld.bsh</i>.

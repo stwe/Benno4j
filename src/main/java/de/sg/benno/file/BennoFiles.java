@@ -205,11 +205,6 @@ public class BennoFiles {
      */
     private final DataFiles dataFiles;
 
-    /**
-     * todo temp var
-     */
-    private final ArrayList<BufferedImage> atlasImages = new ArrayList<>();
-
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -235,6 +230,8 @@ public class BennoFiles {
         dataFiles = new DataFiles();
 
         if (BennoConfig.CREATE_ATLAS_IMAGES) {
+            createSgfxAtlas();
+            createMgfxAtlas();
             createGfxAtlas();
         }
     }
@@ -374,10 +371,6 @@ public class BennoFiles {
         for (var bshFile : bshFiles.values()) {
             bshFile.cleanUp();
         }
-
-        for (var atlas : atlasImages) {
-            atlas.getGraphics().dispose();
-        }
     }
 
     //-------------------------------------------------
@@ -498,6 +491,152 @@ public class BennoFiles {
     //-------------------------------------------------
 
     /**
+     * Creates and stores the SGFX atlas images.
+     *
+     * @throws IOException If an I/O error is thrown.
+     */
+    private void createSgfxAtlas() throws IOException {
+        if (Util.getMaxTextureSize() < (int)TileAtlas.MAX_SGFX_HEIGHT * TileAtlas.NR_OF_SGFX_ROWS) {
+            throw new BennoRuntimeException("The supported texture size should be at least " + (int)TileAtlas.MAX_SGFX_HEIGHT * TileAtlas.NR_OF_SGFX_ROWS);
+        }
+
+        var stadtfldFile = getStadtfldBshFile(Zoom.SGFX);
+        var bshTextures = stadtfldFile.getBshTextures();
+        var atlasImages = new ArrayList<BufferedImage>();
+
+        var c = 0;
+        for (var i = 0; i < TileAtlas.NR_OF_SGFX_ATLAS_IMAGES; i++) {
+            // new atlas
+            var atlas = new BufferedImage(
+                    (int)TileAtlas.MAX_SGFX_WIDTH * TileAtlas.NR_OF_SGFX_ROWS,
+                    (int)TileAtlas.MAX_SGFX_HEIGHT * TileAtlas.NR_OF_SGFX_ROWS,
+                    BufferedImage.TYPE_INT_ARGB
+            );
+
+            // draw bsh images
+            for (var y = 0; y < TileAtlas.NR_OF_SGFX_ROWS; y++) {
+                for (var x = 0; x < TileAtlas.NR_OF_SGFX_ROWS; x++) {
+                    var g = atlas.getGraphics();
+
+                    // only if index exists
+                    if (c >= 0 && c < bshTextures.size()) {
+                        // draw in atlas
+                        g.drawImage(
+                                bshTextures.get(c).getBufferedImage(),
+                                x * (int)TileAtlas.MAX_SGFX_WIDTH,
+                                y * (int)TileAtlas.MAX_SGFX_HEIGHT,
+                                null
+                        );
+                    }
+
+                    c++;
+                }
+            }
+
+            // store atlas
+            atlasImages.add(atlas);
+        }
+
+        if (!atlasImages.isEmpty()) {
+            c = 0;
+
+            var path = "out/" + TileAtlas.ATLAS_SGFX_PATH;
+            Files.createDirectories(Paths.get(path));
+
+            for (var atlas : atlasImages) {
+                String filename = path + c + ".png";
+
+                var file = new File(filename);
+                if (!file.exists()) {
+                    var result = file.createNewFile();
+                    if (!result) {
+                        throw new BennoRuntimeException("Unexpected error.");
+                    }
+                }
+
+                ImageIO.write(atlas, "PNG", file);
+
+                atlas.getGraphics().dispose();
+
+                c++;
+            }
+        }
+    }
+
+    /**
+     * Creates and stores the MGFX atlas images.
+     *
+     * @throws IOException If an I/O error is thrown.
+     */
+    private void createMgfxAtlas() throws IOException {
+        if (Util.getMaxTextureSize() < (int)TileAtlas.MAX_MGFX_HEIGHT * TileAtlas.NR_OF_MGFX_ROWS) {
+            throw new BennoRuntimeException("The supported texture size should be at least " + (int)TileAtlas.MAX_MGFX_HEIGHT * TileAtlas.NR_OF_MGFX_ROWS);
+        }
+
+        var stadtfldFile = getStadtfldBshFile(Zoom.MGFX);
+        var bshTextures = stadtfldFile.getBshTextures();
+        var atlasImages = new ArrayList<BufferedImage>();
+
+        var c = 0;
+        for (var i = 0; i < TileAtlas.NR_OF_MGFX_ATLAS_IMAGES; i++) {
+            // new atlas
+            var atlas = new BufferedImage(
+                    (int)TileAtlas.MAX_MGFX_WIDTH * TileAtlas.NR_OF_MGFX_ROWS,
+                    (int)TileAtlas.MAX_MGFX_HEIGHT * TileAtlas.NR_OF_MGFX_ROWS,
+                    BufferedImage.TYPE_INT_ARGB
+            );
+
+            // draw bsh images
+            for (var y = 0; y < TileAtlas.NR_OF_MGFX_ROWS; y++) {
+                for (var x = 0; x < TileAtlas.NR_OF_MGFX_ROWS; x++) {
+                    var g = atlas.getGraphics();
+
+                    // only if index exists
+                    if (c >= 0 && c < bshTextures.size()) {
+                        // draw in atlas
+                        g.drawImage(
+                                bshTextures.get(c).getBufferedImage(),
+                                x * (int)TileAtlas.MAX_MGFX_WIDTH,
+                                y * (int)TileAtlas.MAX_MGFX_HEIGHT,
+                                null
+                        );
+                    }
+
+                    c++;
+                }
+            }
+
+            // store atlas
+            atlasImages.add(atlas);
+        }
+
+        if (!atlasImages.isEmpty()) {
+            c = 0;
+
+            var path = "out/" + TileAtlas.ATLAS_MGFX_PATH;
+            Files.createDirectories(Paths.get(path));
+
+            for (var atlas : atlasImages) {
+                String filename = path + c + ".png";
+
+                var file = new File(filename);
+                if (!file.exists()) {
+                    var result = file.createNewFile();
+                    if (!result) {
+                        throw new BennoRuntimeException("Unexpected error.");
+                    }
+                }
+
+                ImageIO.write(atlas, "PNG", file);
+
+                atlas.getGraphics().dispose();
+
+                c++;
+            }
+        }
+    }
+
+    /**
      * Creates and stores the GFX atlas images.
      *
      * @throws IOException If an I/O error is thrown.
@@ -509,6 +648,7 @@ public class BennoFiles {
 
         var stadtfldFile = getStadtfldBshFile(Zoom.GFX);
         var bshTextures = stadtfldFile.getBshTextures();
+        var atlasImages = new ArrayList<BufferedImage>();
 
         var c = 0;
         for (var i = 0; i < TileAtlas.NR_OF_GFX_ATLAS_IMAGES; i++) {
@@ -523,6 +663,7 @@ public class BennoFiles {
             for (var y = 0; y < TileAtlas.NR_OF_GFX_ROWS; y++) {
                 for (var x = 0; x < TileAtlas.NR_OF_GFX_ROWS; x++) {
                     var g = atlas.getGraphics();
+
                     // only if index exists
                     if (c >= 0 && c < bshTextures.size()) {
                         // draw in atlas
@@ -560,6 +701,8 @@ public class BennoFiles {
                 }
 
                 ImageIO.write(atlas, "PNG", file);
+
+                atlas.getGraphics().dispose();
 
                 c++;
             }
