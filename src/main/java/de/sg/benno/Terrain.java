@@ -153,8 +153,16 @@ public class Terrain {
         for (var y = island5.yPos; y < island5.yPos + island5.height; y++) {
             for (var x = island5.xPos; x < island5.xPos + island5.width; x++) {
 
-                // get the tile from the bottom layer
-                var island5TileOptional = island5.getTileFromBottomLayer(x - island5.xPos, y - island5.yPos);
+                // get the tile from the top layer
+                var island5TileOptional = island5.getTileFromTopLayer(x - island5.xPos, y - island5.yPos);
+
+                // todo: write method
+
+                // fallback to bottom layer
+                if (island5TileOptional.isPresent() && island5TileOptional.get().graphicId == 0xFFFF) {
+                    island5TileOptional = island5.getTileFromBottomLayer(x - island5.xPos, y - island5.yPos);
+                }
+
                 if (island5TileOptional.isPresent()) {
                     var island5Tile = island5TileOptional.get();
 

@@ -198,8 +198,8 @@ public class Island5 {
     /**
      * Returns the {@link Tile} object from the given position of the {@link #bottomLayer}.
      *
-     * @param x The x position on a island in world space.
-     * @param y The y position on a island in world space.
+     * @param x The x position on an island in world space.
+     * @param y The y position on an island in world space.
      *
      * @return A nullable {@link Tile} Optional.
      */
@@ -208,6 +208,24 @@ public class Island5 {
 
         if (getBottomLayer().getTile(x, y).isPresent()) {
             result = getBottomLayer().getTile(x, y).get();
+        }
+
+        return Optional.ofNullable(result);
+    }
+
+    /**
+     * Returns the {@link Tile} object from the given position of the {@link #topLayer}.
+     *
+     * @param x The x position on an island in world space.
+     * @param y The y position on an island in world space.
+     *
+     * @return A nullable {@link Tile} Optional.
+     */
+    public Optional<Tile> getTileFromTopLayer(int x, int y) {
+        Tile result = null;
+
+        if (getTopLayer().getTile(x, y).isPresent()) {
+            result = getTopLayer().getTile(x, y).get();
         }
 
         return Optional.ofNullable(result);
