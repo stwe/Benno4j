@@ -103,18 +103,10 @@ public class Terrain {
      * @param zoom The current {@link Zoom}.
      */
     public void render(Camera camera, boolean wireframe, Zoom zoom) {
-        /*
         for (var island5 : provider.getIsland5List()) {
             var renderer = islandRenderer.get(island5);
             renderer.render(camera, wireframe, zoom);
         }
-        */
-
-        // todo nur die erste Insel rendern
-        var island = provider.getIsland5List().get(0);
-        var renderer = islandRenderer.get(island);
-
-        renderer.render(camera, wireframe, Zoom.GFX);
     }
 
     //-------------------------------------------------
@@ -130,7 +122,6 @@ public class Terrain {
         LOGGER.debug("Start init Terrain...");
 
         for (var island5 : provider.getIsland5List()) {
-            // create graphic tiles for each zoom
             var zoomTiles = new HashMap<Zoom, ArrayList<TileGraphic>>();
             for (var zoom : Zoom.values()) {
                 createGraphicTiles(island5, zoom, zoomTiles);
@@ -139,10 +130,10 @@ public class Terrain {
             islandTileGraphics.put(island5, zoomTiles);
         }
 
-        // todo Renderer nur für die erste Insel erstellen
-        var island = provider.getIsland5List().get(0);
-        var tiles = islandTileGraphics.get(island);
-        islandRenderer.put(island, new IslandRenderer(tiles, context));
+        for (var island5 : provider.getIsland5List()) {
+            var tiles = islandTileGraphics.get(island5);
+            islandRenderer.put(island5, new IslandRenderer(tiles, context));
+        }
 
         LOGGER.debug("The initialization process was completed successfully.");
     }
