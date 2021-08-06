@@ -269,14 +269,36 @@ public final class TileAtlas {
      * Loads MGFX atlas images.
      */
     private static void loadMGfxAtlasImages() {
+        for (var i = 0; i < NR_OF_MGFX_ATLAS_IMAGES; i++) {
+            var path = ATLAS_MGFX_PATH + i + ".png";
 
+            ImageFile image = null;
+            try {
+                image = new ImageFile(path);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            mgfxAtlasImages.add(image);
+        }
     }
 
     /**
      * Loads SGFX atlas images.
      */
     private static void loadSGfxAtlasImages() {
+        for (var i = 0; i < NR_OF_SGFX_ATLAS_IMAGES; i++) {
+            var path = ATLAS_SGFX_PATH + i + ".png";
 
+            ImageFile image = null;
+            try {
+                image = new ImageFile(path);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            sgfxAtlasImages.add(image);
+        }
     }
 
     /**
@@ -320,13 +342,73 @@ public final class TileAtlas {
      * Create MGFX texture array.
      */
     private static void createMGfxTextureArray() {
+        mgfxTextureArrayId = Texture.generateNewTextureId();
+        Texture.bind(mgfxTextureArrayId, GL_TEXTURE_2D_ARRAY);
 
+        glTextureStorage3D(
+                mgfxTextureArrayId,
+                1,
+                GL_RGBA8,
+                (int)MAX_MGFX_WIDTH * NR_OF_MGFX_ROWS,
+                (int)MAX_MGFX_HEIGHT * NR_OF_MGFX_ROWS,
+                NR_OF_MGFX_ATLAS_IMAGES
+        );
+
+        var zOffset = 0;
+        for (var atlas : mgfxAtlasImages) {
+            glTextureSubImage3D(
+                    mgfxTextureArrayId,
+                    0,
+                    0, 0,
+                    zOffset,
+                    (int)MAX_MGFX_WIDTH * NR_OF_MGFX_ROWS,
+                    (int)MAX_MGFX_HEIGHT * NR_OF_MGFX_ROWS,
+                    1,
+                    GL_BGRA,
+                    GL_UNSIGNED_INT_8_8_8_8_REV,
+                    atlas.getArgb()
+            );
+
+            zOffset++;
+        }
+
+        glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     }
 
     /**
      * Create SGFX texture array.
      */
     private static void createSGfxTextureArray() {
+        sgfxTextureArrayId = Texture.generateNewTextureId();
+        Texture.bind(sgfxTextureArrayId, GL_TEXTURE_2D_ARRAY);
 
+        glTextureStorage3D(
+                sgfxTextureArrayId,
+                1,
+                GL_RGBA8,
+                (int)MAX_SGFX_WIDTH * NR_OF_SGFX_ROWS,
+                (int)MAX_SGFX_HEIGHT * NR_OF_SGFX_ROWS,
+                NR_OF_SGFX_ATLAS_IMAGES
+        );
+
+        var zOffset = 0;
+        for (var atlas : sgfxAtlasImages) {
+            glTextureSubImage3D(
+                    sgfxTextureArrayId,
+                    0,
+                    0, 0,
+                    zOffset,
+                    (int)MAX_SGFX_WIDTH * NR_OF_SGFX_ROWS,
+                    (int)MAX_SGFX_HEIGHT * NR_OF_SGFX_ROWS,
+                    1,
+                    GL_BGRA,
+                    GL_UNSIGNED_INT_8_8_8_8_REV,
+                    atlas.getArgb()
+            );
+
+            zOffset++;
+        }
+
+        glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     }
 }
