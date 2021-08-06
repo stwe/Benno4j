@@ -2,6 +2,7 @@ package de.sg.benno;
 
 import de.sg.benno.file.ImageFile;
 import de.sg.ogl.resource.Texture;
+import org.joml.Vector2f;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import static org.lwjgl.opengl.GL45.glTextureSubImage3D;
 public final class TileAtlas {
 
     //-------------------------------------------------
-    // Constants
+    // Constants GFX
     //-------------------------------------------------
 
     /**
@@ -32,13 +33,13 @@ public final class TileAtlas {
     public static final int NR_OF_GFX_ROWS = 16;
 
     /**
-     * Width of the largest picture in the <i>stadtfld.bsh</i>.
+     * Width of the largest GFX picture in the <i>stadtfld.bsh</i>.
      * Can also be read with the BennoFiles class.
      */
     public static final float MAX_GFX_WIDTH = 64.0f;
 
     /**
-     * Height of the largest picture in the <i>stadtfld.bsh</i>.
+     * Height of the largest GFX picture in the <i>stadtfld.bsh</i>.
      * Can also be read with the BennoFiles class.
      */
     public static final float MAX_GFX_HEIGHT = 286.0f;
@@ -47,6 +48,54 @@ public final class TileAtlas {
      * The path to GFX atlas images.
      */
     public static final String ATLAS_GFX_PATH = "atlas/GFX/";
+
+    //-------------------------------------------------
+    // Constants MGFX
+    //-------------------------------------------------
+
+    public static final int NR_OF_MGFX_ATLAS_IMAGES = 0;
+    public static final int NR_OF_MGFX_ROWS = 0;
+
+    /**
+     * Width of the largest MGFX picture in the <i>stadtfld.bsh</i>.
+     * Can also be read with the BennoFiles class.
+     */
+    public static final float MAX_MGFX_WIDTH = 32.0f;
+
+    /**
+     * Height of the largest MGFX picture in the <i>stadtfld.bsh</i>.
+     * Can also be read with the BennoFiles class.
+     */
+    public static final float MAX_MGFX_HEIGHT = 143.0f;
+
+    /**
+     * The path to MGFX atlas images.
+     */
+    public static final String ATLAS_MGFX_PATH = "atlas/MGFX/";
+
+    //-------------------------------------------------
+    // Constants SGFX
+    //-------------------------------------------------
+
+    public static final int NR_OF_SGFX_ATLAS_IMAGES = 0;
+    public static final int NR_OF_SGFX_ROWS = 0;
+
+    /**
+     * Width of the largest SGFX picture in the <i>stadtfld.bsh</i>.
+     * Can also be read with the BennoFiles class.
+     */
+    public static final float MAX_SGFX_WIDTH = 16.0f;
+
+    /**
+     * Height of the largest SGFX picture in the <i>stadtfld.bsh</i>.
+     * Can also be read with the BennoFiles class.
+     */
+    public static final float MAX_SGFX_HEIGHT = 71.0f;
+
+    /**
+     * The path to SGFX atlas images.
+     */
+    public static final String ATLAS_SGFX_PATH = "atlas/SGFX/";
 
     //-------------------------------------------------
     // Member
@@ -58,9 +107,29 @@ public final class TileAtlas {
     private static final ArrayList<ImageFile> gfxAtlasImages = new ArrayList<>();
 
     /**
-     * The texture array Id.
+     * The list of MGFX tile atlas images.
+     */
+    private static final ArrayList<ImageFile> mgfxAtlasImages = new ArrayList<>();
+
+    /**
+     * The list of SGFX tile atlas images.
+     */
+    private static final ArrayList<ImageFile> sgfxAtlasImages = new ArrayList<>();
+
+    /**
+     * The GFX texture array Id.
      */
     private static int gfxTextureArrayId;
+
+    /**
+     * The MGFX texture array Id.
+     */
+    private static int mgfxTextureArrayId;
+
+    /**
+     * The SGFX texture array Id.
+     */
+    private static int sgfxTextureArrayId;
 
     //-------------------------------------------------
     // Ctors.
@@ -85,13 +154,81 @@ public final class TileAtlas {
         return gfxTextureArrayId;
     }
 
+    /**
+     * Get {@link #mgfxTextureArrayId}.
+     *
+     * @return {@link #mgfxTextureArrayId}
+     */
+    public static int getMgfxTextureArrayId() {
+        return mgfxTextureArrayId;
+    }
+
+    /**
+     * Get {@link #sgfxTextureArrayId}.
+     *
+     * @return {@link #sgfxTextureArrayId}
+     */
+    public static int getSgfxTextureArrayId() {
+        return sgfxTextureArrayId;
+    }
+
+    //-------------------------------------------------
+    // Helper
+    //-------------------------------------------------
+
+    /**
+     * Get the texture offset.
+     *
+     * @param textureIndex The texture index.
+     * @param nrOfRows The number of rows.
+     *
+     * @return {@link Vector2f}
+     */
+    public static Vector2f getTextureOffset(int textureIndex, int nrOfRows) {
+        return new Vector2f(
+                getTextureXOffset(textureIndex, nrOfRows),
+                getTextureYOffset(textureIndex, nrOfRows)
+        );
+    }
+
+    /**
+     * Get the x texture offset.
+     *
+     * @param textureIndex The texture index.
+     * @param nrOfRows The number of rows.
+     *
+     * @return float
+     */
+    private static float getTextureXOffset(int textureIndex, int nrOfRows) {
+        int column = textureIndex % nrOfRows;
+        return (float)column / (float)nrOfRows;
+    }
+
+    /**
+     * Get the y texture offset.
+     *
+     * @param textureIndex The texture index.
+     * @param nrOfRows The number of rows.
+     *
+     * @return float
+     */
+    private static float getTextureYOffset(int textureIndex, int nrOfRows) {
+        int row = textureIndex / nrOfRows;
+        return (float)row / (float)nrOfRows;
+    }
+
     //-------------------------------------------------
     // Textures into Gpu
     //-------------------------------------------------
 
     static {
         loadGfxAtlasImages();
-        createTextureArray();
+        loadMGfxAtlasImages();
+        loadSGfxAtlasImages();
+
+        createGfxTextureArray();
+        createMGfxTextureArray();
+        createSGfxTextureArray();
     }
 
     /**
@@ -113,9 +250,23 @@ public final class TileAtlas {
     }
 
     /**
+     * Loads MGFX atlas images.
+     */
+    private static void loadMGfxAtlasImages() {
+
+    }
+
+    /**
+     * Loads SGFX atlas images.
+     */
+    private static void loadSGfxAtlasImages() {
+
+    }
+
+    /**
      * Create GFX texture array.
      */
-    private static void createTextureArray() {
+    private static void createGfxTextureArray() {
         gfxTextureArrayId = Texture.generateNewTextureId();
         Texture.bind(gfxTextureArrayId, GL_TEXTURE_2D_ARRAY);
 
@@ -147,5 +298,19 @@ public final class TileAtlas {
         }
 
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+    }
+
+    /**
+     * Create MGFX texture array.
+     */
+    private static void createMGfxTextureArray() {
+
+    }
+
+    /**
+     * Create SGFX texture array.
+     */
+    private static void createSGfxTextureArray() {
+
     }
 }

@@ -10,11 +10,11 @@ package de.sg.benno.file;
 
 import de.sg.benno.BennoConfig;
 import de.sg.benno.BennoRuntimeException;
+import de.sg.benno.TileAtlas;
 import de.sg.benno.Util;
 import de.sg.benno.chunk.Island;
 import de.sg.benno.data.DataFiles;
 import de.sg.benno.renderer.Zoom;
-import org.joml.Vector2f;
 
 import javax.imageio.ImageIO;
 import javax.swing.filechooser.FileSystemView;
@@ -234,7 +234,9 @@ public class BennoFiles {
 
         dataFiles = new DataFiles();
 
-        //createGfxAtlas();
+        if (BennoConfig.CREATE_ATLAS_IMAGES) {
+            createGfxAtlas();
+        }
     }
 
     //-------------------------------------------------
@@ -495,49 +497,41 @@ public class BennoFiles {
     // Tile atlas
     //-------------------------------------------------
 
-    public static Vector2f getGfxTextureOffset(int textureIndex, int nrOfRows) {
-        return new Vector2f(
-                getGfxTextureXOffset(textureIndex, nrOfRows),
-                getGfxTextureYOffset(textureIndex, nrOfRows)
-                );
-    }
-
-    public static float getGfxTextureXOffset(int textureIndex, int nrOfRows) {
-        int column = textureIndex % nrOfRows;
-        return (float)column / (float)nrOfRows;
-    }
-
-    public static float getGfxTextureYOffset(int textureIndex, int nrOfRows) {
-        int row = textureIndex / nrOfRows;
-        return (float)row / (float)nrOfRows;
-    }
-
+    /**
+     * Creates and stores the GFX atlas images.
+     *
+     * @throws IOException If an I/O error is thrown.
+     */
     private void createGfxAtlas() throws IOException {
-        var nrOfAtlasImages = 24; // 24 textures a (16 * 16) pics = 6144
-        var nrOfRows = 16;
-        var maxWidth = 64;
-        var maxHeight = 286;
-
-        if (Util.getMaxTextureSize() < maxHeight * nrOfRows) {
-            throw new BennoRuntimeException("The supported texture size should be at least " + maxHeight * nrOfRows);
+        if (Util.getMaxTextureSize() < (int)TileAtlas.MAX_GFX_HEIGHT * TileAtlas.NR_OF_GFX_ROWS) {
+            throw new BennoRuntimeException("The supported texture size should be at least " + (int)TileAtlas.MAX_GFX_HEIGHT * TileAtlas.NR_OF_GFX_ROWS);
         }
 
         var stadtfldFile = getStadtfldBshFile(Zoom.GFX);
         var bshTextures = stadtfldFile.getBshTextures();
 
         var c = 0;
-        for (var i = 0; i < nrOfAtlasImages; i++) {
+        for (var i = 0; i < TileAtlas.NR_OF_GFX_ATLAS_IMAGES; i++) {
             // new atlas
-            var atlas = new BufferedImage(maxWidth * nrOfRows, maxHeight * nrOfRows, BufferedImage.TYPE_INT_ARGB);
+            var atlas = new BufferedImage(
+                    (int)TileAtlas.MAX_GFX_WIDTH * TileAtlas.NR_OF_GFX_ROWS,
+                    (int)TileAtlas.MAX_GFX_HEIGHT * TileAtlas.NR_OF_GFX_ROWS,
+                    BufferedImage.TYPE_INT_ARGB
+            );
 
             // draw bsh images
-            for (var y = 0; y < nrOfRows; y++) {
-                for (var x = 0; x < nrOfRows; x++) {
+            for (var y = 0; y < TileAtlas.NR_OF_GFX_ROWS; y++) {
+                for (var x = 0; x < TileAtlas.NR_OF_GFX_ROWS; x++) {
                     var g = atlas.getGraphics();
                     // only if index exists
                     if (c >= 0 && c < bshTextures.size()) {
                         // draw in atlas
-                        g.drawImage(bshTextures.get(c).getBufferedImage(), x * maxWidth, y * maxHeight, null);
+                        g.drawImage(
+                                bshTextures.get(c).getBufferedImage(),
+                                x * (int)TileAtlas.MAX_GFX_WIDTH,
+                                y * (int)TileAtlas.MAX_GFX_HEIGHT,
+                                null
+                        );
                     }
 
                     c++;
@@ -551,10 +545,11 @@ public class BennoFiles {
         if (!atlasImages.isEmpty()) {
             c = 0;
 
-            Files.createDirectories(Paths.get("out/atlas/GFX/"));
+            var path = "out/" + TileAtlas.ATLAS_GFX_PATH;
+            Files.createDirectories(Paths.get(path));
 
             for (var atlas : atlasImages) {
-                String filename = "out/atlas/GFX/" + c + ".png";
+                String filename = path + c + ".png";
 
                 var file = new File(filename);
                 if (!file.exists()) {

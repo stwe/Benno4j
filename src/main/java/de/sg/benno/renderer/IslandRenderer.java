@@ -166,7 +166,7 @@ public class IslandRenderer {
                 textureIndex.add(index);
 
                 // coordinates on an atlas image
-                var offset = BennoFiles.getGfxTextureOffset(index, NR_OF_GFX_ROWS);
+                var offset = TileAtlas.getTextureOffset(index, NR_OF_GFX_ROWS);
                 offsets.add(offset.x);
                 offsets.add(offset.y);
 

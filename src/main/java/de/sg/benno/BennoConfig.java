@@ -30,4 +30,6 @@ public class BennoConfig {
     public static boolean CREATE_SHIP_GFX_PNG;
     public static boolean CREATE_SHIP_MGFX_PNG;
     public static boolean CREATE_SHIP_SGFX_PNG;
+
+    public static boolean CREATE_ATLAS_IMAGES;
 }
