@@ -1,5 +1,5 @@
-Brainstorming
--------------
+TODO
+----
 
 - für alle stadtfld bsh images wurden OpenGL TextureIds generiert; es werden nicht mehr alle benötigt
 
@@ -21,6 +21,5 @@ Brainstorming
 - Schiffe von a nach b bewegen (A* Path Finding)
 - Schiffe auf der Minimap anzeigen
 
-- Bebauung der Inseln rendern
 - Animation der Bebauung
 

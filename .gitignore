@@ -44,14 +44,18 @@ out/
 ##############################
 ## Atlas
 ##############################
-
 /src/main/resources/atlas/SGFX/
 /src/main/resources/atlas/MGFX/
 /src/main/resources/atlas/GFX/
 
 ##############################
+## Json
+##############################
+/src/main/resources/history/
+
+##############################
 ## Add libs
 ##############################
-
 !/lib/linux/sgogl-java.jar
 !/lib/win/sgogl-java.jar
+
