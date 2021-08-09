@@ -100,7 +100,7 @@ public class World {
 
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
         this.context = Objects.requireNonNull(context, "context must not be null");
-        this.camera = new Camera(22, 206, currentZoom);
+        this.camera = new Camera(112, 336, currentZoom);
 
         init();
     }

@@ -90,9 +90,14 @@ public class IslandRenderer {
     private final HashMap<Zoom, ArrayList<Integer>> textureAtlasIndex = new HashMap<>();
 
     /**
-     * Animation Info (current Gfx, start Gfx, count, frame time)
+     * Animation info (current Gfx, start Gfx, count, frame time).
      */
     private final ArrayList<Integer> animationInfo = new ArrayList<>();
+
+    /**
+     * Additional animation info (animAdd, rotate, orientation).
+     */
+    private final ArrayList<Integer> animationAddInfo = new ArrayList<>();
 
     /**
      * Precalculated texture offsets.
@@ -183,13 +188,22 @@ public class IslandRenderer {
         }
 
         for (var tile : tileGraphics.get(zoom)) {
-            // animation info is the same for every zoom; is only filled once (4 ints per instance)
+            var buildings = context.bennoFiles.getDataFiles().getBuildings();
+            var building = buildings.get(tile.parentTile.graphicId);
+
+            // add animation info; is the same for every zoom; is only filled once (4 ints per instance)
             if (animationInfo.size() != instances * 4) {
-                var building = context.bennoFiles.getDataFiles().getBuildings().get(tile.parentTile.graphicId);
                 animationInfo.add(tile.gfx);          // current gfx
                 animationInfo.add(building.gfx);      // start gfx
                 animationInfo.add(building.animAnz);  // anim count
                 animationInfo.add(building.animTime); // frame time
+            }
+
+            // add other animation info; is the same for every zoom; is only filled once (3 ints per instance)
+            if (animationAddInfo.size() != instances * 3) {
+                animationAddInfo.add(building.animAdd);            // animAdd
+                animationAddInfo.add(building.rotate);             // rotate
+                animationAddInfo.add(tile.parentTile.orientation); // orientation
             }
 
             // offset
@@ -227,6 +241,7 @@ public class IslandRenderer {
         addTextureAtlasIndexVbo(zoom);
         addTextureOffsetsVbo(zoom);
         addYVbo(zoom);
+        addAnimationAddInfoVbo(zoom);
     }
 
     /**
@@ -370,6 +385,30 @@ public class IslandRenderer {
 
         // set buffer layout
         vbo.addFloatAttribute(10, 1, 1, 0, true);
+
+        // unbind vao
+        vao.unbind();
+    }
+
+    /**
+     * Stores {@link #animationAddInfo} to the {@link Vao}.
+     *
+     * @param zoom {@link Zoom}.
+     */
+    private void addAnimationAddInfoVbo(Zoom zoom) {
+        var vao = vaos.get(zoom);
+
+        // bind vao
+        vao.bind();
+
+        // create and add new vbo
+        var vbo = vao.addVbo();
+
+        // store animation add info (static draw) - 3 ints per instance
+        vbo.storeIntegerInstances(animationAddInfo, instances * 3, GL_STATIC_DRAW);
+
+        // set buffer layout
+        vbo.addIntAttribute(11, 3, 3, 0, true);
 
         // unbind vao
         vao.unbind();
