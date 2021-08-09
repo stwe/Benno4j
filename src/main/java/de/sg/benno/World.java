@@ -100,7 +100,7 @@ public class World {
 
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
         this.context = Objects.requireNonNull(context, "context must not be null");
-        this.camera = new Camera(40, 260, currentZoom);
+        this.camera = new Camera(22, 206, currentZoom);
 
         init();
     }
@@ -207,16 +207,14 @@ public class World {
      */
     public void update(float dt) {
         camera.update(currentZoom);
+        terrain.update(dt);
     }
 
     /**
      * Renders the world.
      */
     public void render() {
-        // render water
         water.render(camera, wireframe, currentZoom);
-
-        // render terrain
         terrain.render(camera, wireframe, currentZoom);
     }
 

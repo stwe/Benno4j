@@ -95,6 +95,10 @@ public class Terrain {
     // Logic
     //-------------------------------------------------
 
+    public void update(float dt) {
+        islandRenderer.forEach((k, v) -> v.update(dt));
+    }
+
     /**
      * Renders the terrain.
      *
@@ -103,10 +107,7 @@ public class Terrain {
      * @param zoom The current {@link Zoom}.
      */
     public void render(Camera camera, boolean wireframe, Zoom zoom) {
-        for (var island5 : provider.getIsland5List()) {
-            var renderer = islandRenderer.get(island5);
-            renderer.render(camera, wireframe, zoom);
-        }
+        islandRenderer.forEach((k, v) -> v.render(camera, wireframe, zoom));
     }
 
     //-------------------------------------------------
@@ -157,7 +158,6 @@ public class Terrain {
                 var island5TileOptional = island5.getTileFromTopLayer(x - island5.xPos, y - island5.yPos);
 
                 // todo: write method
-
                 // fallback to bottom layer
                 if (island5TileOptional.isPresent() && island5TileOptional.get().graphicId == 0xFFFF) {
                     island5TileOptional = island5.getTileFromBottomLayer(x - island5.xPos, y - island5.yPos);
@@ -168,6 +168,9 @@ public class Terrain {
 
                     // create tile to display (TileGraphic)
                     var tileGraphic = new TileGraphic();
+
+                    // set island5 tile as parent
+                    tileGraphic.parentTile = island5Tile;
 
                     // work out and set gfx index and tile height (Cliff or Sea-level)
                     island5.setGfxInfo(island5Tile, tileGraphic);

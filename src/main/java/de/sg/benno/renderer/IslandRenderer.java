@@ -12,6 +12,7 @@ import de.sg.benno.TileAtlas;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.input.Camera;
 import de.sg.benno.state.Context;
+import de.sg.ogl.Config;
 import de.sg.ogl.OpenGL;
 import de.sg.ogl.buffer.Vao;
 import de.sg.ogl.buffer.Vertex2D;
@@ -49,6 +50,11 @@ public class IslandRenderer {
      */
     private static final String SHADER_NAME = "island";
 
+    /**
+     * The configured frame time.
+     */
+    private final int DELTA = (int) (1000 / Config.FPS);
+
     //-------------------------------------------------
     // Member
     //-------------------------------------------------
@@ -84,9 +90,9 @@ public class IslandRenderer {
     private final HashMap<Zoom, ArrayList<Integer>> textureAtlasIndex = new HashMap<>();
 
     /**
-     * Specifies the index of the texture on the atlas image.
+     * Animation Info (current Gfx, start Gfx, count, frame time)
      */
-    private final HashMap<Zoom, ArrayList<Integer>> textureIndex = new HashMap<>();
+    private final ArrayList<Integer> animationInfo = new ArrayList<>();
 
     /**
      * Precalculated texture offsets.
@@ -103,6 +109,11 @@ public class IslandRenderer {
      * The {@link Vao} objects for each {@link Zoom}.
      */
     private final HashMap<Zoom, Vao> vaos = new HashMap<>();
+
+    /**
+     * The number of previous updates.
+     */
+    private int updates = 0;
 
     //-------------------------------------------------
     // Ctors.
@@ -159,7 +170,6 @@ public class IslandRenderer {
      * @param zoom {@link Zoom}
      */
     private void createTextureInfo(Zoom zoom) {
-        var textureIndexList = new ArrayList<Integer>();
         var offsetList = new ArrayList<Float>();
         var textureAtlasIndexList = new ArrayList<Integer>();
         var heightBuffer = new ArrayList<Float>();
@@ -173,11 +183,17 @@ public class IslandRenderer {
         }
 
         for (var tile : tileGraphics.get(zoom)) {
-            // texture index
-            var index = tile.gfx % (rows * rows);
-            textureIndexList.add(index);
+            // animation info is the same for every zoom; is only filled once (4 ints per instance)
+            if (animationInfo.size() != instances * 4) {
+                var building = context.bennoFiles.getDataFiles().getBuildings().get(tile.parentTile.graphicId);
+                animationInfo.add(tile.gfx);          // current gfx
+                animationInfo.add(building.gfx);      // start gfx
+                animationInfo.add(building.animAnz);  // anim count
+                animationInfo.add(building.animTime); // frame time
+            }
 
             // offset
+            var index = tile.gfx % (rows * rows);
             var offset = TileAtlas.getTextureOffset(index, rows);
             offsetList.add(offset.x);
             offsetList.add(offset.y);
@@ -189,7 +205,6 @@ public class IslandRenderer {
             heightBuffer.add(tile.size.y);
         }
 
-        textureIndex.put(zoom, textureIndexList);
         offsets.put(zoom, offsetList);
         textureAtlasIndex.put(zoom, textureAtlasIndexList);
         yBuffer.put(zoom, heightBuffer);
@@ -208,7 +223,7 @@ public class IslandRenderer {
         createVao(zoom);
         addMeshVbo(zoom);
         addModelMatricesVbo(zoom);
-        addTextureIndexVbo(zoom);
+        addAnimationInfoVbo(zoom);
         addTextureAtlasIndexVbo(zoom);
         addTextureOffsetsVbo(zoom);
         addYVbo(zoom);
@@ -237,7 +252,7 @@ public class IslandRenderer {
     }
 
     /**
-     * Stores the model matrices for the given {@link Zoom} to the {@link Vao}.
+     * Stores the {@link #modelMatrices} for the given {@link Zoom} to the {@link Vao}.
      *
      * @param zoom {@link Zoom}.
      */
@@ -265,11 +280,11 @@ public class IslandRenderer {
     }
 
     /**
-     * Stores the texture indices for the given {@link Zoom} to the {@link Vao}.
+     * Stores {@link #animationInfo} to the {@link Vao}.
      *
      * @param zoom {@link Zoom}.
      */
-    private void addTextureIndexVbo(Zoom zoom) {
+    private void addAnimationInfoVbo(Zoom zoom) {
         var vao = vaos.get(zoom);
 
         // bind vao
@@ -278,18 +293,18 @@ public class IslandRenderer {
         // create and add new vbo
         var vbo = vao.addVbo();
 
-        // store index (static draw)
-        vbo.storeIntegerInstances(textureIndex.get(zoom), instances, GL_STATIC_DRAW);
+        // store animation info (static draw) - 4 ints per instance
+        vbo.storeIntegerInstances(animationInfo, instances * 4, GL_STATIC_DRAW);
 
         // set buffer layout
-        vbo.addIntAttribute(7, 1, 1, 0, true);
+        vbo.addIntAttribute(7, 4, 4, 0, true);
 
         // unbind vao
         vao.unbind();
     }
 
     /**
-     * Stores the atlas image indices for the given {@link Zoom} to the {@link Vao}.
+     * Stores the {@link #textureAtlasIndex} for the given {@link Zoom} to the {@link Vao}.
      *
      * @param zoom {@link Zoom}.
      */
@@ -313,7 +328,7 @@ public class IslandRenderer {
     }
 
     /**
-     * Stores the offsets for the given {@link Zoom} to the {@link Vao}.
+     * Stores the {@link #offsets} for the given {@link Zoom} to the {@link Vao}.
      *
      * @param zoom {@link Zoom}.
      */
@@ -337,7 +352,7 @@ public class IslandRenderer {
     }
 
     /**
-     * Stores the heights for the given {@link Zoom} to the {@link Vao}.
+     * Stores the {@link #yBuffer} for the given {@link Zoom} to the {@link Vao}.
      *
      * @param zoom {@link Zoom}.
      */
@@ -363,6 +378,22 @@ public class IslandRenderer {
     //-------------------------------------------------
     // Logic
     //-------------------------------------------------
+
+    public void update(float dt) {
+        /*
+        max values:
+        max anzahl 16 (time 90) = 1440 ms
+        max time 220 (anzahl 6) = 1320 ms
+        */
+
+        // todo: die game engine ruft die Update methode
+        // todo: nur 60x pro Sekunde auf
+        // todo: Updates zählen und nach dem 90 Aufruf auf 0 setzen
+        updates++;
+        if (updates > 90) {
+            updates = 0;
+        }
+    }
 
     /**
      * Render the {@link de.sg.benno.chunk.Island5}.
@@ -409,6 +440,8 @@ public class IslandRenderer {
         shader.setUniform("maxY", maxYHeight);
         shader.setUniform("nrOfRows", rows);
         shader.setUniform("sampler", 0);
+        shader.setUniform("updates", updates);
+        shader.setUniform("delta", DELTA);
 
         var vao = vaos.get(zoom);
         vao.bind();

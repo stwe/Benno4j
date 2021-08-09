@@ -41,6 +41,11 @@ public class TileGraphic {
     //-------------------------------------------------
 
     /**
+     * The parent {@link Tile}.
+     */
+    public Tile parentTile;
+
+    /**
      * The gfx, see haeuser.cod or {@link de.sg.benno.data.Building} for reference.
      */
     public int gfx;
