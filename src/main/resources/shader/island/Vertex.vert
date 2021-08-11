@@ -10,10 +10,36 @@ layout (location = 9) in vec2 aOffset;
 layout (location = 10) in float aHeight;
 layout (location = 11) in ivec3 aAnimAdd;
 
+//-------------------------------------------------
+// Out
+//-------------------------------------------------
+
 out vec2 vUv;
 flat out int vTextureAtlasIndex;
+out float skipTile;
 
-vec2 offset;
+//-------------------------------------------------
+// Globals
+//-------------------------------------------------
+
+vec2 uvOffset;
+int rows;
+
+int currentGfx;
+int startGfx;
+int animCount;
+int frameTime;
+
+int animAdd;
+int rotation;
+int orientation;
+
+int totalTime;
+int frame;
+
+//-------------------------------------------------
+// Uniforms
+//-------------------------------------------------
 
 uniform mat4 projection;
 uniform mat4 view;
@@ -22,113 +48,151 @@ uniform float nrOfRows;
 uniform int updates;
 uniform int delta;
 
+//-------------------------------------------------
+// Helper
+//-------------------------------------------------
+
+vec2 calcUvOffset(int gfx) {
+    return vec2(
+        (gfx % rows) / nrOfRows,
+        (gfx / rows) / nrOfRows
+    );
+}
+
+int calcTextureAtlasIndex(int gfx) {
+    return (gfx / (rows * rows));
+}
+
+//-------------------------------------------------
+// Beach
+//-------------------------------------------------
+
+// todo
+
 // rendert eine Animation, wenn die Frames einfach nacheinander abgelegt sind
 // z.B. Wasserkachel mit GFX 758 + sechs weitere Bilder direkt danach
-void renderAnimatedGfx(int gfx) {
-    // zb 8 * 17 = total time of 136 ms
-    int totalTime = updates * delta;
 
-    // get anim info
-    int currentGfx = aAnimInfo.x;
-    int startGfx = aAnimInfo.y;
-    int animCount = aAnimInfo.z;
-    int frameTime = aAnimInfo.w;
+void animateBeach(int id) {
+    if (startGfx == id) {
+        int gfxOffset = (totalTime / frameTime) % animCount;
 
-    // cast nrOfRows
-    int rows = int(nrOfRows);
+        int gfx = startGfx + gfxOffset;
 
-    // work out new offset && new atlas index
-    if (startGfx == gfx) {
-        int pic = (totalTime / frameTime) % animCount;
-
-        offset.x = ((startGfx + pic) % rows) / nrOfRows;
-        offset.y = ((startGfx + pic) / rows) / nrOfRows;
-
-        vTextureAtlasIndex = ((startGfx + pic) / (rows * rows));
+        uvOffset = calcUvOffset(gfx);
+        vTextureAtlasIndex = calcTextureAtlasIndex(gfx);
     }
 }
 
-// Felder (eigentlich keine animation)
-void renderAnimatedTiles1() {
-    // zb 8 * 17 = total time of 136 ms
-    int totalTime = updates * delta;
+//-------------------------------------------------
+// River
+//-------------------------------------------------
 
-    // get anim info
-    int currentGfx = aAnimInfo.x;
-    int startGfx = aAnimInfo.y;
-    int animCount = aAnimInfo.z;
-    //int frameTime = aAnimInfo.w;
-    int frameTime = 900;
-
-    // get rotation info
-    int animAdd = aAnimAdd.x;
-    int rot = aAnimAdd.y;
-    int orient = aAnimAdd.z;
-
-    // cast nrOfRows
-    int rows = int(nrOfRows);
-
-    // work out new offset && new atlas index
-    if (animCount > 0 && animAdd == 1 && startGfx != 758) {
-        int pic = (totalTime / frameTime) % animCount;
-
-        startGfx += (animAdd * pic) + orient;
-        offset.x = ((startGfx) % rows) / nrOfRows;
-        offset.y = ((startGfx) / rows) / nrOfRows;
-
-        vTextureAtlasIndex = ((startGfx) / (rows * rows));
-    }
-}
-
-// Flüsse - Prototyp
-void renderAnimatedTiles4() {
-    // zb 8 * 17 = total time of 136 ms
-    int totalTime = updates * delta;
-
-    // get anim info
-    int currentGfx = aAnimInfo.x;
-    int startGfx = aAnimInfo.y;
-    int animCount = aAnimInfo.z;
-    int frameTime = aAnimInfo.w;
-
-    // get rotation info
-    int animAdd = aAnimAdd.x;
-    int rot = aAnimAdd.y;
-    int orient = aAnimAdd.z;
-
-    // cast nrOfRows
-    int rows = int(nrOfRows);
-
-    // work out new offset && new atlas index
+// todo
+void animateRiver() {
     if (animCount > 0 && animAdd == 4 && startGfx != 758) {
-        int pic = (totalTime / frameTime) % animCount;
+        int gfxOffset = (totalTime / frameTime) % animCount;
+        gfxOffset *= animAdd;
+        gfxOffset += orientation;
 
-        startGfx += (animAdd * pic) + orient;
-        offset.x = ((startGfx) % rows) / nrOfRows;
-        offset.y = ((startGfx) / rows) / nrOfRows;
+        int gfx = startGfx + gfxOffset;
 
-        vTextureAtlasIndex = ((startGfx) / (rows * rows));
+        uvOffset = calcUvOffset(gfx);
+        vTextureAtlasIndex = calcTextureAtlasIndex(gfx);
     }
 }
+
+//-------------------------------------------------
+// River Corner
+//-------------------------------------------------
+
+void animateRiverCorner() {
+    /*
+    ausgehend vom Start, bei welchem Animationsschritt sind wir gerade?
+    Überlauf verhindern; steht auch irgendwo in den Tiles, kann aber
+    berechnet werden
+
+    Test:
+
+    also wenn Start Id = 1648 und current frame 1691
+
+    gegeben: 16 x 6 Animationen
+
+    start bei 1648 + 16 = 1664
+
+    1691 - 1664 = 27
+    27 % 16 = 11
+    --> 1648 + 11 = 1659
+
+    1691 - 1659 = 16x
+    32 = 16x
+    --> x = 2
+
+    Ergebnisse: Start bei 1659 --> 1691 ist der 2te Frame
+    */
+
+    if (startGfx == 1648 || startGfx == 1744) {
+        int startOffset = startGfx + animAdd;
+        int diff = currentGfx - startOffset;
+        int rest = diff % animAdd;
+        int start = startGfx + rest;
+
+        frame *= animAdd;
+        int gfx = start + frame;
+
+        uvOffset = calcUvOffset(gfx);
+        vTextureAtlasIndex = calcTextureAtlasIndex(gfx);
+    }
+}
+
+//-------------------------------------------------
+// Main
+//-------------------------------------------------
 
 void main()
 {
+    // render all tiles
+    skipTile = 0.0;
+
+    // cast
+    rows = int(nrOfRows);
+
+    // get anim info
+    currentGfx = aAnimInfo.x;
+    startGfx = aAnimInfo.y;
+    animCount = aAnimInfo.z;
+    frameTime = aAnimInfo.w;
+
+    // get rotation info
+    animAdd = aAnimAdd.x;
+    rotation = aAnimAdd.y;
+    orientation = aAnimAdd.z;
+
+    // zb 8 * 17 = total time of 136 ms
+    totalTime = updates * delta;
+    frame = (totalTime / frameTime) % animCount;
+
     // get current offset
-    offset = aOffset;
+    uvOffset = aOffset;
 
     // get current atlas index
     vTextureAtlasIndex = aTextureAtlasIndex;
 
-    renderAnimatedGfx(758);
-    //renderAnimatedTiles1();
-    renderAnimatedTiles4();
+    // animate beach area
+    animateBeach(758);
 
+    // animate river
+    animateRiver();
+
+    // animate river corner
+    animateRiverCorner();
+
+    // render rest
     gl_Position = projection * view * aModelMatrix * vec4(aPosition, 0.0, 1.0);
 
-    vUv.x = (aUv.x / nrOfRows) + offset.x;
-    vUv.y = (aUv.y / nrOfRows) + offset.y;
+    vUv.x = (aUv.x / nrOfRows) + uvOffset.x;
+    vUv.y = (aUv.y / nrOfRows) + uvOffset.y;
 
     if (aUv.y == 1.0) {
-        vUv.y = ((1.0 / nrOfRows) * aHeight / maxY) + offset.y;
+        vUv.y = ((1.0 / nrOfRows) * aHeight / maxY) + uvOffset.y;
     }
 }
