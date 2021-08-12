@@ -16,19 +16,43 @@ import java.awt.image.DataBufferByte;
 import java.io.IOException;
 import java.util.Objects;
 
-// todo
-
+/**
+ * Represents an ImageFile.
+ */
 public class ImageFile {
 
     //-------------------------------------------------
     // Member
     //-------------------------------------------------
 
+    /**
+     * A {@link BufferedImage}.
+     */
     private final BufferedImage image;
+
+    /**
+     * The pixels array.
+     */
     private final byte[] pixels;
-    private int width;
-    private int height;
+
+    /**
+     * The width of the image.
+     */
+    private final int width;
+
+    /**
+     * The height of the image.
+     */
+    private final int height;
+
+    /**
+     * True if the image has an alpha channel.
+     */
     private final boolean hasAlphaChannel;
+
+    /**
+     * The number of pixel channels.
+     */
     private int pixelLength;
 
     //-------------------------------------------------
@@ -69,13 +93,30 @@ public class ImageFile {
         return image;
     }
 
+    //-------------------------------------------------
+    // Pixel
+    //-------------------------------------------------
+
+    /**
+     * Returns an array of pixels.
+     *
+     * @return int[]
+     */
     public int[] getArgb() {
-        return image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
+        return image.getRGB(0, 0, width, height, null, 0, width);
     }
 
-    public short[] getRGB(int x, int y) {
-        int pos = (y * pixelLength * width) + (x * pixelLength);
-        short[] rgb = new short[4];
+    /**
+     * A fast getRGB implementation.
+     *
+     * @param x The x position.
+     * @param y The y position.
+     *
+     * @return short[]
+     */
+    public short[] getFastRGB(int x, int y) {
+        var pos = (y * pixelLength * width) + (x * pixelLength);
+        var rgb = new short[4];
 
         if (hasAlphaChannel) {
             rgb[3] = (short) (pixels[pos++] & 0xFF); // Alpha
@@ -83,7 +124,7 @@ public class ImageFile {
 
         rgb[2] = (short) (pixels[pos++] & 0xFF); // Blue
         rgb[1] = (short) (pixels[pos++] & 0xFF); // Green
-        rgb[0] = (short) (pixels[pos++] & 0xFF); // Red
+        rgb[0] = (short) (pixels[pos] & 0xFF); // Red
 
         return rgb;
     }

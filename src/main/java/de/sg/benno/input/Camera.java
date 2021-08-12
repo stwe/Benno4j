@@ -9,6 +9,7 @@
 package de.sg.benno.input;
 
 import de.sg.benno.renderer.Zoom;
+import de.sg.ogl.Config;
 import de.sg.ogl.camera.OrthographicCamera;
 import de.sg.ogl.input.KeyInput;
 import de.sg.ogl.input.MouseInput;
@@ -110,11 +111,12 @@ public class Camera extends OrthographicCamera {
                 }
             }
 
+            /*
             if (MouseInput.getX() < 30) {
                 processUpdate(Direction.LEFT, zoom);
             }
 
-            if (MouseInput.getX() > 1024 - 30) {
+            if (MouseInput.getX() > Config.WIDTH - 30) {
                 processUpdate(Direction.RIGHT, zoom);
             }
 
@@ -122,9 +124,10 @@ public class Camera extends OrthographicCamera {
                 processUpdate(Direction.DOWN, zoom);
             }
 
-            if (MouseInput.getY() > 768 - 30) {
+            if (MouseInput.getY() > Config.HEIGHT - 30) {
                 processUpdate(Direction.UP, zoom);
             }
+            */
         }
 
         // key input

@@ -10,10 +10,16 @@ package de.sg.benno;
 
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.WorldData;
+import de.sg.benno.file.ImageFile;
 import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.*;
 import de.sg.benno.state.Context;
 import de.sg.ogl.input.KeyInput;
+import de.sg.ogl.input.MouseInput;
+import de.sg.ogl.renderer.TileRenderer;
+import de.sg.ogl.resource.Texture;
+import org.joml.Vector2f;
+import org.joml.Vector2i;
 
 import java.util.Objects;
 
@@ -84,6 +90,18 @@ public class World {
      */
     private MiniMap miniMap;
 
+
+
+    private Texture rectangle;
+    private Texture highlight;
+    private ImageFile corner;
+    private TileRenderer tileRenderer;
+    public Vector2i cell = new Vector2i(0, 0);
+    public Vector2i offset = new Vector2i(0, 0);
+    public Vector2i selected = new Vector2i(0, 0);
+
+
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -100,7 +118,12 @@ public class World {
 
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
         this.context = Objects.requireNonNull(context, "context must not be null");
-        this.camera = new Camera(-62, 196, currentZoom);
+        this.camera = new Camera(0, 0, currentZoom);
+
+        rectangle = context.engine.getResourceManager().loadResource(Texture.class, "/debug/frame.png");
+        highlight = context.engine.getResourceManager().loadResource(Texture.class, "/debug/red.png");
+        corner = new ImageFile("debug/corner.png");
+        tileRenderer = new TileRenderer(context.engine);
 
         init();
     }
@@ -163,11 +186,11 @@ public class World {
         water = new Water(provider, context);
 
         // create terrain
-        terrain = new Terrain(provider, context);
+        //terrain = new Terrain(provider, context);
 
         // create and render minimap to a Fbo (creates a texture)
-        miniMap = new MiniMap(provider, context, camera);
-        miniMap.renderToFbo();
+        //miniMap = new MiniMap(provider, context, camera);
+        //miniMap.renderToFbo();
     }
 
     //-------------------------------------------------
@@ -209,7 +232,7 @@ public class World {
      */
     public void update(float dt) {
         camera.update(dt);
-        terrain.update(dt);
+        //terrain.update(dt);
     }
 
     /**
@@ -217,7 +240,60 @@ public class World {
      */
     public void render() {
         water.render(camera, wireframe, currentZoom);
-        terrain.render(camera, wireframe, currentZoom);
+        //terrain.render(camera, wireframe, currentZoom);
+
+        // work out active cell in screen space
+        cell.x = (int) MouseInput.getX() / currentZoom.defaultTileWidth;        // 64
+        cell.y = (int)MouseInput.getY() / (currentZoom.defaultTileHeight + 1); // 31 + 1
+
+        // work out mouse offset into cell in screen space
+        offset.x = (int)MouseInput.getX() % currentZoom.defaultTileWidth;
+        offset.y = (int)MouseInput.getY() % (currentZoom.defaultTileHeight + 1);
+
+        // work out selected tile in world space
+        var origin = new Vector2i(0);
+        origin.x = (int)camera.position.x / 64;
+        origin.y = (int)camera.position.y / 32;
+
+        selected.x = (cell.y + origin.y) + (cell.x + origin.x);
+        selected.y = (cell.y + origin.y) - (cell.x + origin.x);
+
+        selected.x += 1;
+        selected.y -= 1;
+
+        var cellScreenSpace = new Vector2i(cell);
+
+        // "Bodge" selected cell by sampling corners
+        var pixel = corner.getFastRGB(offset.x, offset.y);
+        if (pixel[0] == 255 && pixel[1] == 0 && pixel[2] == 0) {
+            //debugText = "red | selected.x - 1";
+            cellScreenSpace.x -= 1;
+        } else if (pixel[0] == 0 && pixel[1] == 255 && pixel[2] == 0) {
+            //debugText = "green | selected.y - 1";
+            cellScreenSpace.y -= 1;
+        } else  if (pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 255) {
+            //debugText = "blue | selected.y + 1";
+            cellScreenSpace.y += 1;
+        } else if (pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 0) {
+            //debugText = "yellow | selected.x + 1";
+            cellScreenSpace.x += 1;
+        } else {
+            //debugText = "";
+        }
+
+        // draw rectangle
+        tileRenderer.render(
+                rectangle.getId(),
+                new Vector2f(cell.x * 64.0f, cell.y * 32.0f),
+                new Vector2f(64.0f, 32.0f)
+        );
+
+        // highlight tile
+        tileRenderer.render(
+                highlight.getId(),
+                new Vector2f(cell.x * 64.0f, cell.y * 32.0f),
+                new Vector2f(64.0f, 32.0f)
+        );
     }
 
     //-------------------------------------------------
@@ -231,7 +307,7 @@ public class World {
         LOGGER.debug("Start clean up for the World.");
 
         water.cleanUp();
-        terrain.cleanUp();
-        miniMap.cleanUp();
+        //terrain.cleanUp();
+        //miniMap.cleanUp();
     }
 }

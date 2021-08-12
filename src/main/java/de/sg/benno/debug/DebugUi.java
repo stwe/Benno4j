@@ -115,8 +115,8 @@ public class DebugUi {
         ImGui.text("Tile x: " + selTile.x);
         ImGui.text("Tile y: " + selTile.y);
 
-        ImGui.separator();
-        showMiniMap();
+        //ImGui.separator();
+        //showMiniMap();
 
         ImGui.separator();
         showImGuiInfo();
