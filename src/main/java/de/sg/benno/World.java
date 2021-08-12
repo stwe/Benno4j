@@ -12,6 +12,7 @@ import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.file.ImageFile;
 import de.sg.benno.input.Camera;
+import de.sg.benno.input.MousePicker;
 import de.sg.benno.renderer.*;
 import de.sg.benno.state.Context;
 import de.sg.ogl.input.KeyInput;
@@ -91,6 +92,7 @@ public class World {
     private MiniMap miniMap;
 
 
+    // todo temp member
 
     private Texture rectangle;
     private Texture highlight;
@@ -99,8 +101,6 @@ public class World {
     public Vector2i cell = new Vector2i(0, 0);
     public Vector2i offset = new Vector2i(0, 0);
     public Vector2i selected = new Vector2i(0, 0);
-
-
 
     //-------------------------------------------------
     // Ctors.
@@ -242,24 +242,18 @@ public class World {
         water.render(camera, wireframe, currentZoom);
         //terrain.render(camera, wireframe, currentZoom);
 
+        /////////////////////////////////////////////////////////////////
+        //                          todo
+        /////////////////////////////////////////////////////////////////
+
         // work out active cell in screen space
-        cell.x = (int) MouseInput.getX() / currentZoom.defaultTileWidth;        // 64
-        cell.y = (int)MouseInput.getY() / (currentZoom.defaultTileHeight + 1); // 31 + 1
+        cell = MousePicker.getActiveCell(currentZoom);
 
         // work out mouse offset into cell in screen space
-        offset.x = (int)MouseInput.getX() % currentZoom.defaultTileWidth;
-        offset.y = (int)MouseInput.getY() % (currentZoom.defaultTileHeight + 1);
+        offset = MousePicker.getCellOffset(currentZoom);
 
         // work out selected tile in world space
-        var origin = new Vector2i(0);
-        origin.x = (int)camera.position.x / 64;
-        origin.y = (int)camera.position.y / 32;
-
-        selected.x = (cell.y + origin.y) + (cell.x + origin.x);
-        selected.y = (cell.y + origin.y) - (cell.x + origin.x);
-
-        selected.x += 1;
-        selected.y -= 1;
+        selected = MousePicker.getSelectedTile(camera, currentZoom);
 
         var cellScreenSpace = new Vector2i(cell);
 
@@ -281,18 +275,20 @@ public class World {
             //debugText = "";
         }
 
+        var size = MousePicker.getTileWidthAndHeight(currentZoom);
+
         // draw rectangle
         tileRenderer.render(
                 rectangle.getId(),
-                new Vector2f(cell.x * 64.0f, cell.y * 32.0f),
-                new Vector2f(64.0f, 32.0f)
+                new Vector2f(cell.x * size.x, cell.y * size.y),
+                new Vector2f(size.x, size.y)
         );
 
         // highlight tile
         tileRenderer.render(
                 highlight.getId(),
-                new Vector2f(cell.x * 64.0f, cell.y * 32.0f),
-                new Vector2f(64.0f, 32.0f)
+                new Vector2f(cell.x * size.x, cell.y * size.y),
+                new Vector2f(size.x, size.y)
         );
     }
 
