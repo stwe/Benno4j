@@ -198,11 +198,19 @@ public class World {
     //-------------------------------------------------
 
     /**
-     * Handle mouse and keyboard input.
+     * Nothing
      */
-    public void input() {
+    public void input() {}
+
+    /**
+     * Update world.
+     *
+     * @param dt The delta time.
+     */
+    public void update(float dt) {
         // wireframe flag
         if (KeyInput.isKeyPressed(GLFW_KEY_G)) {
+            KeyInput.input(); // todo: a workaround
             wireframe = !wireframe;
         }
 
@@ -222,16 +230,8 @@ public class World {
             camera.resetPosition(currentZoom);
         }
 
-        camera.input(currentZoom);
-    }
+        camera.update(currentZoom);
 
-    /**
-     * Update world.
-     *
-     * @param dt The delta time.
-     */
-    public void update(float dt) {
-        camera.update(dt);
         //terrain.update(dt);
     }
 

@@ -85,15 +85,51 @@ public class Camera extends OrthographicCamera {
     //-------------------------------------------------
 
     /**
-     * Input camera.
+     * Update camera.
+     */
+    public void update(Zoom zoom) {
+        // todo reset? was removed from engine
+        //MouseInput.input();
+        //KeyInput.input();
+
+        handleKeyInput(zoom);
+        handleMouseInput(zoom);
+    }
+
+    /**
+     * Handle key input.
      *
      * @param zoom {@link Zoom}
      */
-    public void input(Zoom zoom) {
-        // mouse input
+    private void handleKeyInput(Zoom zoom) {
+        if (KeyInput.isKeyDown(GLFW.GLFW_KEY_W) || KeyInput.isKeyDown(GLFW_KEY_UP)) {
+            processUpdate(Direction.DOWN, zoom);
+        }
+
+        if (KeyInput.isKeyDown(GLFW.GLFW_KEY_S) || KeyInput.isKeyDown(GLFW_KEY_DOWN)) {
+            processUpdate(Direction.UP, zoom);
+        }
+
+        if (KeyInput.isKeyDown(GLFW.GLFW_KEY_A) || KeyInput.isKeyDown(GLFW_KEY_LEFT)) {
+            processUpdate(Direction.LEFT, zoom);
+        }
+
+        if (KeyInput.isKeyDown(GLFW.GLFW_KEY_D) || KeyInput.isKeyDown(GLFW_KEY_RIGHT)) {
+            processUpdate(Direction.RIGHT, zoom);
+        }
+    }
+
+    /**
+     * Handle mouse input.
+     *
+     * @param zoom {@link Zoom}
+     */
+    private void handleMouseInput(Zoom zoom) {
         if (MouseInput.isMouseInWindow()) {
             var delta = 2.0f;
-            if (MouseInput.isMouseButtonDown(GLFW_MOUSE_BUTTON_2)) { // right mouse button
+
+            // right mouse button
+            if (MouseInput.isMouseButtonDown(GLFW_MOUSE_BUTTON_2)) {
                 if (MouseInput.getDx() > delta) {
                     processUpdate(Direction.RIGHT, zoom);
                 }
@@ -129,33 +165,6 @@ public class Camera extends OrthographicCamera {
             }
             */
         }
-
-        // key input
-
-        if (KeyInput.isKeyDown(GLFW.GLFW_KEY_W) || KeyInput.isKeyDown(GLFW_KEY_UP)) {
-            processUpdate(Direction.DOWN, zoom);
-        }
-
-        if (KeyInput.isKeyDown(GLFW.GLFW_KEY_S) || KeyInput.isKeyDown(GLFW_KEY_DOWN)) {
-            processUpdate(Direction.UP, zoom);
-        }
-
-        if (KeyInput.isKeyDown(GLFW.GLFW_KEY_A) || KeyInput.isKeyDown(GLFW_KEY_LEFT)) {
-            processUpdate(Direction.LEFT, zoom);
-        }
-
-        if (KeyInput.isKeyDown(GLFW.GLFW_KEY_D) || KeyInput.isKeyDown(GLFW_KEY_RIGHT)) {
-            processUpdate(Direction.RIGHT, zoom);
-        }
-    }
-
-    /**
-     * Update camera.
-     */
-    public void update(float dt) {
-        // todo reset? was removed from engine
-        //MouseInput.input();
-        //KeyInput.input();
     }
 
     //-------------------------------------------------
