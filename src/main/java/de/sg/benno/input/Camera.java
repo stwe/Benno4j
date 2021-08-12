@@ -11,6 +11,7 @@ package de.sg.benno.input;
 import de.sg.benno.renderer.Zoom;
 import de.sg.ogl.camera.OrthographicCamera;
 import de.sg.ogl.input.KeyInput;
+import de.sg.ogl.input.MouseInput;
 import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFW;
 
@@ -83,26 +84,75 @@ public class Camera extends OrthographicCamera {
     //-------------------------------------------------
 
     /**
-     * Update camera.
+     * Input camera.
      *
-     * @param zoom The current {@link Zoom}.
+     * @param zoom {@link Zoom}
      */
-    public void update(Zoom zoom) {
-        if (KeyInput.isKeyPressed(GLFW.GLFW_KEY_W) || KeyInput.isKeyPressed(GLFW_KEY_UP)) {
-            processUpdate(Direction.UP, zoom);
+    public void input(Zoom zoom) {
+        // mouse input
+        if (MouseInput.isMouseInWindow()) {
+            var delta = 2.0f;
+            if (MouseInput.isMouseButtonDown(GLFW_MOUSE_BUTTON_2)) { // right mouse button
+                if (MouseInput.getDx() > delta) {
+                    processUpdate(Direction.RIGHT, zoom);
+                }
+
+                if (MouseInput.getDx() < -delta) {
+                    processUpdate(Direction.LEFT, zoom);
+                }
+
+                if (MouseInput.getDy() > delta) {
+                    processUpdate(Direction.UP, zoom);
+                }
+
+                if (MouseInput.getDy() < -delta) {
+                    processUpdate(Direction.DOWN, zoom);
+                }
+            }
+
+            if (MouseInput.getX() < 30) {
+                processUpdate(Direction.LEFT, zoom);
+            }
+
+            if (MouseInput.getX() > 1024 - 30) {
+                processUpdate(Direction.RIGHT, zoom);
+            }
+
+            if (MouseInput.getY() < 30) {
+                processUpdate(Direction.DOWN, zoom);
+            }
+
+            if (MouseInput.getY() > 768 - 30) {
+                processUpdate(Direction.UP, zoom);
+            }
         }
 
-        if (KeyInput.isKeyPressed(GLFW.GLFW_KEY_S) || KeyInput.isKeyPressed(GLFW_KEY_DOWN)) {
+        // key input
+
+        if (KeyInput.isKeyDown(GLFW.GLFW_KEY_W) || KeyInput.isKeyDown(GLFW_KEY_UP)) {
             processUpdate(Direction.DOWN, zoom);
         }
 
-        if (KeyInput.isKeyPressed(GLFW.GLFW_KEY_A) || KeyInput.isKeyPressed(GLFW_KEY_LEFT)) {
+        if (KeyInput.isKeyDown(GLFW.GLFW_KEY_S) || KeyInput.isKeyDown(GLFW_KEY_DOWN)) {
+            processUpdate(Direction.UP, zoom);
+        }
+
+        if (KeyInput.isKeyDown(GLFW.GLFW_KEY_A) || KeyInput.isKeyDown(GLFW_KEY_LEFT)) {
             processUpdate(Direction.LEFT, zoom);
         }
 
-        if (KeyInput.isKeyPressed(GLFW.GLFW_KEY_D) || KeyInput.isKeyPressed(GLFW_KEY_RIGHT)) {
+        if (KeyInput.isKeyDown(GLFW.GLFW_KEY_D) || KeyInput.isKeyDown(GLFW_KEY_RIGHT)) {
             processUpdate(Direction.RIGHT, zoom);
         }
+    }
+
+    /**
+     * Update camera.
+     */
+    public void update(float dt) {
+        // todo reset? was removed from engine
+        //MouseInput.input();
+        //KeyInput.input();
     }
 
     //-------------------------------------------------

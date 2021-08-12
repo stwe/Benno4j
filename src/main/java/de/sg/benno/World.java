@@ -198,6 +198,8 @@ public class World {
             currentZoom = Zoom.GFX;
             camera.resetPosition(currentZoom);
         }
+
+        camera.input(currentZoom);
     }
 
     /**
@@ -206,7 +208,7 @@ public class World {
      * @param dt The delta time.
      */
     public void update(float dt) {
-        camera.update(currentZoom);
+        camera.update(dt);
         terrain.update(dt);
     }
 
