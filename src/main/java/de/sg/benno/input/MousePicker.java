@@ -8,7 +8,9 @@
 
 package de.sg.benno.input;
 
+import de.sg.benno.Water;
 import de.sg.benno.file.ImageFile;
+import de.sg.benno.renderer.TileGraphicRenderer;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
 import de.sg.ogl.input.MouseInput;
@@ -18,8 +20,10 @@ import org.joml.Vector2f;
 import org.joml.Vector2i;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 import static de.sg.ogl.Log.LOGGER;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 
 /**
  * Represents a MousePicker
@@ -51,23 +55,35 @@ public class MousePicker {
 
     /**
      * Renders a highlighted tile.
+     * The {@link TileRenderer} is used for debugging.
      */
     private final TileRenderer tileRenderer;
 
     /**
+     * Renders a single texture.
+     * The {@link TileGraphicRenderer} is used to highlight the current tile under the mouse.
+     */
+    private final TileGraphicRenderer tileGraphicRenderer;
+
+    /**
      * Highlights a cell.
      */
-    private Texture rectangle;
+    private Texture rectangleTexture;
 
     /**
      * Highlights a tile.
      */
-    private Texture highlight;
+    private Texture tileTexture;
 
     /**
      * Corner png files to select tiles.
      */
     private final HashMap<Zoom, ImageFile> corners = new HashMap<>();
+
+    /**
+     * The {@link Water} object.
+     */
+    private final Water water;
 
     //-------------------------------------------------
     // Ctors.
@@ -77,12 +93,17 @@ public class MousePicker {
      * Constructs a new {@link MousePicker} object.
      *
      * @param context {@link Context}
+     * @param water {@link Water}
      * @throws Exception If an error is thrown.
      */
-    public MousePicker(Context context) throws Exception {
+    public MousePicker(Context context, Water water) throws Exception {
         LOGGER.debug("Creates MousePicker object.");
 
-        tileRenderer = new TileRenderer(context.engine);
+        Objects.requireNonNull(context, "context must not be null");
+        this.tileRenderer = new TileRenderer(context.engine);
+        this.tileGraphicRenderer = new TileGraphicRenderer(context);
+
+        this.water = Objects.requireNonNull(water, "water must not be null");
 
         init(context);
     }
@@ -92,14 +113,14 @@ public class MousePicker {
     //-------------------------------------------------
 
     /**
-     * Load png files.
+     * Load png files for highlighting.
      *
      * @param context {@link Context}
      * @throws Exception If an error is thrown.
      */
     private void init(Context context) throws Exception {
-        rectangle = context.engine.getResourceManager().loadResource(Texture.class, CELL_FILE);
-        highlight = context.engine.getResourceManager().loadResource(Texture.class, TILE_FILE);
+        rectangleTexture = context.engine.getResourceManager().loadResource(Texture.class, CELL_FILE);
+        tileTexture = context.engine.getResourceManager().loadResource(Texture.class, TILE_FILE);
 
         var cornerGfxImageFile = new ImageFile(CORNER_FILE);
 
@@ -123,7 +144,48 @@ public class MousePicker {
     //-------------------------------------------------
 
     /**
-     * Highlights cell and tile.
+     * Handle mouse input.
+     *
+     * @param dt The delta time.
+     * @param camera The {@link Camera} object.
+     * @param zoom The current {@link Zoom}.
+     */
+    public void update(float dt, Camera camera, Zoom zoom) {
+        if (MouseInput.isMouseInWindow()) {
+            if (MouseInput.isMouseButtonDown(GLFW_MOUSE_BUTTON_1)) {
+
+                // highlight current water tile if click on it
+                water.updateSelectedWaterTile(getTileUnderMouse(camera, zoom));
+            }
+        }
+    }
+
+    /**
+     * Highlight the current tile.
+     *
+     * @param camera The {@link Camera} object.
+     * @param zoom The current {@link Zoom}
+     */
+    public void render(Camera camera, Zoom zoom) {
+        // get the current position under mouse in world space
+        var tile = getTileUnderMouse(camera, zoom);
+
+        // get the tile graphic on world space to read out the model matrix
+        var tileGraphicOptional = water.getWaterTileGraphic(zoom, tile.x, tile.y);
+        if (tileGraphicOptional.isPresent()) {
+            var tileGraphic = tileGraphicOptional.get();
+
+            // render highlight texture with view && model matrix
+            tileGraphicRenderer.render(
+                    camera,
+                    tileTexture,
+                    tileGraphic.getModelMatrix()
+            );
+        }
+    }
+
+    /**
+     * Highlights cell and tile without corners.
      *
      * @param zoom The current {@link Zoom}
      */
@@ -133,7 +195,7 @@ public class MousePicker {
 
         if (highlightCell) {
             tileRenderer.render(
-                    rectangle.getId(),
+                    rectangleTexture.getId(),
                     new Vector2f(cell.x * size.x, cell.y * size.y),
                     new Vector2f(size.x, size.y)
             );
@@ -141,7 +203,7 @@ public class MousePicker {
 
         if (highlightTile) {
             tileRenderer.render(
-                    highlight.getId(),
+                    tileTexture.getId(),
                     new Vector2f(cell.x * size.x, cell.y * size.y),
                     new Vector2f(size.x, size.y)
             );
@@ -268,6 +330,8 @@ public class MousePicker {
         LOGGER.debug("Start clean up for the MousePicker.");
 
         corners.forEach((k, v) -> v.cleanUp());
+
         tileRenderer.cleanUp();
+        tileGraphicRenderer.cleanUp();
     }
 }

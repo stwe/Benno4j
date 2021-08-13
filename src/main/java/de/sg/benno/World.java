@@ -88,7 +88,7 @@ public class World {
     /**
      * A {@link MousePicker} object to select tiles.
      */
-    private final MousePicker mousePicker;
+    private MousePicker mousePicker;
 
     //-------------------------------------------------
     // Ctors.
@@ -107,7 +107,6 @@ public class World {
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
         this.context = Objects.requireNonNull(context, "context must not be null");
         this.camera = new Camera(0, 0, currentZoom);
-        this.mousePicker = new MousePicker(this.context);
 
         init();
     }
@@ -178,6 +177,9 @@ public class World {
         // create water
         water = new Water(provider, context);
 
+        // the mouse picker
+        mousePicker = new MousePicker(context, water);
+
         // create terrain
         //terrain = new Terrain(provider, context);
 
@@ -226,6 +228,8 @@ public class World {
         camera.update(currentZoom);
 
         //terrain.update(dt);
+
+        mousePicker.update(dt, camera, currentZoom);
     }
 
     /**
@@ -235,7 +239,8 @@ public class World {
         water.render(camera, wireframe, currentZoom);
         //terrain.render(camera, wireframe, currentZoom);
 
-        mousePicker.renderDebug(currentZoom, true, true);
+        //mousePicker.renderDebug(currentZoom, true, true);
+        mousePicker.render(camera, currentZoom);
     }
 
     //-------------------------------------------------
@@ -249,8 +254,10 @@ public class World {
         LOGGER.debug("Start clean up for the World.");
 
         water.cleanUp();
+
         //terrain.cleanUp();
         //miniMap.cleanUp();
+
         mousePicker.cleanUp();
     }
 }

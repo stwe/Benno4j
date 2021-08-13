@@ -22,10 +22,7 @@ import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 
 import static de.sg.benno.World.WORLD_HEIGHT;
 import static de.sg.benno.World.WORLD_WIDTH;
@@ -112,6 +109,30 @@ public class Water {
         this.buildings = this.bennoFiles.getDataFiles().getBuildings();
 
         init();
+    }
+
+    //-------------------------------------------------
+    // Getter
+    //-------------------------------------------------
+
+    /**
+     * Get a {@link TileGraphic} by a given world space position.
+     *
+     * @param zoom The current {@link Zoom}.
+     * @param x The x position in world space.
+     * @param y The y position in world space.
+     *
+     * @return A nullable {@link TileGraphic} Optional.
+     */
+    public Optional<TileGraphic> getWaterTileGraphic(Zoom zoom, int x, int y) {
+        TileGraphic result = null;
+
+        var index = getWaterInstanceIndex(x, y);
+        if (index != NO_WATER) {
+            result = waterTiles.get(zoom).get(index);
+        }
+
+        return Optional.ofNullable(result);
     }
 
     //-------------------------------------------------

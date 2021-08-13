@@ -17,6 +17,7 @@ import de.sg.ogl.buffer.Vao;
 import de.sg.ogl.resource.Geometry;
 import de.sg.ogl.resource.Shader;
 import de.sg.ogl.resource.Texture;
+import org.joml.Matrix4f;
 
 import java.util.Objects;
 
@@ -26,7 +27,7 @@ import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 
 /**
  * Represents a TileGraphicRenderer.
- * Renders a single {@link de.sg.benno.chunk.TileGraphic}.
+ * Renders a single {@link de.sg.benno.chunk.TileGraphic} or a single {@link Texture}.
  */
 public class TileGraphicRenderer {
 
@@ -118,6 +119,36 @@ public class TileGraphicRenderer {
         shader.setUniform("projection", context.engine.getWindow().getOrthographicProjectionMatrix());
         shader.setUniform("view", camera.getViewMatrix());
         shader.setUniform("model", tileGraphic.getModelMatrix());
+        shader.setUniform("diffuseMap", 0);
+
+        vao.bind();
+        vao.drawPrimitives(GL_TRIANGLES);
+        vao.unbind();
+
+        Shader.unbind();
+        Texture.unbind();
+
+        OpenGL.disableBlending();
+    }
+
+    /**
+     * Renders a single {@link Texture}.
+     *
+     * @param camera The {@link Camera} object.
+     * @param texture The {@link Texture} to render.
+     * @param modelMatrix The model matrix.
+     */
+    public void render(Camera camera, Texture texture, Matrix4f modelMatrix) {
+        var textureId = texture.getId();
+
+        OpenGL.enableAlphaBlending();
+
+        shader.bind();
+        Texture.bindForReading(textureId, GL_TEXTURE0);
+
+        shader.setUniform("projection", context.engine.getWindow().getOrthographicProjectionMatrix());
+        shader.setUniform("view", camera.getViewMatrix());
+        shader.setUniform("model", modelMatrix);
         shader.setUniform("diffuseMap", 0);
 
         vao.bind();

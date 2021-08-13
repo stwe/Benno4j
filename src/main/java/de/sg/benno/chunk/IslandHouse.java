@@ -159,8 +159,8 @@ public class IslandHouse {
     /**
      * Returns the {@link Tile} object from the given position.
      *
-     * @param x The x position on a island in world space.
-     * @param y The y position on a island in world space.
+     * @param x The x position on an island in world space.
+     * @param y The y position on an island in world space.
      *
      * @return A nullable {@link Tile} Optional.
      */
