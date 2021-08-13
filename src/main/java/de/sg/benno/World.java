@@ -10,17 +10,11 @@ package de.sg.benno;
 
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.WorldData;
-import de.sg.benno.file.ImageFile;
 import de.sg.benno.input.Camera;
 import de.sg.benno.input.MousePicker;
 import de.sg.benno.renderer.*;
 import de.sg.benno.state.Context;
 import de.sg.ogl.input.KeyInput;
-import de.sg.ogl.input.MouseInput;
-import de.sg.ogl.renderer.TileRenderer;
-import de.sg.ogl.resource.Texture;
-import org.joml.Vector2f;
-import org.joml.Vector2i;
 
 import java.util.Objects;
 
@@ -91,16 +85,10 @@ public class World {
      */
     private MiniMap miniMap;
 
-
-    // todo temp member
-
-    private Texture rectangle;
-    private Texture highlight;
-    private ImageFile corner;
-    private TileRenderer tileRenderer;
-    public Vector2i cell = new Vector2i(0, 0);
-    public Vector2i offset = new Vector2i(0, 0);
-    public Vector2i selected = new Vector2i(0, 0);
+    /**
+     * A {@link MousePicker} object to select tiles.
+     */
+    private final MousePicker mousePicker;
 
     //-------------------------------------------------
     // Ctors.
@@ -119,11 +107,7 @@ public class World {
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
         this.context = Objects.requireNonNull(context, "context must not be null");
         this.camera = new Camera(0, 0, currentZoom);
-
-        rectangle = context.engine.getResourceManager().loadResource(Texture.class, "/debug/frame.png");
-        highlight = context.engine.getResourceManager().loadResource(Texture.class, "/debug/red.png");
-        corner = new ImageFile("debug/corner.png");
-        tileRenderer = new TileRenderer(context.engine);
+        this.mousePicker = new MousePicker(this.context);
 
         init();
     }
@@ -157,6 +141,15 @@ public class World {
      */
     public MiniMap getMiniMap() {
         return miniMap;
+    }
+
+    /**
+     * Get {@link #mousePicker}.
+     *
+     * @return {@link #mousePicker}
+     */
+    public MousePicker getMousePicker() {
+        return mousePicker;
     }
 
     //-------------------------------------------------
@@ -242,54 +235,7 @@ public class World {
         water.render(camera, wireframe, currentZoom);
         //terrain.render(camera, wireframe, currentZoom);
 
-        /////////////////////////////////////////////////////////////////
-        //                          todo
-        /////////////////////////////////////////////////////////////////
-
-        // work out active cell in screen space
-        cell = MousePicker.getActiveCell(currentZoom);
-
-        // work out mouse offset into cell in screen space
-        offset = MousePicker.getCellOffset(currentZoom);
-
-        // work out selected tile in world space
-        selected = MousePicker.getSelectedTile(camera, currentZoom);
-
-        var cellScreenSpace = new Vector2i(cell);
-
-        // "Bodge" selected cell by sampling corners
-        var pixel = corner.getFastRGB(offset.x, offset.y);
-        if (pixel[0] == 255 && pixel[1] == 0 && pixel[2] == 0) {
-            //debugText = "red | selected.x - 1";
-            cellScreenSpace.x -= 1;
-        } else if (pixel[0] == 0 && pixel[1] == 255 && pixel[2] == 0) {
-            //debugText = "green | selected.y - 1";
-            cellScreenSpace.y -= 1;
-        } else  if (pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 255) {
-            //debugText = "blue | selected.y + 1";
-            cellScreenSpace.y += 1;
-        } else if (pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 0) {
-            //debugText = "yellow | selected.x + 1";
-            cellScreenSpace.x += 1;
-        } else {
-            //debugText = "";
-        }
-
-        var size = MousePicker.getTileWidthAndHeight(currentZoom);
-
-        // draw rectangle
-        tileRenderer.render(
-                rectangle.getId(),
-                new Vector2f(cell.x * size.x, cell.y * size.y),
-                new Vector2f(size.x, size.y)
-        );
-
-        // highlight tile
-        tileRenderer.render(
-                highlight.getId(),
-                new Vector2f(cell.x * size.x, cell.y * size.y),
-                new Vector2f(size.x, size.y)
-        );
+        mousePicker.renderDebug(currentZoom, true, true);
     }
 
     //-------------------------------------------------
@@ -305,5 +251,6 @@ public class World {
         water.cleanUp();
         //terrain.cleanUp();
         //miniMap.cleanUp();
+        mousePicker.cleanUp();
     }
 }

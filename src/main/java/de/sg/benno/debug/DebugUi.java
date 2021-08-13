@@ -9,7 +9,6 @@
 package de.sg.benno.debug;
 
 import de.sg.benno.World;
-import de.sg.benno.input.MousePicker;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.GameState;
 import de.sg.ogl.Config;
@@ -109,7 +108,10 @@ public class DebugUi {
         ImGui.text("Mouse x: " + MouseInput.getX());
         ImGui.text("Mouse y: " + MouseInput.getY());
 
-        var selTile = MousePicker.getSelectedTile(gameState.getWorld().getCamera(), gameState.getWorld().getCurrentZoom());
+        var selTile = gameState.getWorld().getMousePicker().getTileUnderMouse(
+                gameState.getWorld().getCamera(),
+                gameState.getWorld().getCurrentZoom()
+        );
         ImGui.separator();
         ImGui.text("Tile under mouse");
         ImGui.text("Tile x: " + selTile.x);

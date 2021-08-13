@@ -16,6 +16,8 @@ import java.awt.image.DataBufferByte;
 import java.io.IOException;
 import java.util.Objects;
 
+import static de.sg.ogl.Log.LOGGER;
+
 /**
  * Represents an ImageFile.
  */
@@ -62,13 +64,12 @@ public class ImageFile {
     /**
      * Constructs a new {@link ImageFile} object.
      *
-     * @param path The file path to the image.
-     *
-     * @throws IOException If an I/O error is thrown.
+     * @param image A {@link BufferedImage}
      */
-    public ImageFile(String path) throws IOException {
-        var source = Util.getFileFromResourceAsStream(path);
-        image = ImageIO.read(Objects.requireNonNull(source, "source must not be null"));
+    public ImageFile(BufferedImage image) {
+        LOGGER.debug("Creates ImageFile object.");
+
+        this.image = Objects.requireNonNull(image, "image must not be null");
 
         pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
         width = image.getWidth();
@@ -78,6 +79,19 @@ public class ImageFile {
         if (hasAlphaChannel) {
             pixelLength = 4;
         }
+    }
+
+    /**
+     * Constructs a new {@link ImageFile} object.
+     *
+     * @param path The file path to the image.
+     *
+     * @throws IOException If an I/O error is thrown.
+     */
+    public ImageFile(String path) throws IOException {
+        this(ImageIO.read(
+                Objects.requireNonNull(Util.getFileFromResourceAsStream(path), "source must not be null"))
+        );
     }
 
     //-------------------------------------------------
@@ -127,5 +141,40 @@ public class ImageFile {
         rgb[0] = (short) (pixels[pos] & 0xFF); // Red
 
         return rgb;
+    }
+
+    //-------------------------------------------------
+    // Helper
+    //-------------------------------------------------
+
+    /**
+     * Resizing an {@link BufferedImage}.
+     *
+     * @param originalImage The original {@link BufferedImage}.
+     * @param targetWidth The target width.
+     * @param targetHeight The target height.
+     *
+     * @return The resized {@link BufferedImage}
+     */
+    public static BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) {
+        var resizedImage = new BufferedImage(targetWidth, targetHeight, originalImage.getType());
+        var graphics2D = resizedImage.createGraphics();
+        graphics2D.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
+        graphics2D.dispose();
+
+        return resizedImage;
+    }
+
+    //-------------------------------------------------
+    // Clean up
+    //-------------------------------------------------
+
+    /**
+     * Clean up.
+     */
+    public void cleanUp() {
+        LOGGER.debug("Start clean up for the ImageFile.");
+
+        image.getGraphics().dispose();
     }
 }

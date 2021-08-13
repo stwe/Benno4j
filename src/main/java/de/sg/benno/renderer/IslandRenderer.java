@@ -418,6 +418,11 @@ public class IslandRenderer {
     // Logic
     //-------------------------------------------------
 
+    /**
+     * Update renderer.
+     *
+     * @param dt The delta time.
+     */
     public void update(float dt) {
         /*
         max values:
