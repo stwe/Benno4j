@@ -83,52 +83,24 @@ public class DebugUi {
 
         ImGui.begin("Debug", windowFlags);
 
-        ImGui.text("Camera position");
-        ImGui.text("Camera screen space x: " + gameState.getWorld().getCamera().position.x + " (" + gameState.getWorld().getCamera().positionInTileUnits.x+")");
-        ImGui.text("Camera screen space y: " + gameState.getWorld().getCamera().position.y + " (" + gameState.getWorld().getCamera().positionInTileUnits.y+")");
-
-        cameraSlider();
-
-        ImGui.separator();
-        ImGui.text("Zoom");
-        if (ImGui.beginCombo("", gameState.getWorld().getCurrentZoom().toString(), 0)) {
-            for (var zoom : Zoom.values()) {
-                ImBoolean isSelect = new ImBoolean();
-                if (ImGui.selectable(zoom.toString(), isSelect, 0)) {
-                    gameState.getWorld().setCurrentZoom(zoom);
-                    gameState.getWorld().getCamera().resetPosition(zoom);
-                }
-            }
-
-            ImGui.endCombo();
-        }
-
-        ImGui.separator();
-        ImGui.text("Mouse position in Benno4j");
-        ImGui.text("Mouse x: " + MouseInput.getX());
-        ImGui.text("Mouse y: " + MouseInput.getY());
-
-        var selTile = gameState.getWorld().getMousePicker().getTileUnderMouse(
-                gameState.getWorld().getCamera(),
-                gameState.getWorld().getCurrentZoom()
-        );
-        ImGui.separator();
-        ImGui.text("Tile under mouse");
-        ImGui.text("Tile x: " + selTile.x);
-        ImGui.text("Tile y: " + selTile.y);
-
-        //ImGui.separator();
-        //showMiniMap();
-
-        ImGui.separator();
-        showImGuiInfo();
+        cameraPosition();
+        zoom();
+        mousePosition();
+        tileUnderMouse();
 
         ImGui.end();
     }
 
-    /**
-     * Add camera slider for faster movement.
-     */
+    //-------------------------------------------------
+    // Widgets
+    //-------------------------------------------------
+
+    private void cameraPosition() {
+        ImGui.text("Camera position");
+        ImGui.text("Camera screen space x: " + gameState.getWorld().getCamera().position.x + " (" + gameState.getWorld().getCamera().positionInTileUnits.x+")");
+        ImGui.text("Camera screen space y: " + gameState.getWorld().getCamera().position.y + " (" + gameState.getWorld().getCamera().positionInTileUnits.y+")");
+    }
+
     private void cameraSlider() {
         ImGui.separator();
         ImGui.text("Camera fast screen space change");
@@ -150,10 +122,50 @@ public class DebugUi {
         }
     }
 
-    /**
-     * Shows the minimap.
-     */
+    private void zoom() {
+        ImGui.separator();
+        ImGui.text("Zoom");
+        if (ImGui.beginCombo("", gameState.getWorld().getCurrentZoom().toString(), 0)) {
+            for (var zoom : Zoom.values()) {
+                ImBoolean isSelect = new ImBoolean();
+                if (ImGui.selectable(zoom.toString(), isSelect, 0)) {
+                    gameState.getWorld().setCurrentZoom(zoom);
+                    gameState.getWorld().getCamera().resetPosition(zoom);
+                }
+            }
+
+            ImGui.endCombo();
+        }
+    }
+
+    private void mousePosition() {
+        ImGui.separator();
+        ImGui.text("Mouse position in BennoApp");
+        ImGui.text("Mouse x: " + MouseInput.getX());
+        ImGui.text("Mouse y: " + MouseInput.getY());
+    }
+
+    private void tileUnderMouse() {
+        var selTile = gameState.getWorld().getMousePicker().getTileUnderMouse(
+                gameState.getWorld().getCamera(),
+                gameState.getWorld().getCurrentZoom()
+        );
+        ImGui.separator();
+        ImGui.text("Tile under mouse");
+        ImGui.text("Tile x: " + selTile.x);
+        ImGui.text("Tile y: " + selTile.y);
+        if (gameState.getWorld().getMousePicker().getCurrentTileGraphic() != null) {
+            var tileGraphic = gameState.getWorld().getMousePicker().getCurrentTileGraphic();
+            ImGui.text("Graphic Id: " + tileGraphic.parentTile.graphicId);
+            ImGui.text("Start gfx on gpu: " + tileGraphic.gfx);
+        } else {
+            ImGui.text("Graphic Id: none");
+            ImGui.text("Start gfx on gpu: none");
+        }
+    }
+
     private void showMiniMap() {
+        ImGui.separator();
         if (miniMapId == 0) {
             miniMapId = gameState.world.getMiniMap().getMiniMapTexture().getId();
         }
@@ -168,9 +180,6 @@ public class DebugUi {
         );
     }
 
-    /**
-     * Info
-     */
     private void showImGuiInfo() {
         ImGui.text("Mouse position in OS");
         ImGui.text("OS Mouse x: " + ImGui.getMousePosX());

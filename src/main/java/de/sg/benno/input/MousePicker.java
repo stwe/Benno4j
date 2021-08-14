@@ -9,6 +9,7 @@
 package de.sg.benno.input;
 
 import de.sg.benno.Water;
+import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.file.ImageFile;
 import de.sg.benno.renderer.TileGraphicRenderer;
 import de.sg.benno.renderer.Zoom;
@@ -85,6 +86,11 @@ public class MousePicker {
      */
     private final Water water;
 
+    /**
+     * The current {@link TileGraphic} under mouse;
+     */
+    private TileGraphic currentTileGraphic;
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -106,6 +112,19 @@ public class MousePicker {
         this.water = Objects.requireNonNull(water, "water must not be null");
 
         init(context);
+    }
+
+    //-------------------------------------------------
+    // Getter
+    //-------------------------------------------------
+
+    /**
+     * Get {@link #currentTileGraphic}.
+     *
+     * @return {@link #currentTileGraphic}
+     */
+    public TileGraphic getCurrentTileGraphic() {
+        return currentTileGraphic;
     }
 
     //-------------------------------------------------
@@ -168,19 +187,21 @@ public class MousePicker {
      */
     public void render(Camera camera, Zoom zoom) {
         // get the current position under mouse in world space
-        var tile = getTileUnderMouse(camera, zoom);
+        var worldPosition = getTileUnderMouse(camera, zoom);
 
-        // get the tile graphic on world space to read out the model matrix
-        var tileGraphicOptional = water.getWaterTileGraphic(zoom, tile.x, tile.y);
+        // get the tile graphic from world space position above to read out the model matrix
+        var tileGraphicOptional = water.getWaterTileGraphic(zoom, worldPosition.x, worldPosition.y);
         if (tileGraphicOptional.isPresent()) {
-            var tileGraphic = tileGraphicOptional.get();
+            currentTileGraphic = tileGraphicOptional.get();
 
             // render highlight texture with view && model matrix
             tileGraphicRenderer.render(
                     camera,
                     tileTexture,
-                    tileGraphic.getModelMatrix()
+                    currentTileGraphic.getModelMatrix()
             );
+        } else {
+            currentTileGraphic = null;
         }
     }
 
@@ -188,6 +209,7 @@ public class MousePicker {
      * Highlights cell and tile without corners.
      *
      * @param zoom The current {@link Zoom}
+     * @deprecated use {@link #render(Camera, Zoom)} instead
      */
     public void renderDebug(Zoom zoom, boolean highlightCell, boolean highlightTile) {
         var size = MousePicker.getTileWidthAndHeight(zoom);

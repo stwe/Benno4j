@@ -9,6 +9,7 @@
 package de.sg.benno;
 
 import de.sg.benno.chunk.Island5;
+import de.sg.benno.chunk.Tile;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.data.Building;
@@ -243,7 +244,11 @@ public class Water {
                 var isWater = Island5.isIslandOnPosition(x, y, provider.getIsland5List()).isEmpty();
                 if (isWater) {
                     var waterTile = new TileGraphic();
-                    waterTile.gfx = 0; // is not needed here because the same gfx is always used
+
+                    // create a "fake" Tile to store the building Id
+                    waterTile.parentTile = new Tile(buildingId);
+
+                    waterTile.gfx = water.gfx;
                     waterTile.tileHeight = TileGraphic.TileHeight.SEA_LEVEL;
                     waterTile.worldPosition.x = x;
                     waterTile.worldPosition.y = y;
