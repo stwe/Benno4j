@@ -341,7 +341,8 @@ public class Island5 {
         LOGGER.debug("Set top and bottom final layer successfully.");
     }
 
-    // todo: Berechnung stimmt nicht
+    // todo: Berechnung stimmt für SGFX
+    // todo: in eine Methode packen + Winkel genauer bestimmen
 
     /**
      * Create an {@link Aabb} for each {@link Zoom}.
@@ -351,9 +352,11 @@ public class Island5 {
      */
     private void createAabbs(Context context) throws Exception {
         for (var zoom : Zoom.values()) {
-            float c = (float)height * 9.0f; // pixel in screen space
-            // a = c·cos(beta)
-            double a = c * Math.cos(Math.toRadians(45));
+            float c = (float)height * 9.0f;
+            double a = c * Math.cos(Math.toRadians(25));
+
+            float b = (float)((c * c) - (a * a));
+            b = (float)Math.sqrt(b);
 
             var aabb = new Aabb(context);
             var screenStart = TileUtil.worldToScreen(xPos, yPos, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf);
@@ -361,7 +364,10 @@ public class Island5 {
             aabb.position = new Vector2f(screenStart);
             aabb.position.x -= (float)a;
             aabb.size.x = width * zoom.defaultTileWidth;
-            aabb.size.y = c*2.0f;
+
+            float w = (float)width * 9.0f;
+            aabb.size.y = (float)(w * Math.cos(Math.toRadians(63)));
+            aabb.size.y += b;
 
             aabbs.put(zoom, aabb);
         }
