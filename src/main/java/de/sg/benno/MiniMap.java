@@ -223,7 +223,7 @@ public class MiniMap {
                 tile.size = new Vector2f(1.0f);
 
                 // water && island
-                var island5Optional = Island5.isIslandOnPosition(x, y, provider.getIsland5List());
+                var island5Optional = Island5.isIsland5OnPosition(x, y, provider.getIsland5List());
                 if (island5Optional.isEmpty()) {
                     // water were found: blue color
                     tile.color = WATER_COLOR;

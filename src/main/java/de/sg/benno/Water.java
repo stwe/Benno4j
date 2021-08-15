@@ -241,7 +241,7 @@ public class Water {
         for (int y = 0; y < WORLD_HEIGHT; y++) {
             for (int x = 0; x < WORLD_WIDTH; x++) {
                 // only consider deep water tiles here
-                var isWater = Island5.isIslandOnPosition(x, y, provider.getIsland5List()).isEmpty();
+                var isWater = Island5.isIsland5OnPosition(x, y, provider.getIsland5List()).isEmpty();
                 if (isWater) {
                     var waterTile = new TileGraphic();
 

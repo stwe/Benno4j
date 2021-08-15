@@ -11,8 +11,6 @@ TODO
       https://ogldev.org/www/tutorial29/tutorial29.html
       https://www.mbsoftworks.sk/tutorials/opengl3/18-3d-picking-pt1/ (clear color auf schwarz setzen)
 
-- Aabbs mit dem Ziel, nur sichtbaren Content anzuzeigen
-
 - Minimap mit der Kamera verbinden
 - Minimap ist momentan absolut statisch - ändern
 
@@ -22,4 +20,3 @@ TODO
 - Schiffe auf der Minimap anzeigen
 
 - Animation der Bebauung
-

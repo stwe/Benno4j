@@ -30,9 +30,9 @@ public class GamFile extends BinaryFile implements WorldData {
     //-------------------------------------------------
 
     /**
-     * The {@link BennoFiles} object.
+     * The {@link Context} object.
      */
-    private final BennoFiles bennoFiles;
+    private final Context context;
 
     /**
      * The list with all {@link Island5} objects.
@@ -62,7 +62,7 @@ public class GamFile extends BinaryFile implements WorldData {
 
         LOGGER.debug("Creates GamFile object from file {}.", path);
 
-        this.bennoFiles = Objects.requireNonNull(context, "context must not be null").bennoFiles;
+        this.context = Objects.requireNonNull(context, "context must not be null");
 
         readDataFromChunks();
     }
@@ -77,7 +77,7 @@ public class GamFile extends BinaryFile implements WorldData {
 
         for (var chunk : getChunks()) {
             if (chunk.getId().equals("INSEL5")) {
-                var island5 = new Island5(chunk, bennoFiles);
+                var island5 = new Island5(chunk, context);
                 island5List.add(island5);
             }
 
@@ -115,6 +115,10 @@ public class GamFile extends BinaryFile implements WorldData {
     @Override
     public void cleanUp() {
         LOGGER.debug("Start clean up for the GamFile.");
+
+        for (var island5 : island5List) {
+            island5.cleanUp();
+        }
     }
 
     //-------------------------------------------------

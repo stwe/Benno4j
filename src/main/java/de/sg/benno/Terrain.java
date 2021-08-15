@@ -12,6 +12,7 @@ import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.file.BennoFiles;
+import de.sg.benno.input.Aabb;
 import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.IslandRenderer;
 import de.sg.benno.renderer.Zoom;
@@ -95,6 +96,11 @@ public class Terrain {
     // Logic
     //-------------------------------------------------
 
+    /**
+     * Update {@link #islandRenderer}.
+     *
+     * @param dt The delta time.
+     */
     public void update(float dt) {
         islandRenderer.forEach((k, v) -> v.update(dt));
     }
@@ -107,7 +113,26 @@ public class Terrain {
      * @param zoom The current {@link Zoom}.
      */
     public void render(Camera camera, boolean wireframe, Zoom zoom) {
-        islandRenderer.forEach((k, v) -> v.render(camera, wireframe, zoom));
+        // todo
+
+        // only deep water:        1900
+        // + 17 islands:           1400
+        // + 17 islands and Aabbs: 1600
+
+        /*
+        islandRenderer.forEach(
+                (k, v) ->  v.render(camera, wireframe, zoom)
+        );
+        */
+
+        islandRenderer.forEach(
+                (k, v) -> {
+                        if (Aabb.aabbVsAabb(camera.getAabb(), k.getAabb(zoom))) {
+                            v.render(camera, wireframe, zoom);
+                            k.getAabb(zoom).render(camera);
+                        }
+                }
+        );
     }
 
     //-------------------------------------------------

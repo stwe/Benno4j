@@ -9,9 +9,14 @@
 package de.sg.benno.chunk;
 
 import de.sg.benno.BennoRuntimeException;
+import de.sg.benno.TileUtil;
 import de.sg.benno.data.Building;
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.file.ScpFile;
+import de.sg.benno.input.Aabb;
+import de.sg.benno.renderer.Zoom;
+import de.sg.benno.state.Context;
+import org.joml.Vector2f;
 
 import java.io.IOException;
 import java.util.*;
@@ -145,6 +150,11 @@ public class Island5 {
      */
     private IslandHouse bottomLayer;
 
+    /**
+     * An {@link Aabb} object for each {@link de.sg.benno.renderer.Zoom}.
+     */
+    private final HashMap<Zoom, Aabb> aabbs = new HashMap<>();
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -153,15 +163,20 @@ public class Island5 {
      * Constructs a new {@link Island5} object.
      *
      * @param chunk {@link Chunk}
-     * @param bennoFiles {@link BennoFiles}.
+     * @param context {@link Context}.
+     * @throws Exception If an error is thrown.
      */
-    public Island5(Chunk chunk, BennoFiles bennoFiles) {
+    public Island5(Chunk chunk, Context context) throws Exception {
         LOGGER.debug("Creates Island5 object.");
 
-        this.bennoFiles = Objects.requireNonNull(bennoFiles, "bennoFiles must not be null");
+        Objects.requireNonNull(context, "context must not be null");
+
+        this.bennoFiles = context.bennoFiles;
         this.buildings = this.bennoFiles.getDataFiles().getBuildings();
 
         readData(Objects.requireNonNull(chunk, "chunk must not be null"));
+
+        createAabbs(context);
     }
 
     //-------------------------------------------------
@@ -231,6 +246,17 @@ public class Island5 {
         return Optional.ofNullable(result);
     }
 
+    /**
+     * Get {@link Aabb} by {@link Zoom}.
+     *
+     * @param zoom {@link Zoom}
+     *
+     * @return {@link Aabb}
+     */
+    public Aabb getAabb(Zoom zoom) {
+        return aabbs.get(zoom);
+    }
+
     //-------------------------------------------------
     // Setter
     //-------------------------------------------------
@@ -250,6 +276,8 @@ public class Island5 {
 
     /**
      * Sets the final top and bottom layer.
+     *
+     * @throws IOException If an I/O error is thrown.
      */
     public void setTopAndBottomLayer() throws IOException {
         LOGGER.debug("Modified flag: {}", modified);
@@ -311,6 +339,32 @@ public class Island5 {
         topLayer = finalIslandHouseList.get(1);
 
         LOGGER.debug("Set top and bottom final layer successfully.");
+    }
+
+    // todo: Berechnung stimmt nicht
+
+    /**
+     * Create an {@link Aabb} for each {@link Zoom}.
+     *
+     * @param context {@link Context}
+     * @throws Exception If an error is thrown.
+     */
+    private void createAabbs(Context context) throws Exception {
+        for (var zoom : Zoom.values()) {
+            float c = (float)height * 9.0f; // pixel in screen space
+            // a = c·cos(beta)
+            double a = c * Math.cos(Math.toRadians(45));
+
+            var aabb = new Aabb(context);
+            var screenStart = TileUtil.worldToScreen(xPos, yPos, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf);
+
+            aabb.position = new Vector2f(screenStart);
+            aabb.position.x -= (float)a;
+            aabb.size.x = width * zoom.defaultTileWidth;
+            aabb.size.y = c*2.0f;
+
+            aabbs.put(zoom, aabb);
+        }
     }
 
     //-------------------------------------------------
@@ -502,7 +556,7 @@ public class Island5 {
      *
      * @return A nullable {@link Island5} Optional.
      */
-    public static Optional<Island5> isIslandOnPosition(int x, int y, ArrayList<Island5> island5List) {
+    public static Optional<Island5> isIsland5OnPosition(int x, int y, ArrayList<Island5> island5List) {
         Island5 result = null;
 
         for (var island5 : island5List) {
@@ -515,5 +569,18 @@ public class Island5 {
         }
 
         return Optional.ofNullable(result);
+    }
+
+    //-------------------------------------------------
+    // Clean up
+    //-------------------------------------------------
+
+    /**
+     * Clean up.
+     */
+    public void cleanUp() {
+        LOGGER.debug("Start clean up for the Island5.");
+
+        aabbs.forEach((k, v) -> v.cleanUp());
     }
 }

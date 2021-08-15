@@ -106,7 +106,7 @@ public class World {
 
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
         this.context = Objects.requireNonNull(context, "context must not be null");
-        this.camera = new Camera(0, 0, currentZoom);
+        this.camera = new Camera(0, 0, context, currentZoom);
 
         init();
     }
@@ -181,7 +181,7 @@ public class World {
         mousePicker = new MousePicker(context, water);
 
         // create terrain
-        //terrain = new Terrain(provider, context);
+        terrain = new Terrain(provider, context);
 
         // create and render minimap to a Fbo (creates a texture)
         //miniMap = new MiniMap(provider, context, camera);
@@ -227,7 +227,7 @@ public class World {
 
         camera.update(currentZoom);
 
-        //terrain.update(dt);
+        terrain.update(dt);
 
         mousePicker.update(dt, camera, currentZoom);
     }
@@ -237,9 +237,9 @@ public class World {
      */
     public void render() {
         water.render(camera, wireframe, currentZoom);
-        //terrain.render(camera, wireframe, currentZoom);
 
-        //mousePicker.renderDebug(currentZoom, true, true);
+        terrain.render(camera, wireframe, currentZoom);
+
         mousePicker.render(camera, currentZoom);
     }
 
@@ -253,11 +253,10 @@ public class World {
     public void cleanUp() {
         LOGGER.debug("Start clean up for the World.");
 
+        camera.cleanUp();
         water.cleanUp();
-
-        //terrain.cleanUp();
+        terrain.cleanUp();
         //miniMap.cleanUp();
-
         mousePicker.cleanUp();
     }
 }

@@ -9,7 +9,7 @@
 package de.sg.benno.input;
 
 import de.sg.benno.renderer.Zoom;
-import de.sg.ogl.Config;
+import de.sg.benno.state.Context;
 import de.sg.ogl.camera.OrthographicCamera;
 import de.sg.ogl.input.KeyInput;
 import de.sg.ogl.input.MouseInput;
@@ -34,31 +34,46 @@ public class Camera extends OrthographicCamera {
      */
     public final Vector2i positionInTileUnits = new Vector2i(0, 0);
 
+    /**
+     * The current {@link Aabb}.
+     */
+    private final Aabb aabb;
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
     /**
      * Constructs a new {@link Camera} object.
-     */
-    public Camera(Zoom zoom) {
-        LOGGER.debug("Creates Camera object at (0, 0) in screen space.");
-        resetPosition(zoom);
-    }
-
-    /**
-     * Constructs a new {@link Camera} object.
      *
      * @param x The start x screen space position in tile units.
      * @param y The start y screen space position in tile units.
+     * @param context {@link Context}
+     * @param zoom {@link Zoom}
+     * @throws Exception If an error is thrown.
      */
-    public Camera(int x, int y, Zoom zoom) {
+    public Camera(int x, int y, Context context, Zoom zoom) throws Exception {
         LOGGER.debug("Creates Camera object at ({}, {}) in screen space.", x, y);
 
-        positionInTileUnits.x = x;
-        positionInTileUnits.y = y;
+        this.positionInTileUnits.x = x;
+        this.positionInTileUnits.y = y;
+
+        this.aabb = new Aabb(context);
 
         resetPosition(zoom);
+    }
+
+    //-------------------------------------------------
+    // Getter
+    //-------------------------------------------------
+
+    /**
+     * Get {@link #aabb}.
+     *
+     * @return {@link #aabb}
+     */
+    public Aabb getAabb() {
+        return aabb;
     }
 
     //-------------------------------------------------
@@ -78,6 +93,8 @@ public class Camera extends OrthographicCamera {
             height = 32;
         }
         position.y = height * positionInTileUnits.y;
+
+        aabb.position = position;
     }
 
     //-------------------------------------------------
@@ -197,5 +214,18 @@ public class Camera extends OrthographicCamera {
             positionInTileUnits.x += zoom.speedFactor;
             position.x += zoom.getCameraSpeed().x;
         }
+    }
+
+    //-------------------------------------------------
+    // Clean up
+    //-------------------------------------------------
+
+    /**
+     * Clean up.
+     */
+    public void cleanUp() {
+        LOGGER.debug("Start clean up for the Camera.");
+
+        aabb.cleanUp();
     }
 }
