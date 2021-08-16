@@ -113,26 +113,33 @@ public class Terrain {
      * @param zoom The current {@link Zoom}.
      */
     public void render(Camera camera, boolean wireframe, Zoom zoom) {
-        // todo
-
         // only deep water:        1900
         // + 17 islands:           1400
         // + 17 islands and Aabbs: 1600
 
-        /*
-        islandRenderer.forEach(
-                (k, v) ->  v.render(camera, wireframe, zoom)
-        );
-        */
-
-        islandRenderer.forEach(
-                (k, v) -> {
-                        if (Aabb.aabbVsAabb(camera.getAabb(), k.getAabb(zoom))) {
-                            v.render(camera, wireframe, zoom);
+        if (!BennoConfig.AABB_COLLISION_DETECTION) {
+            islandRenderer.forEach(
+                    (k, v) -> {
+                        v.render(camera, wireframe, zoom);
+                        if (BennoConfig.SHOW_ISLAND5_AABBS) {
                             k.getAabb(zoom).render(camera);
                         }
-                }
-        );
+                    }
+            );
+        }
+
+        if (BennoConfig.AABB_COLLISION_DETECTION) {
+            islandRenderer.forEach(
+                    (k, v) -> {
+                        if (Aabb.aabbVsAabb(camera.getAabb(), k.getAabb(zoom))) {
+                            v.render(camera, wireframe, zoom);
+                            if (BennoConfig.SHOW_ISLAND5_AABBS) {
+                                k.getAabb(zoom).render(camera);
+                            }
+                        }
+                    }
+            );
+        }
     }
 
     //-------------------------------------------------

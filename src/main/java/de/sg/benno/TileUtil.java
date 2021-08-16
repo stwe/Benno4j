@@ -12,6 +12,19 @@ import org.joml.Vector2i;
 
 public class TileUtil {
 
+    /*
+    h/w = 0.5
+
+    126,87 deg
+
+        \    /
+         \  /
+          \/  arctan(sin(30)) = 26.565
+    -----------
+    */
+
+    public static final double ANGLE_TO_THE_HORIZONTAL = 26.565;
+
     public static Vector2i worldToScreen(int worldX, int worldY, int tileWidthHalf, int tileHeightHalf) {
         return new Vector2i(
                 (worldX - worldY) * tileWidthHalf,

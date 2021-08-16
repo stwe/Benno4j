@@ -20,3 +20,5 @@ TODO
 - Schiffe auf der Minimap anzeigen
 
 - Animation der Bebauung
+
+- 3D Wasser; in diesem Fall muss auch der Uferbereich der Inseln beachtet werden

@@ -31,5 +31,8 @@ public class BennoConfig {
     public static boolean CREATE_SHIP_MGFX_PNG;
     public static boolean CREATE_SHIP_SGFX_PNG;
 
+    public static boolean SHOW_ISLAND5_AABBS;
+    public static boolean AABB_COLLISION_DETECTION;
+
     public static boolean CREATE_ATLAS_IMAGES;
 }

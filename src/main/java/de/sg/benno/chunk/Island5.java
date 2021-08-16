@@ -21,6 +21,7 @@ import org.joml.Vector2f;
 import java.io.IOException;
 import java.util.*;
 
+import static de.sg.benno.TileUtil.ANGLE_TO_THE_HORIZONTAL;
 import static de.sg.benno.Util.*;
 import static de.sg.ogl.Log.LOGGER;
 
@@ -341,8 +342,55 @@ public class Island5 {
         LOGGER.debug("Set top and bottom final layer successfully.");
     }
 
-    // todo: Berechnung stimmt für SGFX
-    // todo: in eine Methode packen + Winkel genauer bestimmen
+    /*
+    h/w = 0.5
+
+    126,87 deg
+
+    \    /
+     \  /
+      \/  arctan(sin(30)) = 26.565
+ -----------
+
+
+      a
+  x ------       found x in screen space
+   |     /  \
+ b |   /      \
+   | /  c       \
+     \          /
+       \      /
+         \  /
+
+    a = c * cos(26.565)
+    b = sqrt(c² - a²)
+
+    ------
+   |     / | \
+   |   /   |   \
+   | / c   | b   \
+     ------
+     \  a        /
+       \       /
+         \   /
+
+     c = sqrt(a² + b²)
+
+         / \
+       /     \
+     /         \
+    |\          / \
+    |  \      /     \
+  a |    \  /         \
+    |    c  \         /
+    |         \     /
+    |           \ /
+    -------------
+        b
+
+    a = c · cos(90 - 26.565)
+
+    */
 
     /**
      * Create an {@link Aabb} for each {@link Zoom}.
@@ -352,22 +400,28 @@ public class Island5 {
      */
     private void createAabbs(Context context) throws Exception {
         for (var zoom : Zoom.values()) {
-            float c = (float)height * 9.0f;
-            double a = c * Math.cos(Math.toRadians(25));
+            float l = (zoom.defaultTileWidthHalf * zoom.defaultTileWidthHalf) + (zoom.defaultTileHeightHalf * zoom.defaultTileHeightHalf);
+            l = (float)Math.sqrt(l);
 
-            float b = (float)((c * c) - (a * a));
+            float c = l * height;
+            float a = c * (float)Math.cos(Math.toRadians(ANGLE_TO_THE_HORIZONTAL));
+            float ao = a;
+            float b = (c * c) - (a * a);
             b = (float)Math.sqrt(b);
 
             var aabb = new Aabb(context);
             var screenStart = TileUtil.worldToScreen(xPos, yPos, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf);
-
             aabb.position = new Vector2f(screenStart);
-            aabb.position.x -= (float)a;
-            aabb.size.x = width * zoom.defaultTileWidth;
+            aabb.position.x -= a;
 
-            float w = (float)width * 9.0f;
-            aabb.size.y = (float)(w * Math.cos(Math.toRadians(63)));
-            aabb.size.y += b;
+            c = l * width;
+            a = (float)(c * Math.cos(Math.toRadians(90.0 - ANGLE_TO_THE_HORIZONTAL)));
+            aabb.size.y = a + b;
+
+            b = (c * c) - (a * a);
+            b = (float)Math.sqrt(b);
+
+            aabb.size.x = b + ao;
 
             aabbs.put(zoom, aabb);
         }
