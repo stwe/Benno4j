@@ -15,19 +15,23 @@ import de.sg.benno.state.Context;
 import de.sg.ogl.Config;
 import de.sg.ogl.OpenGL;
 import de.sg.ogl.buffer.Vao;
+import de.sg.ogl.buffer.Vbo;
 import de.sg.ogl.buffer.Vertex2D;
 import de.sg.ogl.resource.Geometry;
 import de.sg.ogl.resource.Shader;
 import de.sg.ogl.resource.Texture;
 import org.joml.Matrix4f;
+import org.lwjgl.BufferUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import static de.sg.benno.TileAtlas.*;
 import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL15.GL_DYNAMIC_DRAW;
 import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
 import static org.lwjgl.opengl.GL30.GL_TEXTURE_2D_ARRAY;
 
@@ -54,6 +58,16 @@ public class IslandRenderer {
      * The configured frame time.
      */
     private final int DELTA = (int) (1000 / Config.FPS);
+
+    /**
+     * Indicated that a tile is unselected.
+     */
+    private static final int TILE_IS_UNSELECTED = 1;
+
+    /**
+     * Indicated that a tile is selected.
+     */
+    private static final int TILE_IS_SELECTED = 2;
 
     //-------------------------------------------------
     // Member
@@ -109,6 +123,12 @@ public class IslandRenderer {
      * The height of each texture.
      */
     private final HashMap<Zoom, ArrayList<Float>> yBuffer = new HashMap<>();
+
+    /**
+     * The {@link Vbo} for "selected" data.
+     * Every tile has a flag indicating whether it has been selected.
+     */
+    private final HashMap<Zoom, Vbo> selectedVbos = new HashMap<>();
 
     /**
      * The {@link Vao} objects for each {@link Zoom}.
@@ -242,6 +262,7 @@ public class IslandRenderer {
         addTextureOffsetsVbo(zoom);
         addYVbo(zoom);
         addAnimationAddInfoVbo(zoom);
+        addSelectedVbo(zoom);
     }
 
     /**
@@ -414,6 +435,39 @@ public class IslandRenderer {
         vao.unbind();
     }
 
+    /**
+     * Every tile has a flag indicating whether it has been selected.
+     * Add this data to a new {@link de.sg.ogl.buffer.Vbo} for each {@link Zoom}.
+     * 1 = {@link #TILE_IS_UNSELECTED}; 2 = {@link #TILE_IS_SELECTED} (results in a darker color)
+     *
+     *  @param zoom {@link Zoom}.
+     */
+    private void addSelectedVbo(Zoom zoom) {
+        // set default values (unselected = 1)
+        var values = new Integer[instances];
+        Arrays.fill(values, TILE_IS_UNSELECTED);
+        var selectedValues = new ArrayList<>(Arrays.asList(values));
+
+        // bind vao
+        var vao = vaos.get(zoom);
+        vao.bind();
+
+        // create and add new vbo
+        var vbo = vao.addVbo();
+
+        // store index (dynamic draw)
+        vbo.storeIntegerInstances(selectedValues, instances, GL_DYNAMIC_DRAW);
+
+        // set buffer layout
+        vbo.addIntAttribute(12, 1, 1, 0, true);
+
+        // store vbo
+        selectedVbos.put(zoom, vbo);
+
+        // unbind vao
+        vao.unbind();
+    }
+
     //-------------------------------------------------
     // Logic
     //-------------------------------------------------
@@ -499,6 +553,26 @@ public class IslandRenderer {
             OpenGL.disableBlending();
         } else {
             OpenGL.disableWireframeMode();
+        }
+    }
+
+    //-------------------------------------------------
+    // Update Vbo
+    //-------------------------------------------------
+
+    /**
+     * Updates the selected flag.
+     *
+     * @param zoom {@link Zoom}
+     * @param index The instance of the tile.
+     */
+    public void updateSelectedVbo(Zoom zoom, int index) {
+        if (index >= 0) {
+            var ib = BufferUtils.createIntBuffer(1);
+            ib.put(TILE_IS_SELECTED);
+            ib.flip();
+
+            selectedVbos.get(zoom).storeData((long)index * Integer.BYTES, ib);
         }
     }
 

@@ -18,12 +18,13 @@ import de.sg.benno.renderer.IslandRenderer;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.joml.Vector3f;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 
+import static de.sg.benno.World.WORLD_HEIGHT;
+import static de.sg.benno.World.WORLD_WIDTH;
 import static de.sg.ogl.Log.LOGGER;
 
 /**
@@ -37,7 +38,6 @@ public class Terrain {
 
     /**
      * Indicates that there is no island tile in one place.
-     * todo: evtl. kann der Index aus der Water class benutzt werden
      */
     public static final int NO_ISLAND = -1;
 
@@ -70,6 +70,12 @@ public class Terrain {
      */
     private final HashMap<Island5, IslandRenderer> islandRenderer = new HashMap<>();
 
+    /**
+     * Stores the instance number for every position in the world if there is an island5 tile there.
+     * Otherwise there is a value of -1 {@link #NO_ISLAND}.
+     */
+    private final HashMap<Island5, ArrayList<Integer>> islandInstancesIndex = new HashMap<>();
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -93,6 +99,40 @@ public class Terrain {
     }
 
     //-------------------------------------------------
+    // Getter
+    //-------------------------------------------------
+
+    /**
+     * Get {@link #provider}.
+     *
+     * @return {@link #provider}
+     */
+    public WorldData getProvider() {
+        return provider;
+    }
+
+    /**
+     * Get a {@link TileGraphic} from a given {@link Island5}.
+     *
+     * @param zoom {@link Zoom}
+     * @param island5 An {@link Island5}
+     * @param x The x position in world space.
+     * @param y The y position in world space.
+     *
+     * @return {@link Optional} of nullable {@link TileGraphic}
+     */
+    public Optional<TileGraphic> getTileGraphic(Zoom zoom, Island5 island5, int x, int y) {
+        TileGraphic result = null;
+
+        var index = getIsland5InstanceIndex(island5, x, y);
+        if (index > NO_ISLAND) {
+            result = islandTileGraphics.get(island5).get(zoom).get(index);
+        }
+
+        return Optional.ofNullable(result);
+    }
+
+    //-------------------------------------------------
     // Logic
     //-------------------------------------------------
 
@@ -106,6 +146,28 @@ public class Terrain {
     }
 
     /**
+     * Updates the selected flag at the given world position in {@link IslandRenderer}.
+     * At the moment the color is getting darker.
+     *
+     * @param island5 An {@link Island5} object.
+     * @param selected The x and y position of the tile in world space.
+     *
+     * @return True or false, depending on whether the tile has been changed successfully.
+     */
+    public boolean updateSelectedTile(Island5 island5, Vector2i selected) {
+        var index = getIsland5InstanceIndex(island5, selected.x, selected.y);
+
+        if (index > NO_ISLAND) {
+            for (var zoom : Zoom.values()) {
+                islandRenderer.get(island5).updateSelectedVbo(zoom, index);
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Renders the terrain.
      *
      * @param camera The {@link Camera} object.
@@ -113,9 +175,9 @@ public class Terrain {
      * @param zoom The current {@link Zoom}.
      */
     public void render(Camera camera, boolean wireframe, Zoom zoom) {
-        // only deep water:        1900
-        // + 17 islands:           1400
-        // + 17 islands and Aabbs: 1600
+        // only deep water:        fps 1900
+        // + 17 islands:           fps 1400
+        // + 17 islands and Aabbs: fps 1600
 
         if (!BennoConfig.AABB_COLLISION_DETECTION) {
             islandRenderer.forEach(
@@ -183,6 +245,16 @@ public class Terrain {
         var bshFile = this.bennoFiles.getStadtfldBshFile(zoom);
         var tiles = new ArrayList<TileGraphic>();
 
+        // saves for each instance whether there is an island tile there
+        // this is the same for every zoom and therefore only needs to be done once
+        var addInstanceInfo = false;
+        if (islandInstancesIndex.get(island5) == null) {
+            var values = new Integer[WORLD_HEIGHT * WORLD_WIDTH];
+            Arrays.fill(values, NO_ISLAND);
+            islandInstancesIndex.put(island5, new ArrayList<>(Arrays.asList(values)));
+            addInstanceInfo = true;
+        }
+
         for (var y = island5.yPos; y < island5.yPos + island5.height; y++) {
             for (var x = island5.xPos; x < island5.xPos + island5.width; x++) {
 
@@ -231,6 +303,12 @@ public class Terrain {
                     tileGraphic.color = new Vector3f();
 
                     tiles.add(tileGraphic);
+
+                    // only needs to be done once
+                    if (addInstanceInfo) {
+                        var instancesIndex = islandInstancesIndex.get(island5);
+                        instancesIndex.set(TileUtil.getIndexFrom2D(x, y), tiles.size() - 1);
+                    }
                 } else {
                     throw new BennoRuntimeException("Missing tile at bottom layer.");
                 }
@@ -238,6 +316,27 @@ public class Terrain {
         }
 
         zoomTiles.put(zoom, tiles);
+    }
+
+    //-------------------------------------------------
+    // Helper
+    //-------------------------------------------------
+
+    /**
+     * Returns the instance index for the given {@link Island5} location.
+     *
+     * @param island5 The {@link Island5} object.
+     * @param x The x position in world space.
+     * @param y The y position in world space.
+     *
+     * @return {@link #NO_ISLAND} or the instance index.
+     */
+    private int getIsland5InstanceIndex(Island5 island5, int x, int y) {
+        if (x < 0 || y < 0) {
+            return NO_ISLAND;
+        }
+
+        return islandInstancesIndex.get(island5).get(TileUtil.getIndexFrom2D(x, y));
     }
 
     //-------------------------------------------------

@@ -13,6 +13,7 @@ out vec4 fragColor;
 in vec2 vUv;
 flat in int vTextureAtlasIndex;
 in float skipTile;
+flat in int vSelected;
 
 //-------------------------------------------------
 // Uniforms
@@ -32,4 +33,8 @@ void main()
 
     vec3 uv = vec3(vUv, vTextureAtlasIndex);
     fragColor = texture(sampler, uv);
+
+    fragColor.r /= vSelected;
+    fragColor.g /= vSelected;
+    fragColor.b /= vSelected;
 }

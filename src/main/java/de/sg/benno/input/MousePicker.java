@@ -8,7 +8,9 @@
 
 package de.sg.benno.input;
 
+import de.sg.benno.Terrain;
 import de.sg.benno.Water;
+import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.file.ImageFile;
 import de.sg.benno.renderer.TileGraphicRenderer;
@@ -22,6 +24,7 @@ import org.joml.Vector2i;
 
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Optional;
 
 import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
@@ -87,6 +90,11 @@ public class MousePicker {
     private final Water water;
 
     /**
+     * The {@link Terrain} object.
+     */
+    private final Terrain terrain;
+
+    /**
      * The current {@link TileGraphic} under mouse;
      */
     private TileGraphic currentTileGraphic;
@@ -100,9 +108,10 @@ public class MousePicker {
      *
      * @param context {@link Context}
      * @param water {@link Water}
+     * @param terrain {@link Terrain}
      * @throws Exception If an error is thrown.
      */
-    public MousePicker(Context context, Water water) throws Exception {
+    public MousePicker(Context context, Water water, Terrain terrain) throws Exception {
         LOGGER.debug("Creates MousePicker object.");
 
         Objects.requireNonNull(context, "context must not be null");
@@ -110,6 +119,7 @@ public class MousePicker {
         this.tileGraphicRenderer = new TileGraphicRenderer(context);
 
         this.water = Objects.requireNonNull(water, "water must not be null");
+        this.terrain = Objects.requireNonNull(terrain, "terrain must not be null");
 
         init(context);
     }
@@ -163,7 +173,7 @@ public class MousePicker {
     //-------------------------------------------------
 
     /**
-     * Handle mouse input.
+     * Update selected tile.
      *
      * @param dt The delta time.
      * @param camera The {@link Camera} object.
@@ -172,11 +182,42 @@ public class MousePicker {
     public void update(float dt, Camera camera, Zoom zoom) {
         if (MouseInput.isMouseInWindow()) {
             if (MouseInput.isMouseButtonDown(GLFW_MOUSE_BUTTON_1)) {
+                var updated = false;
 
-                // highlight current water tile if click on it
-                water.updateSelectedWaterTile(getTileUnderMouse(camera, zoom));
+                // get tile under mouse
+                var selected = getTileUnderMouse(camera, zoom);
+
+                // try to get an island
+                var island5Optional = Island5.isIsland5OnPosition(
+                        selected.x,
+                        selected.y,
+                        terrain.getProvider().getIsland5List()
+                );
+
+                // when an island is found
+                if (island5Optional.isPresent()) {
+                    updated = terrain.updateSelectedTile(island5Optional.get(), selected);
+                }
+
+                // if no island is found, try to update a water tile
+                if (!updated) {
+                    updated = water.updateSelectedWaterTile(selected);
+                }
+
+                if (updated) {
+                    //LOGGER.debug("Tile selected on x: {}, y: {}", selected.x, selected.y);
+                }
             }
         }
+    }
+
+    /**
+     * Render highlighting texture.
+     *
+     * @param camera The {@link Camera} object.
+     */
+    private void renderHighlighting(Camera camera) {
+        tileGraphicRenderer.render(camera, tileTexture, currentTileGraphic.getModelMatrix());
     }
 
     /**
@@ -186,22 +227,32 @@ public class MousePicker {
      * @param zoom The current {@link Zoom}
      */
     public void render(Camera camera, Zoom zoom) {
-        // get the current position under mouse in world space
-        var worldPosition = getTileUnderMouse(camera, zoom);
+        if (MouseInput.isMouseInWindow()) {
+            // get tile under mouse
+            var worldPosition = getTileUnderMouse(camera, zoom);
 
-        // get the tile graphic from world space position above to read out the model matrix
-        var tileGraphicOptional = water.getWaterTileGraphic(zoom, worldPosition.x, worldPosition.y);
-        if (tileGraphicOptional.isPresent()) {
-            currentTileGraphic = tileGraphicOptional.get();
-
-            // render highlight texture with view && model matrix
-            tileGraphicRenderer.render(
-                    camera,
-                    tileTexture,
-                    currentTileGraphic.getModelMatrix()
+            // try to get an island
+            var island5Optional = Island5.isIsland5OnPosition(
+                    worldPosition.x,
+                    worldPosition.y,
+                    terrain.getProvider().getIsland5List()
             );
-        } else {
-            currentTileGraphic = null;
+
+            Optional<TileGraphic> tileGraphicOptional;
+
+            // when an island is found
+            if (island5Optional.isPresent()) {
+                tileGraphicOptional = terrain.getTileGraphic(zoom, island5Optional.get(), worldPosition.x, worldPosition.y);
+            } else {
+                // it must be a water tile
+                tileGraphicOptional = water.getWaterTileGraphic(zoom, worldPosition.x, worldPosition.y);
+            }
+
+            // render highlighting
+            if (tileGraphicOptional.isPresent()) {
+                currentTileGraphic = tileGraphicOptional.get();
+                renderHighlighting(camera);
+            }
         }
     }
 
@@ -209,7 +260,6 @@ public class MousePicker {
      * Highlights cell and tile without corners.
      *
      * @param zoom The current {@link Zoom}
-     * @deprecated use {@link #render(Camera, Zoom)} instead
      */
     public void renderDebug(Zoom zoom, boolean highlightCell, boolean highlightTile) {
         var size = MousePicker.getTileWidthAndHeight(zoom);

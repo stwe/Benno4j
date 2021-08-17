@@ -156,12 +156,17 @@ public class Water {
      * At the moment the color is getting darker.
      *
      * @param selected The x and y position of the tile in world space.
+     *
+     * @return True or false, depending on whether the water tile has been changed successfully.
      */
-    public void updateSelectedWaterTile(Vector2i selected) {
+    public boolean updateSelectedWaterTile(Vector2i selected) {
         var index = getWaterInstanceIndex(selected.x, selected.y);
         if (index > NO_WATER) {
             waterRenderers.forEach((k, v) -> v.updateSelectedVbo(index));
+            return true;
         }
+
+        return false;
     }
 
     //-------------------------------------------------
@@ -309,6 +314,10 @@ public class Water {
                 zoom
         ));
     }
+
+    //-------------------------------------------------
+    // Helper
+    //-------------------------------------------------
 
     /**
      * Returns the instance index for the given location.

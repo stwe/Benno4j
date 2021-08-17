@@ -9,6 +9,7 @@ layout (location = 8) in int aTextureAtlasIndex;
 layout (location = 9) in vec2 aOffset;
 layout (location = 10) in float aHeight;
 layout (location = 11) in ivec3 aAnimAdd;
+layout (location = 12) in int aSelected;
 
 //-------------------------------------------------
 // Out
@@ -17,6 +18,7 @@ layout (location = 11) in ivec3 aAnimAdd;
 out vec2 vUv;
 flat out int vTextureAtlasIndex;
 out float skipTile;
+flat out int vSelected;
 
 //-------------------------------------------------
 // Globals
@@ -195,4 +197,6 @@ void main()
     if (aUv.y == 1.0) {
         vUv.y = ((1.0 / nrOfRows) * aHeight / maxY) + uvOffset.y;
     }
+
+    vSelected = aSelected;
 }
