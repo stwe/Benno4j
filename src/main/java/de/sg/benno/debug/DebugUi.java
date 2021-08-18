@@ -166,6 +166,8 @@ public class DebugUi {
         ImGui.text("Tile x: " + selTile.x);
         ImGui.text("Tile y: " + selTile.y);
 
+        ImGui.separator();
+        ImGui.text("Tile select mode");
         if (ImGui.beginCombo("mode", gameState.getWorld().getMousePicker().getSearchMode().toString(), 0)) {
             for (var tileHeight : TileGraphic.TileHeight.values()) {
                 ImBoolean isSelect = new ImBoolean();
@@ -202,7 +204,6 @@ public class DebugUi {
     }
 
     private void showMiniMap() {
-        ImGui.separator();
         if (miniMapId == 0) {
             miniMapId = gameState.getWorld().getMiniMap().getMiniMapTexture().getId();
         }
@@ -211,6 +212,8 @@ public class DebugUi {
         //ImGui.text("Next image pos x: " + ImGui.getCursorScreenPosX());
         //ImGui.text("Next image pos y: " + ImGui.getCursorScreenPosY());
 
+        ImGui.setCursorPosY(512.0f);
+        ImGui.separator();
         ImGui.image(miniMapId,
                 MINIMAP_WIDTH * 0.5f, MINIMAP_HEIGHT * 0.5f,
                 0, 0, 1, 1
