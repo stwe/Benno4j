@@ -16,6 +16,8 @@ import de.sg.ogl.input.KeyInput;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
 
+import java.io.IOException;
+
 import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -28,7 +30,7 @@ public class GameState extends ApplicationState {
     /**
      * The {@link World}.
      */
-    public World world;
+    private World world;
 
     /**
      * An ImGui with some debug info.
@@ -104,7 +106,12 @@ public class GameState extends ApplicationState {
 
     @Override
     public void renderImGui() {
-        debugUi.render();
+        // todo remove try catch
+        try {
+            debugUi.render();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

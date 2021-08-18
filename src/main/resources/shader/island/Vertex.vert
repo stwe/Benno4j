@@ -71,14 +71,9 @@ int calcTextureAtlasIndex(int gfx) {
 //-------------------------------------------------
 
 // todo
-
-// rendert eine Animation, wenn die Frames einfach nacheinander abgelegt sind
-// z.B. Wasserkachel mit GFX 758 + sechs weitere Bilder direkt danach
-
 void animateBeach() {
     if (startGfx >= 680 && startGfx <= 811) {
         int gfxOffset = (totalTime / frameTime) % animCount;
-
         int gfx = startGfx + gfxOffset;
 
         uvOffset = calcUvOffset(gfx);

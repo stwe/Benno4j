@@ -1,11 +1,8 @@
 TODO
 ----
 
-- für alle stadtfld bsh images wurden OpenGL TextureIds generiert; es werden nicht mehr alle benötigt
-
 - Karte bzw Content drehen
 
-- Mauspicker mit der klassischen Methode (Position wird berechnet)
 - Mauspicker mit color picking
       http://www.opengl-tutorial.org/miscellaneous/clicking-on-objects/picking-with-an-opengl-hack/
       https://ogldev.org/www/tutorial29/tutorial29.html
@@ -20,5 +17,8 @@ TODO
 - Schiffe auf der Minimap anzeigen
 
 - Animation der Bebauung
+
+- einheitliche Wasseranimation; momentan ist der Uferbereich anders animiert als
+  der Tiefenwasserbereich
 
 - 3D Wasser; in diesem Fall muss auch der Uferbereich der Inseln beachtet werden

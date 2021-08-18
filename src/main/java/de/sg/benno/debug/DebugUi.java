@@ -11,6 +11,7 @@ package de.sg.benno.debug;
 import de.sg.benno.World;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.renderer.Zoom;
+import de.sg.benno.state.Context;
 import de.sg.benno.state.GameState;
 import de.sg.ogl.Config;
 import de.sg.ogl.input.MouseInput;
@@ -18,6 +19,8 @@ import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.internal.ImGui;
 import imgui.type.ImBoolean;
+
+import java.io.IOException;
 
 import static de.sg.benno.MiniMap.MINIMAP_HEIGHT;
 import static de.sg.benno.MiniMap.MINIMAP_WIDTH;
@@ -75,12 +78,18 @@ public class DebugUi {
     /**
      * Render debug menu.
      */
-    public void render() {
+    public void render() throws IOException {
         ImGui.setNextWindowSize(WIDTH, HEIGHT, ImGuiCond.Once);
         ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + Config.WIDTH - WIDTH, ImGui.getMainViewport().getPosY(), ImGuiCond.Once);
 
-        final int windowFlags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize
-                | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoNavFocus | ImGuiWindowFlags.NoBackground;
+        final int windowFlags =
+                ImGuiWindowFlags.NoTitleBar |
+                ImGuiWindowFlags.NoCollapse |
+                ImGuiWindowFlags.NoResize |
+                ImGuiWindowFlags.NoMove |
+                ImGuiWindowFlags.NoBringToFrontOnFocus |
+                ImGuiWindowFlags.NoNavFocus;
+                //ImGuiWindowFlags.NoBackground;
 
         ImGui.begin("Debug", windowFlags);
 
@@ -88,6 +97,7 @@ public class DebugUi {
         zoom();
         mousePosition();
         tileUnderMouse();
+        showMiniMap();
 
         ImGui.end();
     }
@@ -146,7 +156,7 @@ public class DebugUi {
         ImGui.text("Mouse y: " + MouseInput.getY());
     }
 
-    private void tileUnderMouse() {
+    private void tileUnderMouse() throws IOException {
         var selTile = gameState.getWorld().getMousePicker().getTileUnderMouse(
                 gameState.getWorld().getCamera(),
                 gameState.getWorld().getCurrentZoom()
@@ -169,8 +179,22 @@ public class DebugUi {
 
         if (gameState.getWorld().getMousePicker().getCurrentTileGraphic() != null) {
             var tileGraphic = gameState.getWorld().getMousePicker().getCurrentTileGraphic();
+            ImGui.separator();
             ImGui.text("Graphic Id: " + tileGraphic.parentTile.graphicId);
             ImGui.text("Start gfx on gpu: " + tileGraphic.gfx);
+
+            var context = (Context)gameState.getStateMachine().getStateContext();
+            var bshFiles = context.bennoFiles.getStadtfldBshFile(Zoom.GFX);
+            var bshTexture = bshFiles.getBshTextures().get(tileGraphic.gfx);
+            var glTexture = bshTexture.getTexture();
+
+            ImGui.text("GFX Texture");
+
+            ImGui.image(glTexture.getId(),
+                    glTexture.getWidth(), glTexture.getHeight(),
+                    0, 0, 1, 1
+            );
+
         } else {
             ImGui.text("Graphic Id: none");
             ImGui.text("Start gfx on gpu: none");
@@ -180,12 +204,12 @@ public class DebugUi {
     private void showMiniMap() {
         ImGui.separator();
         if (miniMapId == 0) {
-            miniMapId = gameState.world.getMiniMap().getMiniMapTexture().getId();
+            miniMapId = gameState.getWorld().getMiniMap().getMiniMapTexture().getId();
         }
 
-        ImGui.text("For debug only");
-        ImGui.text("Next image pos x: " + ImGui.getCursorScreenPosX());
-        ImGui.text("Next image pos y: " + ImGui.getCursorScreenPosY());
+        //ImGui.text("For debug only");
+        //ImGui.text("Next image pos x: " + ImGui.getCursorScreenPosX());
+        //ImGui.text("Next image pos y: " + ImGui.getCursorScreenPosY());
 
         ImGui.image(miniMapId,
                 MINIMAP_WIDTH * 0.5f, MINIMAP_HEIGHT * 0.5f,

@@ -185,8 +185,8 @@ public class World {
         mousePicker = new MousePicker(context, water, terrain, TileGraphic.TileHeight.CLIFF);
 
         // create and render minimap to a Fbo (creates a texture)
-        //miniMap = new MiniMap(provider, context, camera);
-        //miniMap.renderToFbo();
+        miniMap = new MiniMap(provider, context, camera);
+        miniMap.renderToFbo();
     }
 
     //-------------------------------------------------
@@ -254,6 +254,6 @@ public class World {
         water.cleanUp();
         terrain.cleanUp();
         mousePicker.cleanUp();
-        //miniMap.cleanUp();
+        miniMap.cleanUp();
     }
 }
