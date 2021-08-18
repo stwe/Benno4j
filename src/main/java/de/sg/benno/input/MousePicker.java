@@ -268,7 +268,7 @@ public class MousePicker {
             if (island5Optional.isPresent()) {
                 tileGraphicOptional = terrain.getTileGraphic(zoom, island5Optional.get(), worldPosition.x, worldPosition.y);
             } else {
-                // it must be a water tile
+                // or a water tile
                 tileGraphicOptional = water.getWaterTileGraphic(zoom, worldPosition.x, worldPosition.y);
             }
 
@@ -276,6 +276,8 @@ public class MousePicker {
             if (tileGraphicOptional.isPresent()) {
                 currentTileGraphic = tileGraphicOptional.get();
                 renderHighlighting(camera);
+            } else {
+                currentTileGraphic = null;
             }
 
             renderDebug(zoom);

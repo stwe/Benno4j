@@ -64,7 +64,7 @@ public class World {
     /**
      * The current {@link Zoom}.
      */
-    private Zoom currentZoom = Zoom.GFX;
+    private Zoom currentZoom = Zoom.SGFX;
 
     /**
      * Enable and disable wireframe mode.

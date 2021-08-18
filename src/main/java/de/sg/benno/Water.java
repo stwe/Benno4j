@@ -332,7 +332,12 @@ public class Water {
             return NO_WATER;
         }
 
-        return waterInstancesIndex.get(TileUtil.getIndexFrom2D(x, y));
+        var index = TileUtil.getIndexFrom2D(x, y);
+        if (index > waterInstancesIndex.size()) {
+            return NO_WATER;
+        }
+
+        return waterInstancesIndex.get(index);
     }
 
     //-------------------------------------------------
