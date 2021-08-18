@@ -9,6 +9,7 @@
 package de.sg.benno.debug;
 
 import de.sg.benno.World;
+import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.GameState;
 import de.sg.ogl.Config;
@@ -154,6 +155,18 @@ public class DebugUi {
         ImGui.text("Tile under mouse");
         ImGui.text("Tile x: " + selTile.x);
         ImGui.text("Tile y: " + selTile.y);
+
+        if (ImGui.beginCombo("mode", gameState.getWorld().getMousePicker().getSearchMode().toString(), 0)) {
+            for (var tileHeight : TileGraphic.TileHeight.values()) {
+                ImBoolean isSelect = new ImBoolean();
+                if (ImGui.selectable(tileHeight.toString(), isSelect, 0)) {
+                    gameState.getWorld().getMousePicker().setSearchMode(tileHeight);
+                }
+            }
+
+            ImGui.endCombo();
+        }
+
         if (gameState.getWorld().getMousePicker().getCurrentTileGraphic() != null) {
             var tileGraphic = gameState.getWorld().getMousePicker().getCurrentTileGraphic();
             ImGui.text("Graphic Id: " + tileGraphic.parentTile.graphicId);

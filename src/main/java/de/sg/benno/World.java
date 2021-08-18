@@ -9,6 +9,7 @@
 package de.sg.benno;
 
 import de.sg.benno.chunk.Island5;
+import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.input.Camera;
 import de.sg.benno.input.MousePicker;
@@ -180,8 +181,8 @@ public class World {
         // create terrain
         terrain = new Terrain(provider, context);
 
-        // the mouse picker
-        mousePicker = new MousePicker(context, water, terrain);
+        // the mouse picker - initialize in cliff mode
+        mousePicker = new MousePicker(context, water, terrain, TileGraphic.TileHeight.CLIFF);
 
         // create and render minimap to a Fbo (creates a texture)
         //miniMap = new MiniMap(provider, context, camera);
@@ -226,7 +227,7 @@ public class World {
         }
 
         camera.update(currentZoom);
-        //terrain.update(dt);
+        terrain.update(dt);
         mousePicker.update(dt, camera, currentZoom);
     }
 
@@ -234,10 +235,9 @@ public class World {
      * Renders the world.
      */
     public void render() {
-        //water.render(camera, wireframe, currentZoom);
+        water.render(camera, wireframe, currentZoom);
         terrain.render(camera, wireframe, currentZoom);
         mousePicker.render(camera, currentZoom);
-        mousePicker.renderDebug(currentZoom, true, true);
     }
 
     //-------------------------------------------------

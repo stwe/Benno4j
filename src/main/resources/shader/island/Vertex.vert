@@ -49,6 +49,7 @@ uniform float maxY;
 uniform float nrOfRows;
 uniform int updates;
 uniform int delta;
+uniform float showGrid;
 
 //-------------------------------------------------
 // Helper
@@ -193,6 +194,11 @@ void main()
 
     vUv.x = (aUv.x / nrOfRows) + uvOffset.x;
     vUv.y = (aUv.y / nrOfRows) + uvOffset.y;
+
+    // "cheat" uv for showing a simple grid
+    if (showGrid > 0.5) {
+        vUv.y += 0.0001;
+    }
 
     if (aUv.y == 1.0) {
         vUv.y = ((1.0 / nrOfRows) * aHeight / maxY) + uvOffset.y;

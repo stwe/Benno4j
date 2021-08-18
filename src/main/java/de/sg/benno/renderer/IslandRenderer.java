@@ -8,6 +8,7 @@
 
 package de.sg.benno.renderer;
 
+import de.sg.benno.BennoConfig;
 import de.sg.benno.TileAtlas;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.input.Camera;
@@ -540,6 +541,7 @@ public class IslandRenderer {
         shader.setUniform("sampler", 0);
         shader.setUniform("updates", updates);
         shader.setUniform("delta", DELTA);
+        shader.setUniform("showGrid", BennoConfig.SHOW_GRID);
 
         var vao = vaos.get(zoom);
         vao.bind();
