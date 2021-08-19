@@ -182,7 +182,7 @@ public class World {
         terrain = new Terrain(provider, context);
 
         // create and render minimap to a Fbo (creates a texture)
-        miniMap = new MiniMap(provider, context, camera);
+        miniMap = new MiniMap(provider, context, camera, currentZoom);
 
         // the mouse picker - initialize in cliff mode
         mousePicker = new MousePicker(context, water, terrain, TileGraphic.TileHeight.CLIFF);
@@ -227,7 +227,7 @@ public class World {
 
         camera.update(currentZoom);
         terrain.update(dt);
-        miniMap.update();
+        miniMap.update(currentZoom);
         mousePicker.update(dt, camera, currentZoom);
     }
 

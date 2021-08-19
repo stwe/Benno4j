@@ -14,6 +14,7 @@ import de.sg.benno.chunk.WorldData;
 import de.sg.benno.input.Aabb;
 import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.SimpleTextureRenderer;
+import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
 import de.sg.ogl.resource.Texture;
 import org.joml.Vector2f;
@@ -62,6 +63,8 @@ public class MiniMap {
      */
     private final Texture miniMapTexture;
 
+    private Zoom zoom;
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -74,12 +77,13 @@ public class MiniMap {
      * @param camera The {@link Camera} object to display in the minimap.
      * @throws Exception If an error is thrown.
      */
-    public MiniMap(WorldData provider, Context context, Camera camera) throws Exception {
+    public MiniMap(WorldData provider, Context context, Camera camera, Zoom zoom) throws Exception {
         LOGGER.debug("Creates MiniMap object.");
 
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
         this.camera = Objects.requireNonNull(camera, "camera must not be null");
         this.simpleTextureRenderer = new SimpleTextureRenderer(Objects.requireNonNull(context, "context must not be null"));
+        this.zoom = zoom;
 
         this.buffer = BufferUtils.createByteBuffer(WORLD_WIDTH * WORLD_HEIGHT * 4);
 
@@ -107,7 +111,8 @@ public class MiniMap {
     // Logic
     //-------------------------------------------------
 
-    public void update() {
+    public void update(Zoom zoom) {
+        this.zoom = zoom;
         init();
     }
 
@@ -181,9 +186,7 @@ public class MiniMap {
         // camera
         for (var y = 0; y < WORLD_HEIGHT; y++) {
             for (var x = 0; x < WORLD_WIDTH; x++) {
-
-                // todo: get zoom
-                var ws = TileUtil.worldToScreen(x, y, 8, 4);
+                var ws = TileUtil.worldToScreen(x, y, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf);
 
                 if (Aabb.pointVsAabb(new Vector2f(ws.x, ws.y), camera.getAabb())) {
                     var index = TileUtil.getIndexFrom2D(x, y) * 4;
