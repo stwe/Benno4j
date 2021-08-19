@@ -107,7 +107,7 @@ public class World {
 
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
         this.context = Objects.requireNonNull(context, "context must not be null");
-        this.camera = new Camera(5, 58, context, currentZoom);
+        this.camera = new Camera(0, 0, context, currentZoom);
 
         init();
     }
@@ -181,12 +181,11 @@ public class World {
         // create terrain
         terrain = new Terrain(provider, context);
 
-        // the mouse picker - initialize in cliff mode
-        mousePicker = new MousePicker(context, water, terrain, TileGraphic.TileHeight.CLIFF);
-
         // create and render minimap to a Fbo (creates a texture)
         miniMap = new MiniMap(provider, context, camera);
-        miniMap.renderToFbo();
+
+        // the mouse picker - initialize in cliff mode
+        mousePicker = new MousePicker(context, water, terrain, TileGraphic.TileHeight.CLIFF);
     }
 
     //-------------------------------------------------
@@ -228,6 +227,7 @@ public class World {
 
         camera.update(currentZoom);
         terrain.update(dt);
+        miniMap.update();
         mousePicker.update(dt, camera, currentZoom);
     }
 
@@ -253,7 +253,7 @@ public class World {
         camera.cleanUp();
         water.cleanUp();
         terrain.cleanUp();
-        mousePicker.cleanUp();
         miniMap.cleanUp();
+        mousePicker.cleanUp();
     }
 }

@@ -22,8 +22,8 @@ import imgui.type.ImBoolean;
 
 import java.io.IOException;
 
-import static de.sg.benno.MiniMap.MINIMAP_HEIGHT;
-import static de.sg.benno.MiniMap.MINIMAP_WIDTH;
+import static de.sg.benno.World.WORLD_HEIGHT;
+import static de.sg.benno.World.WORLD_WIDTH;
 
 /**
  * An ImGui for debug output.
@@ -52,11 +52,6 @@ public class DebugUi {
      * The parent {@link GameState}.
      */
     private final GameState gameState;
-
-    /**
-     * The texture id of the minimap.
-     */
-    private int miniMapId = 0;
 
     //-------------------------------------------------
     // Ctors.
@@ -118,7 +113,7 @@ public class DebugUi {
 
         int[] camX = new int[1];
         camX[0] = gameState.getWorld().getCamera().positionInTileUnits.x;
-        if (ImGui.sliderInt("x", camX, -World.WORLD_WIDTH, World.WORLD_WIDTH)) {
+        if (ImGui.sliderInt("x", camX, -WORLD_WIDTH, WORLD_WIDTH)) {
             camX[0] += camX[0] % gameState.getWorld().getCurrentZoom().speedFactor;
             gameState.getWorld().getCamera().positionInTileUnits.x = camX[0];
             gameState.getWorld().getCamera().resetPosition(gameState.getWorld().getCurrentZoom());
@@ -204,18 +199,14 @@ public class DebugUi {
     }
 
     private void showMiniMap() {
-        if (miniMapId == 0) {
-            miniMapId = gameState.getWorld().getMiniMap().getMiniMapTexture().getId();
-        }
-
         //ImGui.text("For debug only");
         //ImGui.text("Next image pos x: " + ImGui.getCursorScreenPosX());
         //ImGui.text("Next image pos y: " + ImGui.getCursorScreenPosY());
 
         ImGui.setCursorPosY(512.0f);
         ImGui.separator();
-        ImGui.image(miniMapId,
-                MINIMAP_WIDTH * 0.5f, MINIMAP_HEIGHT * 0.5f,
+        ImGui.image(gameState.getWorld().getMiniMap().getMiniMapTexture().getId(),
+                WORLD_WIDTH * 0.5f, WORLD_HEIGHT * 0.5f,
                 0, 0, 1, 1
         );
     }
