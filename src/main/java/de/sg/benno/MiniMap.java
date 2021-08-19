@@ -203,8 +203,6 @@ public class MiniMap {
     }
 
     private void renderBufferToTexture() {
-        buffer.flip();
-
         Texture.bind(miniMapTexture.getId());
         Texture.useBilinearFilter();
 
@@ -217,6 +215,7 @@ public class MiniMap {
 
         createBottomLayer();
         createTopLayer();
+        buffer.flip();
 
         renderBufferToTexture();
     }

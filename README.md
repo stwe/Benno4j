@@ -1,12 +1,12 @@
 # Benno4j
 
 This project uses OpenGL to render the content of a savegame without any abstraction layer like SDL.
-All animations are done by the GLSL shader programs. Shaders are little programs that rest on the GPU.
+All animations are done by the GLSL shader programs.
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/e1c293c28dc44e639d747e447899d6a6)](https://www.codacy.com/gh/stwe/Benno4j/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=stwe/Benno4j&amp;utm_campaign=Badge_Grade)
 [![License: GPL v2](https://img.shields.io/badge/license-GPL--2.0-green)](https://github.com/stwe/Benno4j/blob/master/LICENSE)
 
-<img src="https://github.com/stwe/Benno4j/blob/master/devLog/06-08-2021.png" width="409" height="316" />
+<img src="https://github.com/stwe/Benno4j/blob/master/devLog/19-08-2021.png" width="409" height="316" />
 
 ## Supported versions
 
