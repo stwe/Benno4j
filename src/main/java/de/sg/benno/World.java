@@ -11,12 +11,17 @@ package de.sg.benno;
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;
+import de.sg.benno.file.BshFile;
 import de.sg.benno.input.Camera;
 import de.sg.benno.input.MousePicker;
 import de.sg.benno.renderer.*;
 import de.sg.benno.state.Context;
 import de.sg.ogl.input.KeyInput;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 
 import static de.sg.ogl.Log.LOGGER;
@@ -91,6 +96,13 @@ public class World {
      */
     private MousePicker mousePicker;
 
+    // todo
+    private final HashMap<Zoom, BshFile> shipBshFiles = new HashMap<>();
+
+    private final HashMap<Zoom, ArrayList<TileGraphic>> shipTiles = new HashMap<>();
+
+    private TileGraphicRenderer tileGraphicRenderer;
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -107,7 +119,7 @@ public class World {
 
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
         this.context = Objects.requireNonNull(context, "context must not be null");
-        this.camera = new Camera(0, 0, context, currentZoom);
+        this.camera = new Camera(-4, 143, context, currentZoom);
 
         init();
     }
@@ -186,6 +198,49 @@ public class World {
 
         // the mouse picker - initialize in cliff mode
         mousePicker = new MousePicker(context, water, terrain, TileGraphic.TileHeight.CLIFF);
+
+        // load ships
+        initShips();
+    }
+
+    void initShips() throws Exception {
+        tileGraphicRenderer = new TileGraphicRenderer(context);
+
+        for (var zoom : Zoom.values()) {
+
+            LOGGER.debug("Create ship tiles for {}.", zoom.toString());
+
+            var tileGraphics = new ArrayList<TileGraphic>();
+
+            for (var ship : provider.getShips4List()) {
+                LOGGER.debug("Create ship tile on x: {}, y: {}.", ship.xPos, ship.yPos);
+
+                var shipBshFile = context.bennoFiles.getShipBshFile(zoom);
+                shipBshFiles.put(zoom, shipBshFile);
+
+                var shipBshTexture = shipBshFile.getBshTextures().get(ship.gfx);
+
+                var tileGraphic = new TileGraphic();
+                tileGraphic.gfx = ship.gfx;
+                tileGraphic.tileHeight = TileGraphic.TileHeight.SEA_LEVEL;
+                tileGraphic.worldPosition.x = ship.xPos;
+                tileGraphic.worldPosition.y = ship.yPos;
+
+                var screenPosition = TileUtil.worldToScreen(ship.xPos, ship.yPos, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf);
+                var adjustHeight = TileUtil.adjustHeight(zoom.defaultTileHeightHalf, tileGraphic.tileHeight.value, zoom.elevation);
+                screenPosition.y += adjustHeight;
+                screenPosition.x -= shipBshTexture.getWidth();
+                screenPosition.y -= shipBshTexture.getHeight();
+                tileGraphic.screenPosition = new Vector2f(screenPosition);
+
+                tileGraphic.size = new Vector2f(shipBshTexture.getWidth(), shipBshTexture.getHeight());
+                tileGraphic.color = new Vector3f();
+
+                tileGraphics.add(tileGraphic);
+            }
+
+            shipTiles.put(zoom, tileGraphics);
+        }
     }
 
     //-------------------------------------------------
@@ -238,6 +293,11 @@ public class World {
         water.render(camera, wireframe, currentZoom);
         terrain.render(camera, wireframe, currentZoom);
         mousePicker.render(camera, currentZoom);
+
+        // render ships
+        for (var ship : shipTiles.get(currentZoom)) {
+            tileGraphicRenderer.render(camera, ship, shipBshFiles.get(currentZoom));
+        }
     }
 
     //-------------------------------------------------

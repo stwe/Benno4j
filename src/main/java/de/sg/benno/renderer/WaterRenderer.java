@@ -208,7 +208,6 @@ public class WaterRenderer {
      * @param wireframe True if a wireframe is to be rendered.
      */
     public void render(Camera camera, boolean wireframe) {
-        // todo: tmp code
         var now = System.currentTimeMillis();
         var delta = now - last;
         if (delta >= building.animTime) {
