@@ -36,7 +36,6 @@ int animAdd;
 int rotation;
 int orientation;
 
-int totalTime;
 int frame;
 
 //-------------------------------------------------
@@ -47,8 +46,7 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform float maxY;
 uniform float nrOfRows;
-uniform int updates;
-uniform int delta;
+uniform int totalTime;
 uniform float showGrid;
 
 //-------------------------------------------------
@@ -70,11 +68,18 @@ int calcTextureAtlasIndex(int gfx) {
 // Beach
 //-------------------------------------------------
 
-// todo
 void animateBeach() {
     if (startGfx >= 680 && startGfx <= 811) {
-        int gfxOffset = (totalTime / frameTime) % animCount;
-        int gfx = startGfx + gfxOffset;
+        //                 3 =        683 - 680
+        int currentGfxOffset = currentGfx - startGfx;
+
+        //  683
+        int gfx = currentGfx;
+
+        //  zB      5 > 3
+        if (frame > currentGfxOffset) {
+            gfx++;
+        }
 
         uvOffset = calcUvOffset(gfx);
         vTextureAtlasIndex = calcTextureAtlasIndex(gfx);
@@ -85,10 +90,9 @@ void animateBeach() {
 // River
 //-------------------------------------------------
 
-// todo
 void animateRiver() {
     if (animCount > 0 && animAdd == 4 && startGfx != 758) {
-        int gfxOffset = (totalTime / frameTime) % animCount;
+        int gfxOffset = frame;
         gfxOffset *= animAdd;
         gfxOffset += orientation;
 
@@ -134,8 +138,9 @@ void animateRiverCorner() {
         int rest = diff % animAdd;
         int start = startGfx + rest;
 
-        frame *= animAdd;
-        int gfx = start + frame;
+        int gfxOffset = frame;
+        gfxOffset *= animAdd;
+        int gfx = start + gfxOffset;
 
         uvOffset = calcUvOffset(gfx);
         vTextureAtlasIndex = calcTextureAtlasIndex(gfx);
@@ -165,8 +170,7 @@ void main()
     rotation = aAnimAdd.y;
     orientation = aAnimAdd.z;
 
-    // zb 8 * 17 = total time of 136 ms
-    totalTime = updates * delta;
+    // get current frame
     frame = (totalTime / frameTime) % animCount;
 
     // get current offset

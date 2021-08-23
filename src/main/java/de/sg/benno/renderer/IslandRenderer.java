@@ -539,8 +539,7 @@ public class IslandRenderer {
         shader.setUniform("maxY", maxYHeight);
         shader.setUniform("nrOfRows", rows);
         shader.setUniform("sampler", 0);
-        shader.setUniform("updates", updates);
-        shader.setUniform("delta", DELTA);
+        shader.setUniform("totalTime", updates * DELTA);
         shader.setUniform("showGrid", BennoConfig.SHOW_GRID);
 
         var vao = vaos.get(zoom);
