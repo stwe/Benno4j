@@ -1,8 +1,10 @@
 package de.sg.benno.chunk;
 
+import java.util.HashMap;
 import java.util.Objects;
 
 import static de.sg.benno.Util.shortToInt;
+import static de.sg.benno.chunk.Ship4.ShipType.*;
 import static de.sg.ogl.Log.LOGGER;
 
 /**
@@ -45,6 +47,38 @@ import static de.sg.ogl.Log.LOGGER;
 public class Ship4 {
 
     //-------------------------------------------------
+    // Types
+    //-------------------------------------------------
+
+    public enum ShipType {
+        SMALL_TRADING_SHIP(0x15, 0),
+        LARGE_TRADING_SHIP(0x17, 32),
+        SMALL_WAR_SHIP(0x19, 64),
+        LARGE_WAR_SHIP(0x1b, 48),
+        FLYING_DEALER(0x1d, 16),
+        PIRATE_SHIP(0x1f, 80);
+
+        public int type;
+        public int gfxIndex;
+        private static final HashMap<Integer, ShipType> map = new HashMap<>();
+
+        static {
+            for (var shipType : ShipType.values()) {
+                map.put(shipType.type, shipType);
+            }
+        }
+
+        public static ShipType valueOfType(int type) {
+            return map.get(type);
+        }
+
+        ShipType(int type, int gfxIndex) {
+            this.type = type;
+            this.gfxIndex = gfxIndex;
+        }
+    }
+
+    //-------------------------------------------------
     // Member
     //-------------------------------------------------
 
@@ -64,7 +98,7 @@ public class Ship4 {
     public int flags;
     public int price;
     public int id;
-    public int gfx;
+    public int type;
     public int g;
     public int player;
     public int h1;
@@ -86,6 +120,42 @@ public class Ship4 {
         LOGGER.debug("Creates Ship4 object.");
 
         readData(Objects.requireNonNull(chunk, "chunk must not be null"));
+    }
+
+    //-------------------------------------------------
+    // Gfx
+    //-------------------------------------------------
+
+    /**
+     * Get the gfx index by given {@link #type}.
+     *
+     * @return int
+     */
+    public int getCurrentGfx() {
+        var index = 0;
+        switch (ShipType.valueOfType(type)) {
+            case SMALL_TRADING_SHIP:
+                index = SMALL_TRADING_SHIP.gfxIndex;
+                break;
+            case LARGE_TRADING_SHIP:
+                index = LARGE_TRADING_SHIP.gfxIndex;
+                break;
+            case LARGE_WAR_SHIP:
+                index = LARGE_WAR_SHIP.gfxIndex;
+                break;
+            case FLYING_DEALER:
+                index = FLYING_DEALER.gfxIndex;
+                break;
+            case SMALL_WAR_SHIP:
+                index = SMALL_WAR_SHIP.gfxIndex;
+                break;
+            case PIRATE_SHIP:
+                index = PIRATE_SHIP.gfxIndex;
+                break;
+            default:
+        }
+
+        return index + direction;
     }
 
     //-------------------------------------------------
@@ -123,7 +193,7 @@ public class Ship4 {
         flags = chunk.getData().get();
         price = shortToInt(chunk.getData().getShort());
         id = shortToInt(chunk.getData().getShort());
-        gfx = shortToInt(chunk.getData().getShort());
+        type = shortToInt(chunk.getData().getShort());
         g = chunk.getData().get();
         player = chunk.getData().get();
         h1 = chunk.getData().get();

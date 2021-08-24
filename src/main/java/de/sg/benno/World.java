@@ -69,7 +69,7 @@ public class World {
     /**
      * The current {@link Zoom}.
      */
-    private Zoom currentZoom = Zoom.SGFX;
+    private Zoom currentZoom = Zoom.GFX;
 
     /**
      * Enable and disable wireframe mode.
@@ -96,7 +96,7 @@ public class World {
      */
     private MousePicker mousePicker;
 
-    // todo
+    // todo tmp code
     private final HashMap<Zoom, BshFile> shipBshFiles = new HashMap<>();
 
     private final HashMap<Zoom, ArrayList<TileGraphic>> shipTiles = new HashMap<>();
@@ -203,6 +203,11 @@ public class World {
         initShips();
     }
 
+    /**
+     * Generates a {@link TileGraphic} object for each {@link de.sg.benno.chunk.Ship4}.
+     *
+     * @throws Exception If an error is thrown.
+     */
     void initShips() throws Exception {
         tileGraphicRenderer = new TileGraphicRenderer(context);
 
@@ -213,25 +218,32 @@ public class World {
             var tileGraphics = new ArrayList<TileGraphic>();
 
             for (var ship : provider.getShips4List()) {
-                LOGGER.debug("Create ship tile on x: {}, y: {}.", ship.xPos, ship.yPos);
+                // x: 154, y: 177
+                LOGGER.debug("Create ship graphic tile on x: {}, y: {}.", ship.xPos, ship.yPos);
+
+                var xWorldPos = ship.xPos + 1; // todo
+                var yWorldPos = ship.yPos - 1;
+                var gfx = ship.getCurrentGfx();
 
                 var shipBshFile = context.bennoFiles.getShipBshFile(zoom);
                 shipBshFiles.put(zoom, shipBshFile);
 
-                var shipBshTexture = shipBshFile.getBshTextures().get(ship.gfx);
+                var shipBshTexture = shipBshFile.getBshTextures().get(gfx);
 
                 var tileGraphic = new TileGraphic();
-                tileGraphic.gfx = ship.gfx;
+                tileGraphic.gfx = gfx;
                 tileGraphic.tileHeight = TileGraphic.TileHeight.SEA_LEVEL;
-                tileGraphic.worldPosition.x = ship.xPos;
-                tileGraphic.worldPosition.y = ship.yPos;
+                tileGraphic.worldPosition.x = xWorldPos;
+                tileGraphic.worldPosition.y = yWorldPos;
 
-                var screenPosition = TileUtil.worldToScreen(ship.xPos, ship.yPos, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf);
+                var screenPosition = TileUtil.worldToScreen(xWorldPos, yWorldPos, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf);
                 var adjustHeight = TileUtil.adjustHeight(zoom.defaultTileHeightHalf, tileGraphic.tileHeight.value, zoom.elevation);
                 screenPosition.y += adjustHeight;
                 screenPosition.x -= shipBshTexture.getWidth();
                 screenPosition.y -= shipBshTexture.getHeight();
                 tileGraphic.screenPosition = new Vector2f(screenPosition);
+                tileGraphic.screenPosition.x -= zoom.defaultTileWidthHalf * 0.5f;
+                tileGraphic.screenPosition.y -= zoom.defaultTileHeightHalf * 0.5f;
 
                 tileGraphic.size = new Vector2f(shipBshTexture.getWidth(), shipBshTexture.getHeight());
                 tileGraphic.color = new Vector3f();
