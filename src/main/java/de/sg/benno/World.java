@@ -193,7 +193,7 @@ public class World {
         // create terrain
         terrain = new Terrain(provider, context);
 
-        // create and render minimap to a Fbo (creates a texture)
+        // create minimap
         miniMap = new MiniMap(provider, context, camera, currentZoom);
 
         // the mouse picker - initialize in cliff mode

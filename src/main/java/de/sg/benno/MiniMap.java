@@ -16,6 +16,7 @@ import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.SimpleTextureRenderer;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
+import de.sg.ogl.Color;
 import de.sg.ogl.resource.Texture;
 import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
@@ -63,6 +64,9 @@ public class MiniMap {
      */
     private final Texture miniMapTexture;
 
+    /**
+     * The current {@link Zoom}.
+     */
     private Zoom zoom;
 
     //-------------------------------------------------
@@ -83,7 +87,7 @@ public class MiniMap {
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
         this.camera = Objects.requireNonNull(camera, "camera must not be null");
         this.simpleTextureRenderer = new SimpleTextureRenderer(Objects.requireNonNull(context, "context must not be null"));
-        this.zoom = zoom;
+        this.zoom = Objects.requireNonNull(zoom, "zoom must not be null");
 
         this.buffer = BufferUtils.createByteBuffer(WORLD_WIDTH * WORLD_HEIGHT * 4);
 
@@ -111,6 +115,11 @@ public class MiniMap {
     // Logic
     //-------------------------------------------------
 
+    /**
+     * Updates the {@link #miniMapTexture}.
+     *
+     * @param zoom The current {@link Zoom}.
+     */
     public void update(Zoom zoom) {
         this.zoom = zoom;
         init();
@@ -130,16 +139,27 @@ public class MiniMap {
     // Init
     //-------------------------------------------------
 
+    private void bufferPut(int r, int g, int b) {
+        buffer.put((byte)r);
+        buffer.put((byte)g);
+        buffer.put((byte)b);
+        buffer.put((byte)255);
+    }
+
+    private void bufferIndexPut(int startIndex, int r, int g, int b) {
+        buffer.put(startIndex++, (byte)r);
+        buffer.put(startIndex++, (byte)g);
+        buffer.put(startIndex++, (byte)b);
+        buffer.put(startIndex, (byte)255);
+    }
+
     private void createBottomLayer() {
         for(int y = 0; y < WORLD_HEIGHT; y++) {
             for(int x = 0; x < WORLD_WIDTH; x++) {
                 var island5Optional = Island5.isIsland5OnPosition(x, y, provider.getIsland5List());
                 if (island5Optional.isEmpty()) {
                     // water were found: blue color
-                    buffer.put((byte)0);    // r
-                    buffer.put((byte)0);    // g
-                    buffer.put((byte)200);  // b
-                    buffer.put((byte)255);
+                    bufferPut(0, 0, 200);
                 } else {
                     // an island were found
                     var island5 = island5Optional.get();
@@ -150,15 +170,9 @@ public class MiniMap {
                         var island5Tile = island5TileOptional.get();
                         // the island also has water tiles
                         if (Tile.isWaterTile(island5Tile)) {
-                            buffer.put((byte)0);    // r
-                            buffer.put((byte)0);    // g
-                            buffer.put((byte)200);  // b
-                            buffer.put((byte)255);
+                            bufferPut(0, 0, 200);
                         } else {
-                            buffer.put((byte)0);
-                            buffer.put((byte)200);
-                            buffer.put((byte)0);
-                            buffer.put((byte)255);
+                            bufferPut(0, 200, 0);
                         }
                     } else {
                         throw new BennoRuntimeException("Unexpected error: No tile were found.");
@@ -174,11 +188,7 @@ public class MiniMap {
             for (var y = 0; y < 5; y++) {
                 for (var x = 0; x < 5; x++) {
                     var index = TileUtil.getIndexFrom2D(ship.xPos + x, ship.yPos + y) * 4;
-
-                    buffer.put(index++, (byte) 255);
-                    buffer.put(index++, (byte) 0);
-                    buffer.put(index++, (byte) 0);
-                    buffer.put(index, (byte) 255);
+                    bufferIndexPut(index, 255, 0, 0);
                 }
             }
         }
@@ -192,10 +202,7 @@ public class MiniMap {
                     var index = TileUtil.getIndexFrom2D(x, y) * 4;
 
                     if (x % 2 == 0 && y % 2 == 0) {
-                        buffer.put(index++, (byte) 200);
-                        buffer.put(index++, (byte) 200);
-                        buffer.put(index++, (byte) 200);
-                        buffer.put(index, (byte) 255);
+                        bufferIndexPut(index, 200, 200, 200);
                     }
                 }
             }
