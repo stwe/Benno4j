@@ -304,6 +304,7 @@ public class World {
     public void render() {
         water.render(camera, wireframe, currentZoom);
         terrain.render(camera, wireframe, currentZoom);
+        miniMap.render(new Vector2f(-0.5f, -0.5f), new Vector2f(0.5f));
         mousePicker.render(camera, currentZoom);
 
         // render ships

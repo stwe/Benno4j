@@ -92,7 +92,7 @@ public class DebugUi {
         zoom();
         mousePosition();
         tileUnderMouse();
-        showMiniMap();
+        //showMiniMap();
 
         ImGui.end();
     }
@@ -205,10 +205,18 @@ public class DebugUi {
 
         ImGui.setCursorPosY(512.0f);
         ImGui.separator();
-        ImGui.image(gameState.getWorld().getMiniMap().getMiniMapTexture().getId(),
+
+        /*
+        ImGui.image(gameState.getWorld().getMiniMap().getBottomLayerTexture().getId(),
                 WORLD_WIDTH * 0.5f, WORLD_HEIGHT * 0.5f,
                 0, 0, 1, 1
         );
+
+        ImGui.image(gameState.getWorld().getMiniMap().getShipsTexture().getId(),
+                WORLD_WIDTH * 0.5f, WORLD_HEIGHT * 0.5f,
+                0, 0, 1, 1, 0, 0,0,0.5f
+        );
+        */
     }
 
     private void showImGuiInfo() {

@@ -16,12 +16,12 @@ import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.SimpleTextureRenderer;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
-import de.sg.ogl.Color;
 import de.sg.ogl.resource.Texture;
 import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Objects;
 
 import static de.sg.benno.World.WORLD_HEIGHT;
@@ -50,19 +50,29 @@ public class MiniMap {
     private final Camera camera;
 
     /**
-     * A {@link SimpleTextureRenderer} to render the {@link #miniMapTexture} on the screen.
+     * A {@link SimpleTextureRenderer} to render the textures on the screen.
      */
     private final SimpleTextureRenderer simpleTextureRenderer;
 
     /**
-     * A {@link ByteBuffer} with pixel data.
+     *
      */
-    private final ByteBuffer buffer;
+    private final byte[] bottomLayerPixels = new byte[WORLD_WIDTH * WORLD_HEIGHT * 4];
 
     /**
-     * A {@link Texture}.
+     *
      */
-    private final Texture miniMapTexture;
+    private final byte[] shipPixels = new byte[WORLD_WIDTH * WORLD_HEIGHT * 4];
+
+    /**
+     * The bottom layer {@link Texture}.
+     */
+    private final Texture bottomLayerTexture;
+
+    /**
+     *
+     */
+    private final Texture shipsTexture;
 
     /**
      * The current {@link Zoom}.
@@ -89,13 +99,16 @@ public class MiniMap {
         this.simpleTextureRenderer = new SimpleTextureRenderer(Objects.requireNonNull(context, "context must not be null"));
         this.zoom = Objects.requireNonNull(zoom, "zoom must not be null");
 
-        this.buffer = BufferUtils.createByteBuffer(WORLD_WIDTH * WORLD_HEIGHT * 4);
+        this.bottomLayerTexture = new Texture();
+        this.bottomLayerTexture.setNrChannels(4);
+        this.bottomLayerTexture.setFormat(GL_RGBA);
 
-        this.miniMapTexture = new Texture();
-        this.miniMapTexture.setNrChannels(4);
-        this.miniMapTexture.setFormat(GL_RGBA);
+        this.shipsTexture = new Texture();
+        this.shipsTexture.setNrChannels(4);
+        this.shipsTexture.setFormat(GL_RGBA);
 
-        init();
+        initBottomLayer();
+        initShipsLayer();
     }
 
     //-------------------------------------------------
@@ -103,12 +116,16 @@ public class MiniMap {
     //-------------------------------------------------
 
     /**
-     * Get {@link #miniMapTexture}
+     * Get {@link #bottomLayerTexture}.
      *
-     * @return {@link #miniMapTexture}
+     * @return {@link #bottomLayerTexture}
      */
-    public Texture getMiniMapTexture() {
-        return miniMapTexture;
+    public Texture getBottomLayerTexture() {
+        return bottomLayerTexture;
+    }
+
+    public Texture getShipsTexture() {
+        return shipsTexture;
     }
 
     //-------------------------------------------------
@@ -116,50 +133,46 @@ public class MiniMap {
     //-------------------------------------------------
 
     /**
-     * Updates the {@link #miniMapTexture}.
+     * Updates the {@link MiniMap}.
      *
      * @param zoom The current {@link Zoom}.
      */
     public void update(Zoom zoom) {
         this.zoom = zoom;
-        init();
     }
 
     /**
-     * Renders the {@link #miniMapTexture}.
+     * Renders the {@link MiniMap}.
      *
      * @param position The position on the screen.
      * @param size The size/scale of the texture.
      */
     public void render(Vector2f position, Vector2f size) {
-        simpleTextureRenderer.render(miniMapTexture, position, size);
+        simpleTextureRenderer.render(bottomLayerTexture, position, size);
+        simpleTextureRenderer.render(shipsTexture, position, size);
     }
 
     //-------------------------------------------------
     // Init
     //-------------------------------------------------
 
-    private void bufferPut(int r, int g, int b) {
-        buffer.put((byte)r);
-        buffer.put((byte)g);
-        buffer.put((byte)b);
-        buffer.put((byte)255);
-    }
-
-    private void bufferIndexPut(int startIndex, int r, int g, int b) {
-        buffer.put(startIndex++, (byte)r);
-        buffer.put(startIndex++, (byte)g);
-        buffer.put(startIndex++, (byte)b);
-        buffer.put(startIndex, (byte)255);
+    private static void addPixel(byte[] pixels, int index, int r, int g, int b) {
+        pixels[index++] = (byte)r;
+        pixels[index++] = (byte)g;
+        pixels[index++] = (byte)b;
+        pixels[index] = (byte)255;
     }
 
     private void createBottomLayer() {
+        var index = 0;
+
         for(int y = 0; y < WORLD_HEIGHT; y++) {
             for(int x = 0; x < WORLD_WIDTH; x++) {
                 var island5Optional = Island5.isIsland5OnPosition(x, y, provider.getIsland5List());
                 if (island5Optional.isEmpty()) {
                     // water were found: blue color
-                    bufferPut(0, 0, 200);
+                    addPixel(bottomLayerPixels, index, 0, 0, 200);
+                    index += 4;
                 } else {
                     // an island were found
                     var island5 = island5Optional.get();
@@ -170,9 +183,11 @@ public class MiniMap {
                         var island5Tile = island5TileOptional.get();
                         // the island also has water tiles
                         if (Tile.isWaterTile(island5Tile)) {
-                            bufferPut(0, 0, 200);
+                            addPixel(bottomLayerPixels, index, 0, 0, 200);
+                            index += 4;
                         } else {
-                            bufferPut(0, 200, 0);
+                            addPixel(bottomLayerPixels, index, 0, 200, 0);
+                            index += 4;
                         }
                     } else {
                         throw new BennoRuntimeException("Unexpected error: No tile were found.");
@@ -183,16 +198,6 @@ public class MiniMap {
     }
 
     private void createTopLayer() {
-        // ships
-        for(var ship : provider.getShips4List()) {
-            for (var y = 0; y < 5; y++) {
-                for (var x = 0; x < 5; x++) {
-                    var index = TileUtil.getIndexFrom2D(ship.xPos + x, ship.yPos + y) * 4;
-                    bufferIndexPut(index, 255, 0, 0);
-                }
-            }
-        }
-
         // camera
         for (var y = 0; y < WORLD_HEIGHT; y++) {
             for (var x = 0; x < WORLD_WIDTH; x++) {
@@ -202,29 +207,52 @@ public class MiniMap {
                     var index = TileUtil.getIndexFrom2D(x, y) * 4;
 
                     if (x % 2 == 0 && y % 2 == 0) {
-                        bufferIndexPut(index, 200, 200, 200);
+                        //bufferIndexPut(index, 200, 200, 200);
                     }
                 }
             }
         }
     }
 
-    private void renderBufferToTexture() {
-        Texture.bind(miniMapTexture.getId());
+    private void createShipsLayer() {
+        Arrays.fill(shipPixels, (byte)0);
+
+        for(var ship : provider.getShips4List()) {
+            for (var y = 0; y < 5; y++) {
+                for (var x = 0; x < 5; x++) {
+                    var index = TileUtil.getIndexFrom2D(ship.xPos + x, ship.yPos + y) * 4;
+                    addPixel(shipPixels, index, 255, 0, 0);
+                }
+            }
+        }
+    }
+
+    private void initBottomLayer() {
+        createBottomLayer();
+
+        ByteBuffer buffer = BufferUtils.createByteBuffer(bottomLayerPixels.length);
+        buffer.put(bottomLayerPixels);
+        buffer.flip();
+
+        Texture.bind(bottomLayerTexture.getId());
         Texture.useBilinearFilter();
 
-        glBindTexture(GL_TEXTURE_2D, miniMapTexture.getId());
+        glBindTexture(GL_TEXTURE_2D, bottomLayerTexture.getId());
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, WORLD_WIDTH, WORLD_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
     }
 
-    private void init(){
-        // todo: zwei Texturen mit blending anzeigen
+    private void initShipsLayer() {
+        createShipsLayer();
 
-        createBottomLayer();
-        createTopLayer();
+        ByteBuffer buffer = BufferUtils.createByteBuffer(shipPixels.length);
+        buffer.put(shipPixels);
         buffer.flip();
 
-        renderBufferToTexture();
+        Texture.bind(shipsTexture.getId());
+        Texture.useBilinearFilter();
+
+        glBindTexture(GL_TEXTURE_2D, shipsTexture.getId());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, WORLD_WIDTH, WORLD_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
     }
 
     //-------------------------------------------------
@@ -238,6 +266,6 @@ public class MiniMap {
         LOGGER.debug("Start clean up for the MiniMap.");
 
         simpleTextureRenderer.cleanUp();
-        miniMapTexture.cleanUp();
+        bottomLayerTexture.cleanUp();
     }
 }
