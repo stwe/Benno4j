@@ -6,8 +6,8 @@
  * License: GPLv2
  */
 
-import de.sg.benno.BennoConfig;
-import de.sg.benno.BennoRuntimeException;
+package de.sg.benno;
+
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.file.GamFile;
 import de.sg.benno.state.Context;

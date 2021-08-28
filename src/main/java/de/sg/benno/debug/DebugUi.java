@@ -11,7 +11,6 @@ package de.sg.benno.debug;
 import de.sg.benno.chunk.Ship4;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.renderer.Zoom;
-import de.sg.benno.state.Context;
 import de.sg.benno.state.GameState;
 import de.sg.ogl.Config;
 import de.sg.ogl.input.MouseInput;
@@ -21,9 +20,6 @@ import imgui.internal.ImGui;
 import imgui.type.ImBoolean;
 
 import java.io.IOException;
-
-import static de.sg.benno.World.WORLD_HEIGHT;
-import static de.sg.benno.World.WORLD_WIDTH;
 
 /**
  * An ImGui for debug output.
@@ -105,27 +101,6 @@ public class DebugUi {
         ImGui.text("Camera position");
         ImGui.text("Camera screen space x: " + gameState.getWorld().getCamera().position.x + " (" + gameState.getWorld().getCamera().positionInTileUnits.x+")");
         ImGui.text("Camera screen space y: " + gameState.getWorld().getCamera().position.y + " (" + gameState.getWorld().getCamera().positionInTileUnits.y+")");
-    }
-
-    private void cameraSlider() {
-        ImGui.separator();
-        ImGui.text("Camera fast screen space change");
-
-        int[] camX = new int[1];
-        camX[0] = gameState.getWorld().getCamera().positionInTileUnits.x;
-        if (ImGui.sliderInt("x", camX, -WORLD_WIDTH, WORLD_WIDTH)) {
-            camX[0] += camX[0] % gameState.getWorld().getCurrentZoom().speedFactor;
-            gameState.getWorld().getCamera().positionInTileUnits.x = camX[0];
-            gameState.getWorld().getCamera().resetPosition(gameState.getWorld().getCurrentZoom());
-        }
-
-        int[] camY = new int[1];
-        camY[0] = gameState.getWorld().getCamera().positionInTileUnits.y;
-        if (ImGui.sliderInt("y", camY, -WORLD_HEIGHT, WORLD_HEIGHT)) {
-            camY[0] += camY[0] % gameState.getWorld().getCurrentZoom().speedFactor;
-            gameState.getWorld().getCamera().positionInTileUnits.y = camY[0];
-            gameState.getWorld().getCamera().resetPosition(gameState.getWorld().getCurrentZoom());
-        }
     }
 
     private void zoom() {
@@ -219,6 +194,13 @@ public class DebugUi {
         if (target != null) {
             ImGui.text("Target x: " + target.x);
             ImGui.text("Target y: " + target.y);
+
+            var c = 0;
+            ImGui.text("Path to target");
+            for (var node : gameState.getWorld().getShipping().getPath()) {
+                ImGui.text(c + ") x: " + node.position.x + ", y: " +node.position.y);
+                c++;
+            }
         } else {
             ImGui.text("Target: none");
         }

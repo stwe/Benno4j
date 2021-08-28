@@ -8,7 +8,6 @@
 
 package de.sg.benno;
 
-import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.Ship4;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;
@@ -34,7 +33,7 @@ public class Shipping {
     //-------------------------------------------------
 
     /**
-     * Provides data for drawing. For example the {@link Island5} objects from a loaded GAM file.
+     * Provides data for drawing.
      */
     private final WorldData provider;
 
@@ -64,9 +63,14 @@ public class Shipping {
     private Ship4 currentShip;
 
     /**
-     * The target position in world space.
+     * The current target position of the {@link #currentShip} in world space.
      */
     private Vector2i target;
+
+    /**
+     * The current search path of the {@link #currentShip}.
+     */
+    private ArrayList<Node> path;
 
     //-------------------------------------------------
     // Ctors.
@@ -111,12 +115,21 @@ public class Shipping {
     }
 
     /**
-     * Get {@link #target}.
+     * Get current {@link #target}.
      *
      * @return {@link #target}.
      */
     public Vector2i getTarget() {
         return target;
+    }
+
+    /**
+     * Get current {@link #path}.
+     *
+     * @return {@link #path}
+     */
+    public ArrayList<Node> getPath() {
+        return path;
     }
 
     //-------------------------------------------------
@@ -133,12 +146,21 @@ public class Shipping {
     }
 
     /**
-     * Set {@link #target}.
+     * Set current {@link #target}.
      *
      * @param target A {@link Vector2i}
      */
     public void setTarget(Vector2i target) {
         this.target = target;
+    }
+
+    /**
+     * Set current {@link #path}.
+     *
+     * @param path A {@link ArrayList<Node>}
+     */
+    public void setPath(ArrayList<Node> path) {
+        this.path = path;
     }
 
     //-------------------------------------------------

@@ -6,6 +6,8 @@
  * License: GPLv2
  */
 
+package de.sg.benno;
+
 import de.sg.ogl.SgOglEngine;
 
 public class BennoMain {

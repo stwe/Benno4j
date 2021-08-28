@@ -8,9 +8,7 @@
 
 package de.sg.benno.input;
 
-import de.sg.benno.Shipping;
-import de.sg.benno.Terrain;
-import de.sg.benno.Water;
+import de.sg.benno.*;
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.file.ImageFile;
@@ -111,6 +109,11 @@ public class MousePicker {
      */
     private TileGraphic.TileHeight searchMode;
 
+    /**
+     * A* path finding.
+     */
+    private final Astar astar;
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -138,6 +141,8 @@ public class MousePicker {
         this.shipping = Objects.requireNonNull(shipping, "shipping must not be null");
 
         this.searchMode = searchMode;
+
+        this.astar = new Astar();
 
         init(context);
     }
@@ -214,8 +219,7 @@ public class MousePicker {
     //-------------------------------------------------
 
     /**
-     * Update selected tile.
-     * The selected tile is given a darker color.
+     * Handle mouse clicks.
      *
      * @param dt The delta time.
      * @param camera The {@link Camera} object.
@@ -231,13 +235,14 @@ public class MousePicker {
                 // get tile under mouse
                 var selected = getTileUnderMouse(camera, zoom);
 
-                // todo: brute force searching
+                // todo: brute force searching - use a HashMap later
                 for (var ship : shipping.getProvider().getShips4List()) {
                     if (ship.xPos == selected.x && ship.yPos == selected.y) {
                         shipping.setCurrentShip(ship);
                     } else {
                         shipping.setCurrentShip(null);
                         shipping.setTarget(null);
+                        shipping.setPath(null);
                     }
                 }
             }
@@ -249,8 +254,16 @@ public class MousePicker {
 
                 if (shipping.getCurrentShip() != null) {
                     shipping.setTarget(selected);
+
+                    var path = astar.findPathToMapPosition(
+                            new Vector2i(shipping.getCurrentShip().xPos, shipping.getCurrentShip().yPos),
+                            selected
+                    );
+
+                    shipping.setPath(path);
                 } else {
                     shipping.setTarget(null);
+                    shipping.setPath(null);
                 }
             }
         }
@@ -277,10 +290,6 @@ public class MousePicker {
         // if no island is found, try to update a water tile
         if (!updated) {
             updated = water.updateSelectedWaterTile(selected);
-        }
-
-        if (updated) {
-            //LOGGER.debug("Tile selected on x: {}, y: {}", selected.x, selected.y);
         }
     }
 
