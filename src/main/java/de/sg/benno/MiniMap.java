@@ -69,6 +69,11 @@ public class MiniMap {
      */
     private static final Vector4i CAMERA_COLOR = new Vector4i(255, 255, 255, 255);
 
+    /**
+     * Brown buildings.
+     */
+    private static final Vector4i BUILDING_COLOR = new Vector4i(150, 150, 0, 255);
+
     //-------------------------------------------------
     // Member
     //-------------------------------------------------
@@ -230,20 +235,30 @@ public class MiniMap {
                     // an island were found
                     var island5 = island5Optional.get();
 
-                    // get island tile
-                    var island5TileOptional = island5.getTileFromBottomLayer(x - island5.xPos, y - island5.yPos);
-                    if (island5TileOptional.isPresent()) {
-                        var island5Tile = island5TileOptional.get();
+                    // get island bottom layer (terrain)
+                    var tileFromBottomLayer = island5.getTileFromBottomLayer(x - island5.xPos, y - island5.yPos);
+
+                    // get island top layer (building)
+                    var tileFromTopLayer = island5.getTileFromTopLayer(x - island5.xPos, y - island5.yPos);
+
+                    // highlight buildings from top layer
+                    if (tileFromTopLayer.isPresent() && tileFromTopLayer.get().graphicId != 0xFFFF) {
+                        addPixel(bottomLayerPixels, index, BUILDING_COLOR);
+                        index += 4;
+                    }
+
+                    if (tileFromTopLayer.isPresent() && tileFromTopLayer.get().graphicId == 0xFFFF && tileFromBottomLayer.isPresent()) {
+                        var tile = tileFromBottomLayer.get();
                         // the island also has water tiles
-                        if (Tile.isWaterTile(island5Tile)) {
+                        if (Tile.isWaterTile(tile)) {
                             addPixel(bottomLayerPixels, index, DEEP_WATER_COLOR);
                         } else {
                             addPixel(bottomLayerPixels, index, ISLAND_COLOR);
                         }
+
                         index += 4;
-                    } else {
-                        throw new BennoRuntimeException("Unexpected error: No tile were found.");
                     }
+
                 }
             }
         }
