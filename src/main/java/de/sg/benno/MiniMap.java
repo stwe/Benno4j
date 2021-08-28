@@ -35,6 +35,15 @@ import static org.lwjgl.opengl.GL11.*;
 public class MiniMap {
 
     //-------------------------------------------------
+    // Constants
+    //-------------------------------------------------
+
+    /**
+     * Number of bytes for all pixels of a layer.
+     */
+    private static final int PIXEL_BYTES = WORLD_WIDTH * WORLD_HEIGHT * 4;
+
+    //-------------------------------------------------
     // Member
     //-------------------------------------------------
 
@@ -55,24 +64,34 @@ public class MiniMap {
     private final SimpleTextureRenderer simpleTextureRenderer;
 
     /**
-     *
+     * The bottom layer pixels.
      */
-    private final byte[] bottomLayerPixels = new byte[WORLD_WIDTH * WORLD_HEIGHT * 4];
+    private final byte[] bottomLayerPixels = new byte[PIXEL_BYTES];
 
     /**
-     *
+     * The ships pixels.
      */
-    private final byte[] shipPixels = new byte[WORLD_WIDTH * WORLD_HEIGHT * 4];
+    private final byte[] shipPixels = new byte[PIXEL_BYTES];
+
+    /**
+     * The pixels of field of view.
+     */
+    private final byte[] cameraPixels = new byte[PIXEL_BYTES];
 
     /**
      * The bottom layer {@link Texture}.
      */
-    private final Texture bottomLayerTexture;
+    private Texture bottomLayerTexture;
 
     /**
-     *
+     * The {@link Texture} with all ships.
      */
-    private final Texture shipsTexture;
+    private Texture shipsTexture;
+
+    /**
+     * The {@link Texture} with the field of view of the camera.
+     */
+    private Texture cameraTexture;
 
     /**
      * The current {@link Zoom}.
@@ -99,16 +118,11 @@ public class MiniMap {
         this.simpleTextureRenderer = new SimpleTextureRenderer(Objects.requireNonNull(context, "context must not be null"));
         this.zoom = Objects.requireNonNull(zoom, "zoom must not be null");
 
-        this.bottomLayerTexture = new Texture();
-        this.bottomLayerTexture.setNrChannels(4);
-        this.bottomLayerTexture.setFormat(GL_RGBA);
+        createTextureObjects();
 
-        this.shipsTexture = new Texture();
-        this.shipsTexture.setNrChannels(4);
-        this.shipsTexture.setFormat(GL_RGBA);
-
-        initBottomLayer();
-        initShipsLayer();
+        createBottomLayer();
+        createShipsLayer();
+        createCameraLayer();
     }
 
     //-------------------------------------------------
@@ -124,8 +138,22 @@ public class MiniMap {
         return bottomLayerTexture;
     }
 
+    /**
+     * Get {@link #shipsTexture}.
+     *
+     * @return {@link #shipsTexture}
+     */
     public Texture getShipsTexture() {
         return shipsTexture;
+    }
+
+    /**
+     * Get {@link #cameraTexture}.
+     *
+     * @return {@link #cameraTexture}
+     */
+    public Texture getCameraTexture() {
+        return cameraTexture;
     }
 
     //-------------------------------------------------
@@ -139,6 +167,10 @@ public class MiniMap {
      */
     public void update(Zoom zoom) {
         this.zoom = zoom;
+
+        // todo: handle ships update
+
+        createCameraLayer();
     }
 
     /**
@@ -148,22 +180,20 @@ public class MiniMap {
      * @param size The size/scale of the texture.
      */
     public void render(Vector2f position, Vector2f size) {
+        // todo: das sollte in einem draw call erledigt werden
         simpleTextureRenderer.render(bottomLayerTexture, position, size);
         simpleTextureRenderer.render(shipsTexture, position, size);
+        simpleTextureRenderer.render(cameraTexture, position, size);
     }
 
     //-------------------------------------------------
-    // Init
+    // Content
     //-------------------------------------------------
 
-    private static void addPixel(byte[] pixels, int index, int r, int g, int b) {
-        pixels[index++] = (byte)r;
-        pixels[index++] = (byte)g;
-        pixels[index++] = (byte)b;
-        pixels[index] = (byte)255;
-    }
-
-    private void createBottomLayer() {
+    /**
+     * Creates the bottom layer pixels.
+     */
+    private void createBottomLayerPixels() {
         var index = 0;
 
         for(int y = 0; y < WORLD_HEIGHT; y++) {
@@ -171,7 +201,7 @@ public class MiniMap {
                 var island5Optional = Island5.isIsland5OnPosition(x, y, provider.getIsland5List());
                 if (island5Optional.isEmpty()) {
                     // water were found: blue color
-                    addPixel(bottomLayerPixels, index, 0, 0, 200);
+                    addPixel(bottomLayerPixels, index, 0, 0, 200, 0);
                     index += 4;
                 } else {
                     // an island were found
@@ -183,12 +213,11 @@ public class MiniMap {
                         var island5Tile = island5TileOptional.get();
                         // the island also has water tiles
                         if (Tile.isWaterTile(island5Tile)) {
-                            addPixel(bottomLayerPixels, index, 0, 0, 200);
-                            index += 4;
+                            addPixel(bottomLayerPixels, index, 0, 0, 200, 0);
                         } else {
-                            addPixel(bottomLayerPixels, index, 0, 200, 0);
-                            index += 4;
+                            addPixel(bottomLayerPixels, index, 0, 200, 0, 255);
                         }
+                        index += 4;
                     } else {
                         throw new BennoRuntimeException("Unexpected error: No tile were found.");
                     }
@@ -197,61 +226,127 @@ public class MiniMap {
         }
     }
 
-    private void createTopLayer() {
-        // camera
-        for (var y = 0; y < WORLD_HEIGHT; y++) {
-            for (var x = 0; x < WORLD_WIDTH; x++) {
-                var ws = TileUtil.worldToScreen(x, y, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf);
-
-                if (Aabb.pointVsAabb(new Vector2f(ws.x, ws.y), camera.getAabb())) {
-                    var index = TileUtil.getIndexFrom2D(x, y) * 4;
-
-                    if (x % 2 == 0 && y % 2 == 0) {
-                        //bufferIndexPut(index, 200, 200, 200);
-                    }
-                }
-            }
-        }
-    }
-
-    private void createShipsLayer() {
+    /**
+     * Creates the ships layer pixels.
+     */
+    private void createShipsLayerPixels() {
         Arrays.fill(shipPixels, (byte)0);
 
         for(var ship : provider.getShips4List()) {
             for (var y = 0; y < 5; y++) {
                 for (var x = 0; x < 5; x++) {
                     var index = TileUtil.getIndexFrom2D(ship.xPos + x, ship.yPos + y) * 4;
-                    addPixel(shipPixels, index, 255, 0, 0);
+                    addPixel(shipPixels, index, 255, 0, 0, 255);
                 }
             }
         }
     }
 
-    private void initBottomLayer() {
-        createBottomLayer();
+    /**
+     * Creates the camera layer pixels.
+     */
+    private void createCameraLayerPixels() {
+        Arrays.fill(cameraPixels, (byte)0);
 
-        ByteBuffer buffer = BufferUtils.createByteBuffer(bottomLayerPixels.length);
-        buffer.put(bottomLayerPixels);
-        buffer.flip();
+        for (var y = 0; y < WORLD_HEIGHT; y++) {
+            for (var x = 0; x < WORLD_WIDTH; x++) {
+                var ws = new Vector2f(TileUtil.worldToScreen(x, y, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf));
+                var wsXMinusOne = new Vector2f(TileUtil.worldToScreen(x - 1, y, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf));
+                var wsYMinusOne = new Vector2f(TileUtil.worldToScreen(x, y - 1, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf));
+                var wsYPlusOne = new Vector2f(TileUtil.worldToScreen(x, y + 1, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf));
 
-        Texture.bind(bottomLayerTexture.getId());
-        Texture.useBilinearFilter();
-
-        glBindTexture(GL_TEXTURE_2D, bottomLayerTexture.getId());
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, WORLD_WIDTH, WORLD_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+                if (Aabb.pointVsAabb(ws, camera.getAabb())) {
+                    if (!Aabb.pointVsAabb(wsXMinusOne, camera.getAabb()) ||
+                            !Aabb.pointVsAabb(wsYMinusOne, camera.getAabb()) || !Aabb.pointVsAabb(wsYPlusOne, camera.getAabb())) {
+                        var index = TileUtil.getIndexFrom2D(x, y) * 4;
+                        addPixel(cameraPixels, index, 0, 0, 0, 255);
+                    }
+                }
+            }
+        }
     }
 
-    private void initShipsLayer() {
-        createShipsLayer();
+    //-------------------------------------------------
+    // Init
+    //-------------------------------------------------
 
-        ByteBuffer buffer = BufferUtils.createByteBuffer(shipPixels.length);
-        buffer.put(shipPixels);
+    /**
+     * Creates empty textures.
+     */
+    private void createTextureObjects() {
+        this.bottomLayerTexture = new Texture();
+        this.bottomLayerTexture.setNrChannels(4);
+        this.bottomLayerTexture.setFormat(GL_RGBA);
+
+        this.shipsTexture = new Texture();
+        this.shipsTexture.setNrChannels(4);
+        this.shipsTexture.setFormat(GL_RGBA);
+
+        this.cameraTexture = new Texture();
+        this.cameraTexture.setNrChannels(4);
+        this.cameraTexture.setFormat(GL_RGBA);
+    }
+
+    /**
+     * Creates bottom layer.
+     */
+    private void createBottomLayer() {
+        createBottomLayerPixels();
+        pixelToTexture(bottomLayerPixels, bottomLayerTexture);
+    }
+
+    /**
+     * Creates ships layer.
+     */
+    private void createShipsLayer() {
+        createShipsLayerPixels();
+        pixelToTexture(shipPixels, shipsTexture);
+    }
+
+    /**
+     * Creates camera layer.
+     */
+    private void createCameraLayer() {
+        createCameraLayerPixels();
+        pixelToTexture(cameraPixels, cameraTexture);
+    }
+
+    //-------------------------------------------------
+    // Helper
+    //-------------------------------------------------
+
+    /**
+     * Adds rgba values to a given pixel byte map.
+     *
+     * @param pixels The pixel byte map.
+     * @param index The map index.
+     * @param r The value for red.
+     * @param g The value for green.
+     * @param b The value for blue.
+     * @param a The value for alpha.
+     */
+    private static void addPixel(byte[] pixels, int index, int r, int g, int b, int a) {
+        pixels[index++] = (byte)r;
+        pixels[index++] = (byte)g;
+        pixels[index++] = (byte)b;
+        pixels[index] = (byte)a;
+    }
+
+    /**
+     * Creates a texture based on the pixel data.
+     *
+     * @param pixels The pixel byte map.
+     * @param texture A {@link Texture} object.
+     */
+    private static void pixelToTexture(byte[] pixels, Texture texture) {
+        ByteBuffer buffer = BufferUtils.createByteBuffer(pixels.length);
+        buffer.put(pixels);
         buffer.flip();
 
-        Texture.bind(shipsTexture.getId());
+        Texture.bind(texture.getId());
         Texture.useBilinearFilter();
 
-        glBindTexture(GL_TEXTURE_2D, shipsTexture.getId());
+        glBindTexture(GL_TEXTURE_2D, texture.getId());
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, WORLD_WIDTH, WORLD_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
     }
 
@@ -266,6 +361,9 @@ public class MiniMap {
         LOGGER.debug("Start clean up for the MiniMap.");
 
         simpleTextureRenderer.cleanUp();
+
         bottomLayerTexture.cleanUp();
+        shipsTexture.cleanUp();
+        cameraTexture.cleanUp();
     }
 }

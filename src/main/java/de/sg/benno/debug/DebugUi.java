@@ -8,7 +8,6 @@
 
 package de.sg.benno.debug;
 
-import de.sg.benno.World;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
@@ -42,7 +41,7 @@ public class DebugUi {
     /**
      * The menu height.
      */
-    private static final int HEIGHT = 700;
+    private static final int HEIGHT = 420;
 
     //-------------------------------------------------
     // Member
@@ -92,7 +91,6 @@ public class DebugUi {
         zoom();
         mousePosition();
         tileUnderMouse();
-        //showMiniMap();
 
         ImGui.end();
     }
@@ -121,7 +119,7 @@ public class DebugUi {
 
         int[] camY = new int[1];
         camY[0] = gameState.getWorld().getCamera().positionInTileUnits.y;
-        if (ImGui.sliderInt("y", camY, -World.WORLD_HEIGHT, World.WORLD_HEIGHT)) {
+        if (ImGui.sliderInt("y", camY, -WORLD_HEIGHT, WORLD_HEIGHT)) {
             camY[0] += camY[0] % gameState.getWorld().getCurrentZoom().speedFactor;
             gameState.getWorld().getCamera().positionInTileUnits.y = camY[0];
             gameState.getWorld().getCamera().resetPosition(gameState.getWorld().getCurrentZoom());
@@ -196,27 +194,6 @@ public class DebugUi {
             ImGui.text("Graphic Id: none");
             ImGui.text("Start gfx on gpu: none");
         }
-    }
-
-    private void showMiniMap() {
-        //ImGui.text("For debug only");
-        //ImGui.text("Next image pos x: " + ImGui.getCursorScreenPosX());
-        //ImGui.text("Next image pos y: " + ImGui.getCursorScreenPosY());
-
-        ImGui.setCursorPosY(512.0f);
-        ImGui.separator();
-
-        /*
-        ImGui.image(gameState.getWorld().getMiniMap().getBottomLayerTexture().getId(),
-                WORLD_WIDTH * 0.5f, WORLD_HEIGHT * 0.5f,
-                0, 0, 1, 1
-        );
-
-        ImGui.image(gameState.getWorld().getMiniMap().getShipsTexture().getId(),
-                WORLD_WIDTH * 0.5f, WORLD_HEIGHT * 0.5f,
-                0, 0, 1, 1, 0, 0,0,0.5f
-        );
-        */
     }
 
     private void showImGuiInfo() {
