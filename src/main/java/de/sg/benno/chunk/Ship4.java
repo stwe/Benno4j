@@ -1,3 +1,11 @@
+/*
+ * This file is part of the Benno4j project.
+ *
+ * Copyright (c) 2021. stwe <https://github.com/stwe/Benno4j>
+ *
+ * License: GPLv2
+ */
+
 package de.sg.benno.chunk;
 
 import java.util.HashMap;
@@ -51,12 +59,42 @@ public class Ship4 {
     //-------------------------------------------------
 
     public enum ShipType {
-        SMALL_TRADING_SHIP(0x15, 0),
-        LARGE_TRADING_SHIP(0x17, 32),
-        SMALL_WAR_SHIP(0x19, 64),
-        LARGE_WAR_SHIP(0x1b, 48),
-        FLYING_DEALER(0x1d, 16),
-        PIRATE_SHIP(0x1f, 80);
+        SMALL_TRADING_SHIP(0x15, 0) {
+            @Override
+            public String toString() {
+                return "Small trading ship";
+            }
+        },
+        LARGE_TRADING_SHIP(0x17, 32) {
+            @Override
+            public String toString() {
+                return "Large trading ship";
+            }
+        },
+        SMALL_WAR_SHIP(0x19, 64) {
+            @Override
+            public String toString() {
+                return "Small war ship";
+            }
+        },
+        LARGE_WAR_SHIP(0x1b, 48) {
+            @Override
+            public String toString() {
+                return "Large war ship";
+            }
+        },
+        FLYING_DEALER(0x1d, 16) {
+            @Override
+            public String toString() {
+                return "Flying dealer";
+            }
+        },
+        PIRATE_SHIP(0x1f, 80) {
+            @Override
+            public String toString() {
+                return "Pirate ship";
+            }
+        };
 
         public int type;
         public int gfxIndex;

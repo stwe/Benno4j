@@ -8,6 +8,7 @@
 
 package de.sg.benno.input;
 
+import de.sg.benno.Shipping;
 import de.sg.benno.Terrain;
 import de.sg.benno.Water;
 import de.sg.benno.chunk.Island5;
@@ -28,6 +29,7 @@ import java.util.Optional;
 
 import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_2;
 
 /**
  * Represents a MousePicker
@@ -95,6 +97,11 @@ public class MousePicker {
     private final Terrain terrain;
 
     /**
+     * The {@link Shipping} object.
+     */
+    private final Shipping shipping;
+
+    /**
      * The current {@link TileGraphic} under mouse;
      */
     private TileGraphic currentTileGraphic;
@@ -114,11 +121,12 @@ public class MousePicker {
      * @param context {@link Context}
      * @param water {@link Water}
      * @param terrain {@link Terrain}
+     * @param shipping {@link Shipping}
      * @param searchMode Initializes the search mode.
      *                   Either the picker can determine water tiles or the higher drawing island tiles.
      * @throws Exception If an error is thrown.
      */
-    public MousePicker(Context context, Water water, Terrain terrain, TileGraphic.TileHeight searchMode) throws Exception {
+    public MousePicker(Context context, Water water, Terrain terrain, Shipping shipping, TileGraphic.TileHeight searchMode) throws Exception {
         LOGGER.debug("Creates MousePicker object.");
 
         Objects.requireNonNull(context, "context must not be null");
@@ -127,6 +135,7 @@ public class MousePicker {
 
         this.water = Objects.requireNonNull(water, "water must not be null");
         this.terrain = Objects.requireNonNull(terrain, "terrain must not be null");
+        this.shipping = Objects.requireNonNull(shipping, "shipping must not be null");
 
         this.searchMode = searchMode;
 
@@ -214,33 +223,64 @@ public class MousePicker {
      */
     public void update(float dt, Camera camera, Zoom zoom) {
         if (MouseInput.isMouseInWindow()) {
+
+            // select ship
             if (MouseInput.isMouseButtonDown(GLFW_MOUSE_BUTTON_1)) {
-                var updated = false;
+                // todo: selected evtl. besser mit Aabb's ausarbeiten
 
                 // get tile under mouse
                 var selected = getTileUnderMouse(camera, zoom);
 
-                // try to get an island
-                var island5Optional = Island5.isIsland5OnPosition(
-                        selected.x,
-                        selected.y,
-                        terrain.getProvider().getIsland5List()
-                );
-
-                // when an island is found
-                if (island5Optional.isPresent()) {
-                    updated = terrain.updateSelectedTile(island5Optional.get(), selected);
-                }
-
-                // if no island is found, try to update a water tile
-                if (!updated) {
-                    updated = water.updateSelectedWaterTile(selected);
-                }
-
-                if (updated) {
-                    //LOGGER.debug("Tile selected on x: {}, y: {}", selected.x, selected.y);
+                // todo: brute force searching
+                for (var ship : shipping.getProvider().getShips4List()) {
+                    if (ship.xPos == selected.x && ship.yPos == selected.y) {
+                        shipping.setCurrentShip(ship);
+                    } else {
+                        shipping.setCurrentShip(null);
+                        shipping.setTarget(null);
+                    }
                 }
             }
+
+            // set target
+            if (MouseInput.isMouseButtonDown(GLFW_MOUSE_BUTTON_2)) {
+                // get tile under mouse
+                var selected = getTileUnderMouse(camera, zoom);
+
+                if (shipping.getCurrentShip() != null) {
+                    shipping.setTarget(selected);
+                } else {
+                    shipping.setTarget(null);
+                }
+            }
+        }
+    }
+
+    private void oldHandleMouseClick(Camera camera, Zoom zoom) {
+        var updated = false;
+
+        // get tile under mouse
+        var selected = getTileUnderMouse(camera, zoom);
+
+        // try to get an island
+        var island5Optional = Island5.isIsland5OnPosition(
+                selected.x,
+                selected.y,
+                terrain.getProvider().getIsland5List()
+        );
+
+        // when an island is found
+        if (island5Optional.isPresent()) {
+            updated = terrain.updateSelectedTile(island5Optional.get(), selected);
+        }
+
+        // if no island is found, try to update a water tile
+        if (!updated) {
+            updated = water.updateSelectedWaterTile(selected);
+        }
+
+        if (updated) {
+            //LOGGER.debug("Tile selected on x: {}, y: {}", selected.x, selected.y);
         }
     }
 

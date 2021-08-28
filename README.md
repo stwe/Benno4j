@@ -6,12 +6,10 @@ All animations are done by the GLSL shader programs.
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/e1c293c28dc44e639d747e447899d6a6)](https://www.codacy.com/gh/stwe/Benno4j/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=stwe/Benno4j&amp;utm_campaign=Badge_Grade)
 [![License: GPL v2](https://img.shields.io/badge/license-GPL--2.0-green)](https://github.com/stwe/Benno4j/blob/master/LICENSE)
 
-## Video
-
 This project is under heavy development and will receive frequent updates with new features and enhancements.
 The video below shows the current, very early stage of development.
 
-[![stwe on youtube](https://i9.ytimg.com/vi/pBWGzlppSLM/mq2.jpg?sqp=CLSd_ogG&rs=AOn4CLBKI6lgVMMc7nS4CHH50w4tnrtxiA)](https://www.youtube.com/watch?v=pBWGzlppSLM)
+<img src="https://github.com/stwe/Benno4j/blob/master/devLog/28-08-2021.png" width="409" height="316" />
 
 ## Supported versions
 

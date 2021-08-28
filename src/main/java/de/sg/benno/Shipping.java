@@ -9,6 +9,7 @@
 package de.sg.benno;
 
 import de.sg.benno.chunk.Island5;
+import de.sg.benno.chunk.Ship4;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.file.BshFile;
@@ -17,6 +18,7 @@ import de.sg.benno.renderer.TileGraphicRenderer;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -56,6 +58,16 @@ public class Shipping {
      */
     private TileGraphicRenderer tileGraphicRenderer;
 
+    /**
+     * The current selected {@link Ship4}.
+     */
+    private Ship4 currentShip;
+
+    /**
+     * The target position in world space.
+     */
+    private Vector2i target;
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -77,11 +89,94 @@ public class Shipping {
     }
 
     //-------------------------------------------------
+    // Getter
+    //-------------------------------------------------
+
+    /**
+     * Get {@link #provider}.
+     *
+     * @return {@link #provider}
+     */
+    public WorldData getProvider() {
+        return provider;
+    }
+
+    /**
+     * Get {@link #currentShip}.
+     *
+     * @return {@link #currentShip}.
+     */
+    public Ship4 getCurrentShip() {
+        return currentShip;
+    }
+
+    /**
+     * Get {@link #target}.
+     *
+     * @return {@link #target}.
+     */
+    public Vector2i getTarget() {
+        return target;
+    }
+
+    //-------------------------------------------------
+    // Setter
+    //-------------------------------------------------
+
+    /**
+     * Set {@link #currentShip}.
+     *
+     * @param currentShip A {@link Ship4}
+     */
+    public void setCurrentShip(Ship4 currentShip) {
+        this.currentShip = currentShip;
+    }
+
+    /**
+     * Set {@link #target}.
+     *
+     * @param target A {@link Vector2i}
+     */
+    public void setTarget(Vector2i target) {
+        this.target = target;
+    }
+
+    //-------------------------------------------------
     // Logic
     //-------------------------------------------------
 
-    public void update(float dt) {}
+    /**
+     * Updates all ships.
+     *
+     * @param dt The delta time.
+     */
+    public void update(float dt) {
+        /*
+        dt *= 16.0f;
+        if (target != null) {
+            var t = TileUtil.worldToScreen(target.x, target.y, Zoom.GFX.defaultTileWidthHalf, Zoom.GFX.defaultTileHeightHalf);
+            for (var p : shipTileGraphics.get(Zoom.GFX)) {
+                if (Math.abs(p.screenPosition.x - t.x) > dt || Math.abs(p.screenPosition.y - t.y) > dt) {
+                    p.screenPosition.x += Math.max(-dt, Math.min(dt, t.x - p.screenPosition.x)); // move to destination clamping speed;
+                    p.screenPosition.y += Math.max(-dt, Math.min(dt, t.y - p.screenPosition.y));
+                    //p.atDest = false;  // flag the player is on the way
+                } else {
+                    // player directly over a till and not moving;
+                    p.screenPosition.x = t.x; // ensure the player positioned correctly;
+                    p.screenPosition.y = t.y;
+                    //p.atDest = true;  // flag the player has arrived
+                }
+            }
+        }
+        */
+    }
 
+    /**
+     * Render all ships.
+     *
+     * @param camera {@link Camera} object
+     * @param zoom The current {@link Zoom}
+     */
     public void render(Camera camera, Zoom zoom) {
         for (var ship : shipTileGraphics.get(zoom)) {
             tileGraphicRenderer.render(camera, ship, shipBshFiles.get(zoom));

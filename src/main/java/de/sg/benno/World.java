@@ -141,6 +141,15 @@ public class World {
     }
 
     /**
+     * Get {@link #shipping}.
+     *
+     * @return {@link #shipping}
+     */
+    public Shipping getShipping() {
+        return shipping;
+    }
+
+    /**
      * Get {@link #miniMap}.
      *
      * @return {@link #miniMap}
@@ -194,7 +203,7 @@ public class World {
         miniMap = new MiniMap(provider, context, camera, currentZoom);
 
         // the mouse picker - initialize in cliff mode
-        mousePicker = new MousePicker(context, water, terrain, TileGraphic.TileHeight.SEA_LEVEL);
+        mousePicker = new MousePicker(context, water, terrain, shipping, TileGraphic.TileHeight.SEA_LEVEL);
     }
 
     //-------------------------------------------------
@@ -237,7 +246,7 @@ public class World {
         camera.update(currentZoom);
         //water.update();
         terrain.update(dt);
-        //shipping.update();
+        shipping.update(dt);
         miniMap.update(currentZoom);
         mousePicker.update(dt, camera, currentZoom);
     }

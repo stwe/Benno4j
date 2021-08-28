@@ -8,6 +8,7 @@
 
 package de.sg.benno.debug;
 
+import de.sg.benno.chunk.Ship4;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
@@ -91,6 +92,7 @@ public class DebugUi {
         zoom();
         mousePosition();
         tileUnderMouse();
+        currentShip();
 
         ImGui.end();
     }
@@ -195,6 +197,31 @@ public class DebugUi {
             ImGui.text("Start gfx on gpu: none");
         }
         */
+    }
+
+    private void currentShip() {
+        ImGui.separator();
+        ImGui.text("Current ship");
+        var currentShip = gameState.getWorld().getShipping().getCurrentShip();
+        if (currentShip != null) {
+            ImGui.text("Name: " + currentShip.name);
+            ImGui.text("X: " + currentShip.xPos);
+            ImGui.text("Y: " + currentShip.yPos);
+            ImGui.text("Health: " + currentShip.health);
+            ImGui.text("Cannons: " + currentShip.numberOfCannons);
+            ImGui.text("Type: " + Ship4.ShipType.valueOfType(currentShip.type));
+            ImGui.text("Direction: " + currentShip.direction);
+        } else {
+            ImGui.text("Ship: none");
+        }
+
+        var target = gameState.getWorld().getShipping().getTarget();
+        if (target != null) {
+            ImGui.text("Target x: " + target.x);
+            ImGui.text("Target y: " + target.y);
+        } else {
+            ImGui.text("Target: none");
+        }
     }
 
     private void showImGuiInfo() {
