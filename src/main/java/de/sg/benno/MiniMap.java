@@ -13,11 +13,12 @@ import de.sg.benno.chunk.Tile;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.input.Aabb;
 import de.sg.benno.input.Camera;
-import de.sg.benno.renderer.SimpleTextureRenderer;
+import de.sg.benno.renderer.MiniMapRenderer;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
 import de.sg.ogl.resource.Texture;
 import org.joml.Vector2f;
+import org.joml.Vector4i;
 import org.lwjgl.BufferUtils;
 
 import java.nio.ByteBuffer;
@@ -43,6 +44,31 @@ public class MiniMap {
      */
     private static final int PIXEL_BYTES = WORLD_WIDTH * WORLD_HEIGHT * 4;
 
+    /**
+     * So that we can see the camera section better.
+     */
+    private static final int FIELD_OF_VIEW_EDGE_THICKNESS = 2;
+
+    /**
+     * Transparent deep water.
+     */
+    private static final Vector4i DEEP_WATER_COLOR = new Vector4i(0, 0, 0, 0);
+
+    /**
+     * Green islands.
+     */
+    private static final Vector4i ISLAND_COLOR = new Vector4i(0, 200, 0, 255);
+
+    /**
+     * Red ships.
+     */
+    private static final Vector4i SHIP_COLOR = new Vector4i(255, 0, 0, 255);
+
+    /**
+     * White camera.
+     */
+    private static final Vector4i CAMERA_COLOR = new Vector4i(255, 255, 255, 255);
+
     //-------------------------------------------------
     // Member
     //-------------------------------------------------
@@ -59,9 +85,9 @@ public class MiniMap {
     private final Camera camera;
 
     /**
-     * A {@link SimpleTextureRenderer} to render the textures on the screen.
+     * A {@link MiniMapRenderer} to render the textures on the screen.
      */
-    private final SimpleTextureRenderer simpleTextureRenderer;
+    private final MiniMapRenderer miniMapRenderer;
 
     /**
      * The bottom layer pixels.
@@ -115,7 +141,7 @@ public class MiniMap {
 
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
         this.camera = Objects.requireNonNull(camera, "camera must not be null");
-        this.simpleTextureRenderer = new SimpleTextureRenderer(Objects.requireNonNull(context, "context must not be null"));
+        this.miniMapRenderer = new MiniMapRenderer(Objects.requireNonNull(context, "context must not be null"));
         this.zoom = Objects.requireNonNull(zoom, "zoom must not be null");
 
         createTextureObjects();
@@ -180,10 +206,7 @@ public class MiniMap {
      * @param size The size/scale of the texture.
      */
     public void render(Vector2f position, Vector2f size) {
-        // todo: das sollte in einem draw call erledigt werden
-        simpleTextureRenderer.render(bottomLayerTexture, position, size);
-        simpleTextureRenderer.render(shipsTexture, position, size);
-        simpleTextureRenderer.render(cameraTexture, position, size);
+        miniMapRenderer.render(bottomLayerTexture, shipsTexture, cameraTexture, position, size);
     }
 
     //-------------------------------------------------
@@ -200,8 +223,8 @@ public class MiniMap {
             for(int x = 0; x < WORLD_WIDTH; x++) {
                 var island5Optional = Island5.isIsland5OnPosition(x, y, provider.getIsland5List());
                 if (island5Optional.isEmpty()) {
-                    // water were found: blue color
-                    addPixel(bottomLayerPixels, index, 0, 0, 200, 0);
+                    // water were found
+                    addPixel(bottomLayerPixels, index, DEEP_WATER_COLOR);
                     index += 4;
                 } else {
                     // an island were found
@@ -213,9 +236,9 @@ public class MiniMap {
                         var island5Tile = island5TileOptional.get();
                         // the island also has water tiles
                         if (Tile.isWaterTile(island5Tile)) {
-                            addPixel(bottomLayerPixels, index, 0, 0, 200, 0);
+                            addPixel(bottomLayerPixels, index, DEEP_WATER_COLOR);
                         } else {
-                            addPixel(bottomLayerPixels, index, 0, 200, 0, 255);
+                            addPixel(bottomLayerPixels, index, ISLAND_COLOR);
                         }
                         index += 4;
                     } else {
@@ -236,7 +259,7 @@ public class MiniMap {
             for (var y = 0; y < 5; y++) {
                 for (var x = 0; x < 5; x++) {
                     var index = TileUtil.getIndexFrom2D(ship.xPos + x, ship.yPos + y) * 4;
-                    addPixel(shipPixels, index, 255, 0, 0, 255);
+                    addPixel(shipPixels, index, SHIP_COLOR);
                 }
             }
         }
@@ -251,15 +274,15 @@ public class MiniMap {
         for (var y = 0; y < WORLD_HEIGHT; y++) {
             for (var x = 0; x < WORLD_WIDTH; x++) {
                 var ws = new Vector2f(TileUtil.worldToScreen(x, y, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf));
-                var wsXMinusOne = new Vector2f(TileUtil.worldToScreen(x - 1, y, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf));
-                var wsYMinusOne = new Vector2f(TileUtil.worldToScreen(x, y - 1, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf));
-                var wsYPlusOne = new Vector2f(TileUtil.worldToScreen(x, y + 1, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf));
+                var wsXMinusOne = new Vector2f(TileUtil.worldToScreen(x - FIELD_OF_VIEW_EDGE_THICKNESS, y, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf));
+                var wsYMinusOne = new Vector2f(TileUtil.worldToScreen(x, y - FIELD_OF_VIEW_EDGE_THICKNESS, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf));
+                var wsYPlusOne = new Vector2f(TileUtil.worldToScreen(x, y + FIELD_OF_VIEW_EDGE_THICKNESS, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf));
 
                 if (Aabb.pointVsAabb(ws, camera.getAabb())) {
                     if (!Aabb.pointVsAabb(wsXMinusOne, camera.getAabb()) ||
                             !Aabb.pointVsAabb(wsYMinusOne, camera.getAabb()) || !Aabb.pointVsAabb(wsYPlusOne, camera.getAabb())) {
                         var index = TileUtil.getIndexFrom2D(x, y) * 4;
-                        addPixel(cameraPixels, index, 0, 0, 0, 255);
+                        addPixel(cameraPixels, index, CAMERA_COLOR);
                     }
                 }
             }
@@ -333,6 +356,17 @@ public class MiniMap {
     }
 
     /**
+     * Adds rgba values to a given pixel byte map.
+     *
+     * @param pixels The pixel byte map.
+     * @param index The map index.
+     * @param color The rgba values.
+     */
+    private static void addPixel(byte[] pixels, int index, Vector4i color) {
+        addPixel(pixels, index, color.x, color.y, color.z, color.w);
+    }
+
+    /**
      * Creates a texture based on the pixel data.
      *
      * @param pixels The pixel byte map.
@@ -360,7 +394,7 @@ public class MiniMap {
     public void cleanUp() {
         LOGGER.debug("Start clean up for the MiniMap.");
 
-        simpleTextureRenderer.cleanUp();
+        miniMapRenderer.cleanUp();
 
         bottomLayerTexture.cleanUp();
         shipsTexture.cleanUp();

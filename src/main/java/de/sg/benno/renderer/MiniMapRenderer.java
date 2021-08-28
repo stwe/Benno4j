@@ -22,13 +22,12 @@ import java.util.Objects;
 
 import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.*;
 
 /**
- * Represents a SimpleTextureRenderer.
- * Renders a {@link Texture}.
+ * Represents a MiniMapRenderer.
  */
-public class SimpleTextureRenderer {
+public class MiniMapRenderer {
 
     //-------------------------------------------------
     // Constants
@@ -37,7 +36,7 @@ public class SimpleTextureRenderer {
     /**
      * The name of the used shader.
      */
-    private static final String SHADER_NAME = "simpleTexture";
+    private static final String SHADER_NAME = "miniMap";
 
     //-------------------------------------------------
     // Member
@@ -63,13 +62,13 @@ public class SimpleTextureRenderer {
     //-------------------------------------------------
 
     /**
-     * Constructs a new {@link SimpleTextureRenderer} object.
+     * Constructs a new {@link MiniMapRenderer} object.
      *
      * @param context The {@link Context} object.
      * @throws Exception If an error is thrown.
      */
-    public SimpleTextureRenderer(Context context) throws Exception {
-        LOGGER.debug("Creates SimpleTextureRenderer object.");
+    public MiniMapRenderer(Context context) throws Exception {
+        LOGGER.debug("Creates MiniMapRenderer object.");
 
         Objects.requireNonNull(context, "context must not be null");
 
@@ -96,18 +95,29 @@ public class SimpleTextureRenderer {
     //-------------------------------------------------
 
     /**
-     * Renders a {@link Texture}.
+     * Renders the minimap.
      * The texture is flipped in y direction.
      *
-     * @param texture The {@link Texture} to render.
+     * @param bottomLayer The bottom layer {@link Texture}.
+     * @param shipsLayer The ships layer {@link Texture}.
+     * @param cameraLayer The camera {@link Texture}.
      * @param position The position of the texture.
      * @param size The size of the texture.
      */
-    public void render(Texture texture, Vector2f position, Vector2f size) {
+    public void render(
+            Texture bottomLayer,
+            Texture shipsLayer,
+            Texture cameraLayer,
+            Vector2f position,
+            Vector2f size
+    ) {
         OpenGL.enableAlphaBlending();
 
         shader.bind();
-        Texture.bindForReading(texture.getId(), GL_TEXTURE0);
+
+        Texture.bindForReading(bottomLayer.getId(), GL_TEXTURE0);
+        Texture.bindForReading(shipsLayer.getId(), GL_TEXTURE1);
+        Texture.bindForReading(cameraLayer.getId(), GL_TEXTURE2);
 
         Matrix4f modelMatrix = new Matrix4f();
         modelMatrix
@@ -116,7 +126,9 @@ public class SimpleTextureRenderer {
                 .scale(new Vector3f(size, 1.0f));
 
         shader.setUniform("model", modelMatrix);
-        shader.setUniform("diffuseMap", 0);
+        shader.setUniform("bottomLayer", 0);
+        shader.setUniform("shipsLayer", 1);
+        shader.setUniform("cameraLayer", 2);
 
         vao.bind();
         vao.drawPrimitives(GL_TRIANGLES);
@@ -136,7 +148,7 @@ public class SimpleTextureRenderer {
      * Clean up.
      */
     public void cleanUp() {
-        LOGGER.debug("Clean up SimpleTextureRenderer.");
+        LOGGER.debug("Clean up MiniMapRenderer.");
 
         this.vao.cleanUp();
     }
