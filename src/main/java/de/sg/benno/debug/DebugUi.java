@@ -36,12 +36,12 @@ public class DebugUi {
     /**
      * The menu width.
      */
-    private static final int WIDTH = 260;
+    private static final int WIDTH = 270;
 
     /**
      * The menu height.
      */
-    private static final int HEIGHT = 420;
+    private static final int HEIGHT = 550;
 
     //-------------------------------------------------
     // Member
@@ -172,6 +172,7 @@ public class DebugUi {
             ImGui.endCombo();
         }
 
+        /*
         if (gameState.getWorld().getMousePicker().getCurrentTileGraphic() != null) {
             var tileGraphic = gameState.getWorld().getMousePicker().getCurrentTileGraphic();
             ImGui.separator();
@@ -189,11 +190,11 @@ public class DebugUi {
                     glTexture.getWidth(), glTexture.getHeight(),
                     0, 0, 1, 1
             );
-
         } else {
             ImGui.text("Graphic Id: none");
             ImGui.text("Start gfx on gpu: none");
         }
+        */
     }
 
     private void showImGuiInfo() {

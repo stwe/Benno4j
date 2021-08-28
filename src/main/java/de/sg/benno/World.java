@@ -119,7 +119,7 @@ public class World {
 
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
         this.context = Objects.requireNonNull(context, "context must not be null");
-        this.camera = new Camera(-4, 143, context, currentZoom);
+        this.camera = new Camera(-20, 152, context, currentZoom);
 
         init();
     }
@@ -197,7 +197,7 @@ public class World {
         miniMap = new MiniMap(provider, context, camera, currentZoom);
 
         // the mouse picker - initialize in cliff mode
-        mousePicker = new MousePicker(context, water, terrain, TileGraphic.TileHeight.CLIFF);
+        mousePicker = new MousePicker(context, water, terrain, TileGraphic.TileHeight.SEA_LEVEL);
 
         // load ships
         initShips();
@@ -304,7 +304,7 @@ public class World {
     public void render() {
         water.render(camera, wireframe, currentZoom);
         terrain.render(camera, wireframe, currentZoom);
-        miniMap.render(new Vector2f(0.5f, -0.75f), new Vector2f(0.4f));
+        miniMap.render(new Vector2f(0.55f, -0.9f), new Vector2f(0.4f));
         mousePicker.render(camera, currentZoom);
 
         // render ships
