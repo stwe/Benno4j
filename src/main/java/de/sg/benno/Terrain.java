@@ -76,6 +76,11 @@ public class Terrain {
      */
     private final HashMap<Island5, ArrayList<Integer>> islandInstancesIndex = new HashMap<>();
 
+    /**
+     * Stores a 1 for the non-passable area; otherwise a 0.
+     */
+    private ArrayList<Byte> passableArea;
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -130,6 +135,15 @@ public class Terrain {
         }
 
         return Optional.ofNullable(result);
+    }
+
+    /**
+     * Get {@link #passableArea}.
+     *
+     * @return {@link #passableArea}
+     */
+    public ArrayList<Byte> getPassableArea() {
+        return passableArea;
     }
 
     //-------------------------------------------------
@@ -215,6 +229,10 @@ public class Terrain {
      */
     private void init() throws Exception {
         LOGGER.debug("Start init Terrain...");
+
+        var values = new Byte[WORLD_HEIGHT * WORLD_WIDTH];
+        Arrays.fill(values, (byte)0);
+        passableArea = new ArrayList<>(Arrays.asList(values));
 
         for (var island5 : provider.getIsland5List()) {
             var zoomTiles = new HashMap<Zoom, ArrayList<TileGraphic>>();
@@ -308,6 +326,11 @@ public class Terrain {
                     if (addInstanceInfo) {
                         var instancesIndex = islandInstancesIndex.get(island5);
                         instancesIndex.set(TileUtil.getIndexFrom2D(x, y), tiles.size() - 1);
+
+                        // todo: use graphicId
+                        if (tileGraphic.gfx < 680 || tileGraphic.gfx > 1051) {
+                            passableArea.set(TileUtil.getIndexFrom2D(x, y), (byte)1);
+                        }
                     }
                 } else {
                     throw new BennoRuntimeException("Missing tile at bottom layer.");

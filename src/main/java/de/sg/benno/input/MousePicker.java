@@ -250,7 +250,8 @@ public class MousePicker {
 
                     var path = Astar.findPathToTarget(
                             shipping.getCurrentShip(),
-                            selected
+                            selected,
+                            terrain.getPassableArea()
                     );
 
                     shipping.setPath(path);

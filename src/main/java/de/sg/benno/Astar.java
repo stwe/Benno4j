@@ -43,11 +43,12 @@ public class Astar {
      *
      * @param start The start position in world space.
      * @param end The target position in world space.
+     * @param obstacles The list with all the obstacles.
      *
      * @return A {@link ArrayList} with zero or multiple {@link Node} objects.
      */
-    public static ArrayList<Node> findPathToTarget(Vector2i start, Vector2i end) {
-        return findPath(new Node(start), new Node(end));
+    public static ArrayList<Node> findPathToTarget(Vector2i start, Vector2i end, ArrayList<Byte> obstacles) {
+        return findPathToTarget(new Node(start), new Node(end), obstacles);
     }
 
     /**
@@ -55,11 +56,12 @@ public class Astar {
      *
      * @param ship4 The start position of a {@link Ship4} in world space.
      * @param end The target position in world space.
+     * @param obstacles The list with all the obstacles.
      *
      * @return A {@link ArrayList} with zero or multiple {@link Node} objects.
      */
-    public static ArrayList<Node> findPathToTarget(Ship4 ship4, Vector2i end) {
-        return findPath(new Node(ship4.getPosition()), new Node(end));
+    public static ArrayList<Node> findPathToTarget(Ship4 ship4, Vector2i end, ArrayList<Byte> obstacles) {
+        return findPathToTarget(new Node(ship4.getPosition()), new Node(end), obstacles);
     }
 
     /**
@@ -67,13 +69,14 @@ public class Astar {
      *
      * @param startNode The {@link Node} representing the start position in world space.
      * @param endNode The {@link Node} representing the target position in world space.
+     * @param obstacles The list with all the obstacles.
      *
      * @return A {@link ArrayList} with zero or multiple {@link Node} objects.
      */
-    public static ArrayList<Node> findPath(Node startNode, Node endNode) {
+    public static ArrayList<Node> findPathToTarget(Node startNode, Node endNode, ArrayList<Byte> obstacles) {
         var empty = new ArrayList<Node>();
 
-        if (!isValid(endNode)) {
+        if (!isValid(endNode, obstacles)) {
             LOGGER.debug("The end node is invalid.");
             return empty;
         }
@@ -128,7 +131,7 @@ public class Astar {
 
                 node = newNode;
                 openList.remove(newNode);
-            } while (!isValid(node));
+            } while (!isValid(node, obstacles));
 
             xPos = node.position.x;
             yPos = node.position.y;
@@ -141,7 +144,7 @@ public class Astar {
                     var newYPos = yPos + yOffset;
                     var newIndex = TileUtil.getIndexFrom2D(newXPos, newYPos);
 
-                    if (isValid(newXPos, newYPos)) {
+                    if (isValid(newXPos, newYPos, obstacles)) {
                         if (isEndNodeReached(newXPos, newYPos, endNode)) {
                             allList.get(newIndex).parentPosition.x = xPos;
                             allList.get(newIndex).parentPosition.y = yPos;
@@ -250,35 +253,32 @@ public class Astar {
      *
      * @param x The x position in world space.
      * @param y The y position in world space.
+     * @param obstacles The list with all the obstacles.
      *
      * @return boolean
      */
-    private static boolean isValid(int x, int y) {
-        // check out of bounds
+    private static boolean isValid(int x, int y, ArrayList<Byte> obstacles) {
         if (x < 0 || y < 0 || x >= WORLD_WIDTH || y >= WORLD_HEIGHT) {
             return false;
         }
 
-        // check if there is an obstacle
-
-        // todo: für Schiffe prüfen, ob sich an der Pos eine Insel/Ufer befindet
-
-        return true;
+        return obstacles.get(TileUtil.getIndexFrom2D(x, y)) != 1;
     }
 
     /**
      * Check whether a position is valid - not an obstacle and not out of bounds.
      *
      * @param node The {@link Node} representing a position in world space.
+     * @param obstacles The list with all the obstacles.
      *
      * @return boolean
      */
-    private static boolean isValid(Node node) {
-        return isValid(node.position.x, node.position.y);
+    private static boolean isValid(Node node, ArrayList<Byte> obstacles) {
+        return isValid(node.position.x, node.position.y, obstacles);
     }
 
     //-------------------------------------------------
-    // Validation
+    // Helper
     //-------------------------------------------------
 
     /**
