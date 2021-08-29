@@ -8,6 +8,8 @@
 
 package de.sg.benno.chunk;
 
+import org.joml.Vector2i;
+
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -158,6 +160,19 @@ public class Ship4 {
         LOGGER.debug("Creates Ship4 object.");
 
         readData(Objects.requireNonNull(chunk, "chunk must not be null"));
+    }
+
+    //-------------------------------------------------
+    // Getter
+    //-------------------------------------------------
+
+    /**
+     * For convenience; get position as {@link Vector2i}.
+     *
+     * @return The position as {@link Vector2i}
+     */
+    public Vector2i getPosition() {
+        return new Vector2i(xPos, yPos);
     }
 
     //-------------------------------------------------

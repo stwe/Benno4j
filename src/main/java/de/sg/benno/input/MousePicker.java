@@ -109,11 +109,6 @@ public class MousePicker {
      */
     private TileGraphic.TileHeight searchMode;
 
-    /**
-     * A* path finding.
-     */
-    private final Astar astar;
-
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -141,8 +136,6 @@ public class MousePicker {
         this.shipping = Objects.requireNonNull(shipping, "shipping must not be null");
 
         this.searchMode = searchMode;
-
-        this.astar = new Astar();
 
         init(context);
     }
@@ -255,8 +248,8 @@ public class MousePicker {
                 if (shipping.getCurrentShip() != null) {
                     shipping.setTarget(selected);
 
-                    var path = astar.findPathToMapPosition(
-                            new Vector2i(shipping.getCurrentShip().xPos, shipping.getCurrentShip().yPos),
+                    var path = Astar.findPathToTarget(
+                            shipping.getCurrentShip(),
                             selected
                     );
 

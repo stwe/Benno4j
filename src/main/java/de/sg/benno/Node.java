@@ -10,6 +10,10 @@ package de.sg.benno;
 
 import org.joml.Vector2i;
 
+/**
+ * The A* take a graph as input. A graph is a set of locations ({@link Node}).
+ * A {@link Node} represents a tile in the world.
+ */
 public class Node {
 
     //-------------------------------------------------
@@ -22,6 +26,25 @@ public class Node {
     public float g = 0.0f;
     public float h = 0.0f;
     public float f = 0.0f;
+
+    //-------------------------------------------------
+    // Ctors.
+    //-------------------------------------------------
+
+    /**
+     * Constructs a new {@link Node} object.
+     */
+    public Node() {
+    }
+
+    /**
+     * Constructs a new {@link Node} object.
+     *
+     * @param position The start position in world space.
+     */
+    public Node(Vector2i position) {
+        this.position = position;
+    }
 
     //-------------------------------------------------
     // Override

@@ -8,6 +8,7 @@
 
 package de.sg.benno;
 
+import de.sg.benno.chunk.Ship4;
 import org.joml.Vector2i;
 
 import java.util.ArrayList;
@@ -15,17 +16,70 @@ import java.util.Stack;
 
 import static de.sg.benno.World.WORLD_HEIGHT;
 import static de.sg.benno.World.WORLD_WIDTH;
+import static de.sg.ogl.Log.LOGGER;
 
+/**
+ * Represents the A* algorithm.
+ * A* search finds a path from start node to a goal node.
+ */
 public class Astar {
 
-    public ArrayList<Node> findPath(Node startNode, Node endNode) {
+    //-------------------------------------------------
+    // Ctors.
+    //-------------------------------------------------
+
+    /**
+     * Static class.
+     */
+    private Astar() {
+    }
+
+    //-------------------------------------------------
+    // Find path
+    //-------------------------------------------------
+
+    /**
+     * Finds the lowest cost path to a given target.
+     *
+     * @param start The start position in world space.
+     * @param end The target position in world space.
+     *
+     * @return A {@link ArrayList} with zero or multiple {@link Node} objects.
+     */
+    public static ArrayList<Node> findPathToTarget(Vector2i start, Vector2i end) {
+        return findPath(new Node(start), new Node(end));
+    }
+
+    /**
+     * Finds the lowest cost path to a given target.
+     *
+     * @param ship4 The start position of a {@link Ship4} in world space.
+     * @param end The target position in world space.
+     *
+     * @return A {@link ArrayList} with zero or multiple {@link Node} objects.
+     */
+    public static ArrayList<Node> findPathToTarget(Ship4 ship4, Vector2i end) {
+        return findPath(new Node(ship4.getPosition()), new Node(end));
+    }
+
+    /**
+     * Finds the lowest cost path to a given target.
+     *
+     * @param startNode The {@link Node} representing the start position in world space.
+     * @param endNode The {@link Node} representing the target position in world space.
+     *
+     * @return A {@link ArrayList} with zero or multiple {@link Node} objects.
+     */
+    public static ArrayList<Node> findPath(Node startNode, Node endNode) {
         var empty = new ArrayList<Node>();
 
         if (!isValid(endNode)) {
+            LOGGER.debug("The end node is invalid.");
             return empty;
         }
 
         if (startNode.equals(endNode)) {
+            LOGGER.debug("End node reached.");
             return empty;
         }
 
@@ -63,26 +117,22 @@ public class Astar {
             var node = new Node();
 
             do {
-                var tmp = Float.MAX_VALUE;
-                var itNode = new Node();
-                for (var n : openList) {
-                    var openListNode = n;
-
-                    if (openListNode.f < tmp) {
-                        tmp = openListNode.f;
-                        itNode = n;
+                var f = Float.MAX_VALUE;
+                var newNode = new Node();
+                for (var openListNode : openList) {
+                    if (openListNode.f < f) {
+                        f = openListNode.f;
+                        newNode = openListNode;
                     }
                 }
 
-                node = itNode;
-                openList.remove(itNode);
-
+                node = newNode;
+                openList.remove(newNode);
             } while (!isValid(node));
 
             xPos = node.position.x;
             yPos = node.position.y;
             index = TileUtil.getIndexFrom2D(xPos, yPos);
-
             closedList.set(index, true);
 
             for (var yOffset = -1; yOffset <= 1; yOffset++) {
@@ -92,7 +142,7 @@ public class Astar {
                     var newIndex = TileUtil.getIndexFrom2D(newXPos, newYPos);
 
                     if (isValid(newXPos, newYPos)) {
-                        if (newXPos == endNode.position.x && newYPos == endNode.position.y) {
+                        if (isEndNodeReached(newXPos, newYPos, endNode)) {
                             allList.get(newIndex).parentPosition.x = xPos;
                             allList.get(newIndex).parentPosition.y = yPos;
 
@@ -119,23 +169,24 @@ public class Astar {
             }
         }
 
+        LOGGER.debug("No path found.");
+
         return empty;
     }
 
-    public ArrayList<Node> findPathToMapPosition(
-            Vector2i startPosition,
-            Vector2i targetPosition
-    ) {
-        var startNode = new Node();
-        var endNode = new Node();
+    //-------------------------------------------------
+    // Make path
+    //-------------------------------------------------
 
-        startNode.position = startPosition;
-        endNode.position = targetPosition;
-
-        return findPath(startNode, endNode);
-    }
-
-    private ArrayList<Node> makePath(ArrayList<Node> nodes, Node endNode) {
+    /**
+     * Putting the path inside a {@link ArrayList}.
+     *
+     * @param nodes The {@link Node} objects.
+     * @param endNode The {@link Node} representing the target position in world space.
+     *
+     * @return {@link ArrayList<Node>}
+     */
+    private static ArrayList<Node> makePath(ArrayList<Node> nodes, Node endNode) {
         var xPos = endNode.position.x;
         var yPos = endNode.position.y;
         var index = TileUtil.getIndexFrom2D(xPos, yPos);
@@ -144,9 +195,8 @@ public class Astar {
         var usablePath = new ArrayList<Node>();
 
         while (
-                !(nodes.get(index).parentPosition.x == xPos &&
-                        nodes.get(index).parentPosition.y == yPos) &&
-                        nodes.get(index).position.x != -1 && nodes.get(index).position.y != -1
+                !(nodes.get(index).parentPosition.x == xPos && nodes.get(index).parentPosition.y == yPos) &&
+                  nodes.get(index).position.x != -1 && nodes.get(index).position.y != -1
         ) {
             path.push(nodes.get(index));
             var tmpX = nodes.get(index).parentPosition.x;
@@ -167,24 +217,80 @@ public class Astar {
         return usablePath;
     }
 
-    private float calculateHeuristic(int x, int y, Node endNode) {
-        var xd = endNode.position.x - x;
-        var yd = endNode.position.y - y;
+    //-------------------------------------------------
+    // Heuristic
+    //-------------------------------------------------
 
-        return (float)Math.sqrt(xd * xd + yd * yd);
+    /**
+     * Tells us how close we are to the goal.
+     * @see <a href="https://theory.stanford.edu/~amitp/GameProgramming/Heuristics.html">Amit's Notes on A* Heuristics</a>
+     *
+     * @param x A x position in world space.
+     * @param y A y position in world space.
+     * @param endNode The {@link Node} representing the target position in world space.
+     *
+     * @return The distance to the goal.
+     */
+    private static float calculateHeuristic(int x, int y, Node endNode) {
+        var d = 1; // cost for moving from one space to an adjacent space
+        var d2 = 1; // the cost of moving diagonally
+
+        var dx = Math.abs(x - endNode.position.x);
+        var dy = Math.abs(y - endNode.position.y);
+
+        return d * (dx + dy) + (d2 - 2 * d) * Math.min(dx, dy);
     }
 
-    private boolean isValid(int x, int y) {
+    //-------------------------------------------------
+    // Validation
+    //-------------------------------------------------
+
+    /**
+     * Check whether a position is valid - not an obstacle and not out of bounds.
+     *
+     * @param x The x position in world space.
+     * @param y The y position in world space.
+     *
+     * @return boolean
+     */
+    private static boolean isValid(int x, int y) {
+        // check out of bounds
         if (x < 0 || y < 0 || x >= WORLD_WIDTH || y >= WORLD_HEIGHT) {
             return false;
         }
 
-        // todo search map obstacles
+        // check if there is an obstacle
+
+        // todo: für Schiffe prüfen, ob sich an der Pos eine Insel/Ufer befindet
 
         return true;
     }
 
-    private boolean isValid(Node node) {
+    /**
+     * Check whether a position is valid - not an obstacle and not out of bounds.
+     *
+     * @param node The {@link Node} representing a position in world space.
+     *
+     * @return boolean
+     */
+    private static boolean isValid(Node node) {
         return isValid(node.position.x, node.position.y);
+    }
+
+    //-------------------------------------------------
+    // Validation
+    //-------------------------------------------------
+
+    /**
+     * Checks whether the end node has been reached.
+     *
+     * @param x The x position in world space.
+     * @param y The y position in world space.
+     * @param endNode The {@link Node} representing the target position in world space.
+     *
+     * @return boolean
+     */
+    private static boolean isEndNodeReached(int x, int y, Node endNode) {
+        return x == endNode.position.x && y == endNode.position.y;
     }
 }
