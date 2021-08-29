@@ -46,7 +46,12 @@ public class MousePicker {
     /**
      * Highlights a tile.
      */
-    private static final String TILE_FILE = "/debug/red.png";
+    private static final String RED_TILE_FILE = "/debug/red.png";
+
+    /**
+     * Highlights path.
+     */
+    private static final String YELLOW_TILE_FILE = "/debug/full.png";
 
     /**
      * To select tiles.
@@ -78,6 +83,11 @@ public class MousePicker {
      * Highlights a tile.
      */
     private Texture tileTexture;
+
+    /**
+     * Highlights path.
+     */
+    private Texture pathTexture;
 
     /**
      * Corner png files to select tiles.
@@ -188,7 +198,8 @@ public class MousePicker {
      */
     private void init(Context context) throws Exception {
         rectangleTexture = context.engine.getResourceManager().loadResource(Texture.class, CELL_FILE);
-        tileTexture = context.engine.getResourceManager().loadResource(Texture.class, TILE_FILE);
+        tileTexture = context.engine.getResourceManager().loadResource(Texture.class, RED_TILE_FILE);
+        pathTexture = context.engine.getResourceManager().loadResource(Texture.class, YELLOW_TILE_FILE);
 
         var cornerGfxImageFile = new ImageFile(CORNER_FILE);
 
@@ -321,6 +332,27 @@ public class MousePicker {
                 renderHighlighting(camera);
             } else {
                 currentTileGraphic = null;
+            }
+
+            // render path
+            if (shipping.getPath() != null && !shipping.getPath().isEmpty() && currentTileGraphic != null) {
+                for (var node : shipping.getPath()) {
+                    var iOpt = Island5.isIsland5OnPosition(
+                            node.position.x,
+                            node.position.y,
+                            terrain.getProvider().getIsland5List()
+                    );
+
+                    Optional<TileGraphic> tOpt;
+
+                    if (iOpt.isPresent()) {
+                        tOpt = terrain.getTileGraphic(zoom, iOpt.get(), node.position.x, node.position.y);
+                    } else {
+                        tOpt = water.getWaterTileGraphic(zoom, node.position.x, node.position.y);
+                    }
+
+                    tOpt.ifPresent(tileGraphic -> tileGraphicRenderer.render(camera, pathTexture, tileGraphic.getModelMatrix()));
+                }
             }
 
             renderDebug(zoom);
