@@ -105,6 +105,10 @@ public class Shipping {
         return provider;
     }
 
+    public HashMap<Zoom, ArrayList<TileGraphic>> getShipTileGraphics() {
+        return shipTileGraphics;
+    }
+
     /**
      * Get {@link #currentShip}.
      *

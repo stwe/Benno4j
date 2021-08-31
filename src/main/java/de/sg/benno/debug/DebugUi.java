@@ -18,6 +18,7 @@ import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.internal.ImGui;
 import imgui.type.ImBoolean;
+import org.joml.Vector2f;
 
 import java.io.IOException;
 
@@ -194,6 +195,64 @@ public class DebugUi {
         if (target != null) {
             ImGui.text("Target x: " + target.x);
             ImGui.text("Target y: " + target.y);
+
+            if (currentShip != null) {
+                var d = new Vector2f(target).sub(new Vector2f(currentShip.getPosition()));
+                d = d.normalize();
+                ImGui.text("dir x: " + d.x + " dir y: " + d.y);
+                var angle = Math.atan2(d.y, d.x);
+                var angleDeg = Math.toDegrees(angle) + 180.0;
+                ImGui.text("angle: " + angleDeg);
+                var HALF_DIRECTION = 22.5;
+                // 0 ... 22.5 -> E
+                if (angleDeg <= HALF_DIRECTION && angleDeg >= 0) {
+                    currentShip.direction = 1;
+                    //return Direction::E_DIRECTION;
+                }
+
+                // 337.5 ... 360 -> E
+                if (angleDeg <= 360 && angleDeg >= 315 + HALF_DIRECTION) {
+                    currentShip.direction = 1;
+                    //return Direction::E_DIRECTION;
+                }
+
+                if (angleDeg <= 315 + HALF_DIRECTION && angleDeg >= 270 + HALF_DIRECTION) {
+                    currentShip.direction = 0;
+                    //return Direction::NE_DIRECTION;
+                }
+
+                if (angleDeg <= 270 + HALF_DIRECTION && angleDeg >= 225 + HALF_DIRECTION) {
+                    currentShip.direction = 7;
+                    //return Direction::N_DIRECTION;
+                }
+
+                if (angleDeg <= 225 + HALF_DIRECTION && angleDeg >= 180 + HALF_DIRECTION) {
+                    currentShip.direction = 6;
+                    //return Direction::NW_DIRECTION;
+                }
+
+                if (angleDeg <= 180 + HALF_DIRECTION && angleDeg >= 135 + HALF_DIRECTION) {
+                    currentShip.direction = 5;
+                    //return Direction::W_DIRECTION;
+                }
+
+                if (angleDeg <= 135 + HALF_DIRECTION && angleDeg >= 90 + HALF_DIRECTION) {
+                    currentShip.direction = 4;
+                    //return Direction::SW_DIRECTION;
+                }
+
+                if (angleDeg <= 90 + HALF_DIRECTION && angleDeg >= 45 + HALF_DIRECTION) {
+                    currentShip.direction = 3;
+                    //return Direction::S_DIRECTION;
+                }
+
+                if (angleDeg <= 45 + HALF_DIRECTION && angleDeg >= HALF_DIRECTION) {
+                    currentShip.direction = 2;
+                    //return Direction::SE_DIRECTION;
+                }
+
+                gameState.getWorld().getShipping().getShipTileGraphics().get(Zoom.GFX).get(0).gfx = currentShip.getCurrentGfx();
+            }
 
             var c = 0;
             ImGui.text("Path to target");

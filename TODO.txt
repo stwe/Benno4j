@@ -3,10 +3,6 @@ TODO
 
 - Karte bzw Content drehen
 
-- Mauspicker mit color picking
-      http://www.opengl-tutorial.org/miscellaneous/clicking-on-objects/picking-with-an-opengl-hack/
-      https://ogldev.org/www/tutorial29/tutorial29.html
-      https://www.mbsoftworks.sk/tutorials/opengl3/18-3d-picking-pt1/ (clear color auf schwarz setzen)
 
 - Minimap mit der Kamera verbinden
 - Minimap ist momentan absolut statisch - ändern
@@ -18,7 +14,3 @@ TODO
 
 - Animation der Bebauung
 
-- einheitliche Wasseranimation; momentan ist der Uferbereich anders animiert als
-  der Tiefenwasserbereich
-
-- 3D Wasser; in diesem Fall muss auch der Uferbereich der Inseln beachtet werden
