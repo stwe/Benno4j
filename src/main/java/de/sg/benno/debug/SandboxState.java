@@ -6,63 +6,35 @@
  * License: GPLv2
  */
 
-package de.sg.benno.state;
+package de.sg.benno.debug;
 
 import de.sg.benno.BennoRuntimeException;
-import de.sg.benno.World;
 import de.sg.benno.chunk.WorldData;
-import de.sg.benno.gui.WorldUi;
+import de.sg.benno.state.Context;
 import de.sg.ogl.input.KeyInput;
 import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
 
-import java.io.IOException;
-
 import static de.sg.ogl.Log.LOGGER;
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 
-public class GameState extends ApplicationState {
+public class SandboxState extends ApplicationState {
 
     //-------------------------------------------------
     // Member
     //-------------------------------------------------
 
-    /**
-     * The {@link World}.
-     */
-    private World world;
-
-    /**
-     * An ImGui.
-     */
-    private WorldUi worldUi;
+    private Sandbox sandbox;
 
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
-    /**
-     * Constructs a new {@link GameState} object.
-     *
-     * @param stateMachine The parent {@link StateMachine}.
-     */
-    public GameState(StateMachine stateMachine) {
+    public SandboxState(StateMachine stateMachine) {
         super(stateMachine);
 
-        LOGGER.debug("Creates GameState object.");
-    }
-
-    //-------------------------------------------------
-    // Getter
-    //-------------------------------------------------
-
-    /**
-     * Get {@link #world}.
-     *
-     * @return {@link #world}
-     */
-    public World getWorld() {
-        return world;
+        LOGGER.debug("Creates SandboxState object.");
     }
 
     //-------------------------------------------------
@@ -76,12 +48,10 @@ public class GameState extends ApplicationState {
         }
 
         if (params[0] instanceof WorldData) {
-            world = new World((WorldData)params[0], (Context)getStateMachine().getStateContext());
+            sandbox = new Sandbox((WorldData)params[0], (Context)getStateMachine().getStateContext());
         } else {
             throw new BennoRuntimeException("Invalid world data provider type.");
         }
-
-        worldUi = new WorldUi(this);
     }
 
     @Override
@@ -91,33 +61,28 @@ public class GameState extends ApplicationState {
             glfwSetWindowShouldClose(context.engine.getWindow().getWindowHandle(), true);
         }
 
-        world.input();
+        sandbox.input();
     }
 
     @Override
     public void update(float dt) {
-        world.update(dt);
+        sandbox.update(dt);
     }
 
     @Override
     public void render() {
-        world.render();
+        sandbox.render();
     }
 
     @Override
-    public void renderImGui() {
-        // todo remove try catch
-        try {
-            worldUi.render();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void renderImGui() throws Exception {
+
     }
 
     @Override
     public void cleanUp() {
-        LOGGER.debug("Start clean up for the GameState.");
+        LOGGER.debug("Start clean up for the SandboxState.");
 
-        world.cleanUp();
+        sandbox.cleanUp();
     }
 }

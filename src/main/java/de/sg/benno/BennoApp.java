@@ -8,15 +8,18 @@
 
 package de.sg.benno;
 
+import de.sg.benno.debug.SandboxState;
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.file.GamFile;
 import de.sg.benno.state.Context;
 import de.sg.benno.state.GameState;
 import de.sg.ogl.*;
+import de.sg.ogl.state.ApplicationState;
 import de.sg.ogl.state.StateMachine;
 
 import java.io.IOException;
 
+import static de.sg.benno.BennoConfig.GAME_STATE_NAME;
 import static de.sg.ogl.Log.LOGGER;
 
 /**
@@ -76,13 +79,27 @@ public class BennoApp extends SgOglApplication {
         this.stateMachine = new StateMachine(stateContext);
         //this.stateMachine.add("main_menu", new MainMenuState(stateMachine));
         //this.stateMachine.add("game_menu", new GameMenuState(stateMachine));
-        this.stateMachine.add("game", new GameState(stateMachine));
+
+        ApplicationState state = null;
+        if (GAME_STATE_NAME.equals("game")) {
+            state = new GameState(stateMachine);
+        }
+
+        if (GAME_STATE_NAME.equals("sandbox")) {
+            state = new SandboxState(stateMachine);
+        }
+
+        if (state != null) {
+            this.stateMachine.add(GAME_STATE_NAME, state);
+        } else {
+            throw new BennoRuntimeException("Invalid game state name.");
+        }
 
         //this.stateMachine.change("main_menu");
         if (!bennoFiles.getSavegameFilePaths().isEmpty()) {
             // the GAM file is the data provider for the world, which the GameState is created
             gamFile = new GamFile(bennoFiles.getSavegameFilePaths().get(0), stateContext);
-            this.stateMachine.change("game", gamFile);
+            this.stateMachine.change(GAME_STATE_NAME, gamFile);
         } else {
             throw new BennoRuntimeException("No savegame found.");
         }

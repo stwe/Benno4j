@@ -6,17 +6,17 @@
  * License: GPLv2
  */
 
-package de.sg.benno;
+package de.sg.benno.debug;
 
+import de.sg.benno.Shipping;
+import de.sg.benno.Water;
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.input.Camera;
-import de.sg.benno.input.MousePicker;
-import de.sg.benno.renderer.*;
+import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
 import de.sg.ogl.input.KeyInput;
-import org.joml.Vector2f;
 
 import java.util.Objects;
 
@@ -24,24 +24,7 @@ import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_3;
 
-/**
- * Represents a complete game world.
- */
-public class World {
-
-    //-------------------------------------------------
-    // Constants
-    //-------------------------------------------------
-
-    /**
-     * The width of the world in tiles.
-     */
-    public static final int WORLD_WIDTH = 500;
-
-    /**
-     * The height of the world in tiles.
-     */
-    public static final int WORLD_HEIGHT = 350;
+public class Sandbox {
 
     //-------------------------------------------------
     // Member
@@ -68,29 +51,14 @@ public class World {
     private Zoom currentZoom = Zoom.GFX;
 
     /**
-     * Enable and disable wireframe mode.
-     */
-    private boolean wireframe = false;
-
-    /**
      * The {@link Water} object with the deep water area.
      */
     private Water water;
 
     /**
-     * The {@link Terrain} object contains all islands.
-     */
-    private Terrain terrain;
-
-    /**
      * The {@link Shipping} object manages all ships.
      */
     private Shipping shipping;
-
-    /**
-     * The {@link MiniMap} of this world.
-     */
-    private MiniMap miniMap;
 
     /**
      * A {@link MousePicker} object to select tiles.
@@ -102,14 +70,14 @@ public class World {
     //-------------------------------------------------
 
     /**
-     * Constructs a new {@link World} object.
+     * Constructs a new {@link Sandbox} object.
      *
      * @param provider A {@link WorldData} object (e.g. {@link de.sg.benno.file.GamFile}).
      * @param context The {@link Context} object.
      * @throws Exception If an error is thrown.
      */
-    public World(WorldData provider, Context context) throws Exception {
-        LOGGER.debug("Creates World object from provider class {}.", provider.getClass());
+    public Sandbox(WorldData provider, Context context) throws Exception {
+        LOGGER.debug("Creates Sandbox object from provider class {}.", provider.getClass());
 
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
         this.context = Objects.requireNonNull(context, "context must not be null");
@@ -119,73 +87,11 @@ public class World {
     }
 
     //-------------------------------------------------
-    // Getter
-    //-------------------------------------------------
-
-    /**
-     * Get {@link #camera}.
-     *
-     * @return {@link #camera}
-     */
-    public Camera getCamera() {
-        return camera;
-    }
-
-    /**
-     * Get {@link #currentZoom}.
-     *
-     * @return {@link #currentZoom}
-     */
-    public Zoom getCurrentZoom() {
-        return currentZoom;
-    }
-
-    /**
-     * Get {@link #shipping}.
-     *
-     * @return {@link #shipping}
-     */
-    public Shipping getShipping() {
-        return shipping;
-    }
-
-    /**
-     * Get {@link #miniMap}.
-     *
-     * @return {@link #miniMap}
-     */
-    public MiniMap getMiniMap() {
-        return miniMap;
-    }
-
-    /**
-     * Get {@link #mousePicker}.
-     *
-     * @return {@link #mousePicker}
-     */
-    public MousePicker getMousePicker() {
-        return mousePicker;
-    }
-
-    //-------------------------------------------------
-    // Setter
-    //-------------------------------------------------
-
-    /**
-     * Set {@link #currentZoom}.
-     *
-     * @param currentZoom {@link #currentZoom}
-     */
-    public void setCurrentZoom(Zoom currentZoom) {
-        this.currentZoom = currentZoom;
-    }
-
-    //-------------------------------------------------
     // Init
     //-------------------------------------------------
 
     /**
-     * Initialize world content.
+     * Initialize sandbox content.
      *
      * @throws Exception If an error is thrown.
      */
@@ -193,17 +99,11 @@ public class World {
         // create water
         water = new Water(provider, context);
 
-        // create terrain
-        terrain = new Terrain(provider, context);
-
         // create shipping
         shipping = new Shipping(provider, context);
 
-        // create minimap
-        miniMap = new MiniMap(provider, context, camera, currentZoom);
-
         // the mouse picker
-        mousePicker = new MousePicker(context, water, terrain, shipping, TileGraphic.TileHeight.SEA_LEVEL);
+        mousePicker = new MousePicker(context, water, shipping, TileGraphic.TileHeight.SEA_LEVEL);
     }
 
     //-------------------------------------------------
@@ -216,17 +116,11 @@ public class World {
     public void input() {}
 
     /**
-     * Update world.
+     * Update sandbox.
      *
      * @param dt The delta time.
      */
     public void update(float dt) {
-        // wireframe flag
-        if (KeyInput.isKeyPressed(GLFW_KEY_G)) {
-            KeyInput.input(); // todo: a workaround
-            wireframe = !wireframe;
-        }
-
         // change zoom
         if (KeyInput.isKeyPressed(GLFW_KEY_1)) {
             currentZoom = Zoom.SGFX;
@@ -244,21 +138,16 @@ public class World {
         }
 
         camera.update(currentZoom);
-        //water.update();
-        terrain.update(dt);
         shipping.update(dt);
-        miniMap.update(currentZoom);
         mousePicker.update(dt, camera, currentZoom);
     }
 
     /**
-     * Renders the world.
+     * Renders the sandbox.
      */
     public void render() {
-        water.render(camera, wireframe, currentZoom);
-        terrain.render(camera, wireframe, currentZoom);
+        water.render(camera, false, currentZoom);
         shipping.render(camera, currentZoom);
-        miniMap.render(new Vector2f(0.55f, -0.9f), new Vector2f(0.4f));
         mousePicker.render(camera, currentZoom);
     }
 
@@ -270,13 +159,11 @@ public class World {
      * Clean up.
      */
     public void cleanUp() {
-        LOGGER.debug("Start clean up for the World.");
+        LOGGER.debug("Start clean up for the Sandbox.");
 
         camera.cleanUp();
         water.cleanUp();
-        terrain.cleanUp();
         shipping.cleanUp();
-        miniMap.cleanUp();
         mousePicker.cleanUp();
     }
 }

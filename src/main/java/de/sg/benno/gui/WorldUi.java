@@ -6,7 +6,7 @@
  * License: GPLv2
  */
 
-package de.sg.benno.debug;
+package de.sg.benno.gui;
 
 import de.sg.benno.chunk.Ship4;
 import de.sg.benno.chunk.TileGraphic;
@@ -23,9 +23,9 @@ import org.joml.Vector2f;
 import java.io.IOException;
 
 /**
- * An ImGui for debug output.
+ * An ImGui.
  */
-public class DebugUi {
+public class WorldUi {
 
     //-------------------------------------------------
     // Constants
@@ -55,11 +55,11 @@ public class DebugUi {
     //-------------------------------------------------
 
     /**
-     * Constructs a new {@link DebugUi} object.
+     * Constructs a new {@link WorldUi} object.
      *
      * @param gameState The parent {@link GameState}.
      */
-    public DebugUi(GameState gameState) {
+    public WorldUi(GameState gameState) {
         this.gameState = gameState;
     }
 
@@ -83,7 +83,7 @@ public class DebugUi {
                 ImGuiWindowFlags.NoNavFocus;
                 //ImGuiWindowFlags.NoBackground;
 
-        ImGui.begin("Debug", windowFlags);
+        ImGui.begin("World", windowFlags);
 
         cameraPosition();
         zoom();

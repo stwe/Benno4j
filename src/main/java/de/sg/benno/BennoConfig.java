@@ -37,4 +37,6 @@ public class BennoConfig {
     public static boolean SHOW_GRID;
 
     public static boolean CREATE_ATLAS_IMAGES;
+
+    public static String GAME_STATE_NAME;
 }
