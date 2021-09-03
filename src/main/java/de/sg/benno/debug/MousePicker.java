@@ -8,6 +8,7 @@
 
 package de.sg.benno.debug;
 
+import de.sg.benno.Astar;
 import de.sg.benno.Shipping;
 import de.sg.benno.Water;
 import de.sg.benno.chunk.TileGraphic;
@@ -177,11 +178,11 @@ public class MousePicker {
     public void update(float dt, Camera camera, Zoom zoom) {
         if (MouseInput.isMouseInWindow()) {
 
-            // select ship
+            // select ship with left mouse button
             if (MouseInput.isMouseButtonDown(GLFW_MOUSE_BUTTON_1)) {
                 // todo: selected evtl. besser mit Aabb's ausarbeiten
 
-                // get tile under mouse
+                // get world position of the tile under mouse
                 var selected = getTileUnderMouse(camera, zoom);
 
                 // todo: brute force searching - use a HashMap later
@@ -196,33 +197,44 @@ public class MousePicker {
                 }
             }
 
-            // set target
+            // set target with right mouse button
             if (MouseInput.isMouseButtonDown(GLFW_MOUSE_BUTTON_2)) {
-                // get tile under mouse
+                // get world position of the tile under mouse
                 var selected = getTileUnderMouse(camera, zoom);
 
                 if (shipping.getCurrentShip() != null) {
                     shipping.setTarget(selected);
+
+                    /*
+                    var path = Astar.findPathToTarget(
+                            shipping.getCurrentShip(),
+                            selected,
+                            terrain.getPassableArea()
+                    );
+
+                    shipping.setPath(path);
+                    */
                 } else {
                     shipping.setTarget(null);
+                    shipping.setPath(null);
                 }
             }
         }
     }
 
     /**
-     * Highlight the current tile and read out the {@link #currentTileGraphic}.
+     * Highlight the current tile.
      *
      * @param camera The {@link Camera} object.
      * @param zoom The current {@link Zoom}
      */
     public void render(Camera camera, Zoom zoom) {
         if (MouseInput.isMouseInWindow()) {
-            // get tile under mouse
+            // get world position of the tile under mouse
             var worldPosition = getTileUnderMouse(camera, zoom);
 
-            Optional<TileGraphic> tileGraphicOptional;
-            tileGraphicOptional = water.getWaterTileGraphic(zoom, worldPosition.x, worldPosition.y);
+            // get the tile graphic
+            var tileGraphicOptional = water.getWaterTileGraphic(zoom, worldPosition.x, worldPosition.y);
 
             // render highlighting
             if (tileGraphicOptional.isPresent()) {

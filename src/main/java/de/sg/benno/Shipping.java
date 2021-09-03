@@ -229,7 +229,6 @@ public class Shipping {
             var tileGraphics = new ArrayList<TileGraphic>();
 
             for (var ship : provider.getShips4List()) {
-                // x: 154, y: 177
                 LOGGER.debug("Create ship graphic tile on x: {}, y: {}.", ship.xPos, ship.yPos);
 
                 var xWorldPos = ship.xPos + 1; // todo

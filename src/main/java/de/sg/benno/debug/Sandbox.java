@@ -87,6 +87,27 @@ public class Sandbox {
     }
 
     //-------------------------------------------------
+    // Getter
+    //-------------------------------------------------
+
+
+    public Camera getCamera() {
+        return camera;
+    }
+
+    public Zoom getCurrentZoom() {
+        return currentZoom;
+    }
+
+    public Shipping getShipping() {
+        return shipping;
+    }
+
+    public MousePicker getMousePicker() {
+        return mousePicker;
+    }
+
+    //-------------------------------------------------
     // Init
     //-------------------------------------------------
 

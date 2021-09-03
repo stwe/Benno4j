@@ -21,6 +21,9 @@ import imgui.type.ImBoolean;
 import org.joml.Vector2f;
 
 import java.io.IOException;
+import java.util.Objects;
+
+import static de.sg.ogl.Log.LOGGER;
 
 /**
  * An ImGui.
@@ -60,7 +63,9 @@ public class WorldUi {
      * @param gameState The parent {@link GameState}.
      */
     public WorldUi(GameState gameState) {
-        this.gameState = gameState;
+        LOGGER.debug("Creates WorldUi object.");
+
+        this.gameState = Objects.requireNonNull(gameState, "gameState must not be null");
     }
 
     //-------------------------------------------------

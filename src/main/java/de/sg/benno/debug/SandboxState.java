@@ -27,6 +27,8 @@ public class SandboxState extends ApplicationState {
 
     private Sandbox sandbox;
 
+    private DebugUi debugUi;
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -35,6 +37,14 @@ public class SandboxState extends ApplicationState {
         super(stateMachine);
 
         LOGGER.debug("Creates SandboxState object.");
+    }
+
+    //-------------------------------------------------
+    // Getter
+    //-------------------------------------------------
+
+    public Sandbox getSandbox() {
+        return sandbox;
     }
 
     //-------------------------------------------------
@@ -52,6 +62,8 @@ public class SandboxState extends ApplicationState {
         } else {
             throw new BennoRuntimeException("Invalid world data provider type.");
         }
+
+        debugUi = new DebugUi(this);
     }
 
     @Override
@@ -76,7 +88,7 @@ public class SandboxState extends ApplicationState {
 
     @Override
     public void renderImGui() throws Exception {
-
+        debugUi.render();
     }
 
     @Override
