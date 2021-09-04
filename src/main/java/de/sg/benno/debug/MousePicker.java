@@ -8,7 +8,6 @@
 
 package de.sg.benno.debug;
 
-import de.sg.benno.Astar;
 import de.sg.benno.Shipping;
 import de.sg.benno.Water;
 import de.sg.benno.chunk.TileGraphic;
@@ -25,7 +24,6 @@ import org.joml.Vector2i;
 
 import java.util.HashMap;
 import java.util.Objects;
-import java.util.Optional;
 
 import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;

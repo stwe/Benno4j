@@ -113,7 +113,12 @@ public class World {
 
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
         this.context = Objects.requireNonNull(context, "context must not be null");
-        this.camera = new Camera(-20, 152, context, currentZoom);
+
+        if (BennoConfig.ZOOM_START >= 1 && BennoConfig.ZOOM_START <= 3) {
+            currentZoom = Zoom.values()[BennoConfig.ZOOM_START - 1];
+        }
+
+        this.camera = new Camera(BennoConfig.CAMERA_START_X, BennoConfig.CAMERA_START_Y, context, currentZoom);
 
         init();
     }

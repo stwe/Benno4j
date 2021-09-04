@@ -15,6 +15,7 @@ import de.sg.benno.chunk.WorldData;
 import de.sg.benno.state.Context;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -61,6 +62,23 @@ public class GamFile extends BinaryFile implements WorldData {
         super(Objects.requireNonNull(path, "path must not be null"));
 
         LOGGER.debug("Creates GamFile object from file {}.", path);
+
+        this.context = Objects.requireNonNull(context, "context must not be null");
+
+        readDataFromChunks();
+    }
+
+    /**
+     * Contructs a new {@link GamFile} object.
+     *
+     * @param inputStream An {@link InputStream}.
+     * @param context The {@link Context} object.
+     * @throws Exception If an error is thrown.
+     */
+    public GamFile(InputStream inputStream, Context context) throws Exception {
+        super(Objects.requireNonNull(inputStream, "inputStream must not be null"));
+
+        LOGGER.debug("Creates GamFile object from input stream.");
 
         this.context = Objects.requireNonNull(context, "context must not be null");
 

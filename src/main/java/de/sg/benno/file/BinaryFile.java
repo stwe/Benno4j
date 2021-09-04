@@ -8,13 +8,17 @@
 
 package de.sg.benno.file;
 
+import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.chunk.Chunk;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Objects;
+
+import static de.sg.ogl.Log.LOGGER;
 
 /**
  * Common stuff for all {@link BinaryFile} objects.
@@ -28,7 +32,12 @@ public abstract class BinaryFile implements BinaryFileInterface {
     /**
      * The {@link Path} to the file.
      */
-    private final Path path;
+    private Path path = null;
+
+    /**
+     * An {@link InputStream}.
+     */
+    private InputStream inputStream = null;
 
     /**
      * Each file has one or many {@link Chunk} objects.
@@ -40,13 +49,30 @@ public abstract class BinaryFile implements BinaryFileInterface {
     //-------------------------------------------------
 
     /**
-     * Contructs a new {@link BinaryFile} object.
+     * Contructs a new {@link BinaryFile} object from {@link Path}.
      *
      * @param path The {@link Path} to the file.
      * @throws IOException If an I/O error is thrown.
      */
     public BinaryFile(Path path) throws IOException {
         this.path = Objects.requireNonNull(path, "path must not be null");
+
+        LOGGER.debug("Reading Chunks from {}.", path);
+
+        readChunksFromFile();
+    }
+
+    /**
+     * Contructs a new {@link BinaryFile} object from {@link InputStream}.
+     *
+     * @param inputStream An {@link InputStream}.
+     * @throws IOException If an I/O error is thrown.
+     */
+    public BinaryFile(InputStream inputStream) throws IOException {
+        this.inputStream = Objects.requireNonNull(inputStream, "inputStream must not be null");
+
+        LOGGER.debug("Reading Chunks from input stream.");
+
         readChunksFromFile();
     }
 
@@ -110,7 +136,14 @@ public abstract class BinaryFile implements BinaryFileInterface {
 
     @Override
     public void readChunksFromFile() throws IOException {
-        var inputStream = new FileInputStream(path.toFile());
+        if (inputStream == null) {
+            if (path == null) {
+                throw new BennoRuntimeException("No path given.");
+            }
+
+            inputStream = new FileInputStream(path.toFile());
+        }
+
         while (inputStream.available() > 0) {
             var chunk = new Chunk(inputStream);
             chunks.add(chunk);

@@ -11,6 +11,8 @@ package de.sg.benno.debug;
 import de.sg.benno.chunk.Ship4;
 import de.sg.ogl.Config;
 import de.sg.ogl.input.MouseInput;
+import imgui.ImColor;
+import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.internal.ImGui;
@@ -67,6 +69,11 @@ public class DebugUi {
     // Logic
     //-------------------------------------------------
 
+    /**
+     * Render widgets.
+     *
+     * @throws IOException If an I/O error is thrown.
+     */
     public void render() throws IOException {
         ImGui.setNextWindowSize(WIDTH, HEIGHT, ImGuiCond.Once);
         ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + Config.WIDTH - WIDTH, ImGui.getMainViewport().getPosY(), ImGuiCond.Once);
@@ -82,9 +89,11 @@ public class DebugUi {
 
         ImGui.begin("Debug", windowFlags);
 
-        mousePosition();
-        tileUnderMouse();
+        cameraPosition();
+        screenSpacePosition();
+        worldSpacePosition();
         currentShip();
+        targetWorldSpacePosition();
 
         ImGui.end();
     }
@@ -93,29 +102,59 @@ public class DebugUi {
     // Widgets
     //-------------------------------------------------
 
-    private void mousePosition() {
-        ImGui.separator();
-        ImGui.text("Mouse position in BennoApp");
-        ImGui.text("Mouse x: " + MouseInput.getX());
-        ImGui.text("Mouse y: " + MouseInput.getY());
+    /**
+     * Shows current position.
+     */
+    private void cameraPosition() {
+        ImGui.text("Camera position");
+        ImGui.text("Camera screen space x: " + sandboxState.getSandbox().getCamera().position.x + " (" + sandboxState.getSandbox().getCamera().positionInTileUnits.x+")");
+        ImGui.text("Camera screen space y: " + sandboxState.getSandbox().getCamera().position.y + " (" + sandboxState.getSandbox().getCamera().positionInTileUnits.y+")");
     }
 
-    private void tileUnderMouse() {
+    /**
+     * Shows the current mouse position in screen space.
+     */
+    private void screenSpacePosition() {
+        ImGui.separator();
+
+        ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
+        ImGui.text("Mouse position in screen space");
+        ImGui.popStyleColor();
+
+        ImGui.text("Screen x: " + MouseInput.getX());
+        ImGui.text("Screen y: " + MouseInput.getY());
+    }
+
+    /**
+     * Shows the current mouse position in world space.
+     */
+    private void worldSpacePosition() {
         var selTile = sandboxState.getSandbox().getMousePicker().getTileUnderMouse(
                 sandboxState.getSandbox().getCamera(),
                 sandboxState.getSandbox().getCurrentZoom()
         );
+
         ImGui.separator();
-        ImGui.text("Tile under mouse");
+
+        ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
+        ImGui.text("Mouse position in world space");
+        ImGui.popStyleColor();
+
         ImGui.text("Tile x: " + selTile.x);
         ImGui.text("Tile y: " + selTile.y);
     }
 
+    /**
+     * Shows info about the current ship.
+     */
     private void currentShip() {
         ImGui.separator();
 
+        ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
         ImGui.text("Current ship");
+        ImGui.popStyleColor();
 
+        // a ship was clicked with the left mouse button
         var currentShip = sandboxState.getSandbox().getShipping().getCurrentShip();
         if (currentShip != null) {
             ImGui.text("Name: " + currentShip.name);
@@ -128,7 +167,19 @@ public class DebugUi {
         } else {
             ImGui.text("Ship: none");
         }
+    }
 
+    /**
+     * The current target position in world space.
+     */
+    private void targetWorldSpacePosition() {
+        ImGui.separator();
+
+        ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
+        ImGui.text("Current target");
+        ImGui.popStyleColor();
+
+        // a target was selected with the right mouse button
         var target = sandboxState.getSandbox().getShipping().getTarget();
         if (target != null) {
             ImGui.text("Target x: " + target.x);

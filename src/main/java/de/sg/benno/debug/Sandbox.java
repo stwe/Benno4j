@@ -8,6 +8,7 @@
 
 package de.sg.benno.debug;
 
+import de.sg.benno.BennoConfig;
 import de.sg.benno.Shipping;
 import de.sg.benno.Water;
 import de.sg.benno.chunk.Island5;
@@ -24,6 +25,9 @@ import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_3;
 
+/**
+ * Represents a Sandbox.
+ */
 public class Sandbox {
 
     //-------------------------------------------------
@@ -81,7 +85,12 @@ public class Sandbox {
 
         this.provider = Objects.requireNonNull(provider, "provider must not be null");
         this.context = Objects.requireNonNull(context, "context must not be null");
-        this.camera = new Camera(-20, 152, context, currentZoom);
+
+        if (BennoConfig.ZOOM_START >= 1 && BennoConfig.ZOOM_START <= 3) {
+            currentZoom = Zoom.values()[BennoConfig.ZOOM_START - 1];
+        }
+
+        this.camera = new Camera(BennoConfig.CAMERA_START_X, BennoConfig.CAMERA_START_Y, context, currentZoom);
 
         init();
     }
@@ -90,19 +99,38 @@ public class Sandbox {
     // Getter
     //-------------------------------------------------
 
-
+    /**
+     * Get {@link #camera}.
+     *
+     * @return {@link #camera}
+     */
     public Camera getCamera() {
         return camera;
     }
 
+    /**
+     * Get {@link #currentZoom}.
+     *
+     * @return {@link #currentZoom}
+     */
     public Zoom getCurrentZoom() {
         return currentZoom;
     }
 
+    /**
+     * Get {@link #shipping}.
+     *
+     * @return {@link #shipping}
+     */
     public Shipping getShipping() {
         return shipping;
     }
 
+    /**
+     * Get {@link #mousePicker}.
+     *
+     * @return {@link #mousePicker}
+     */
     public MousePicker getMousePicker() {
         return mousePicker;
     }

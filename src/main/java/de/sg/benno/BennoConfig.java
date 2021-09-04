@@ -39,4 +39,11 @@ public class BennoConfig {
     public static boolean CREATE_ATLAS_IMAGES;
 
     public static String GAME_STATE_NAME;
+
+    public static int CAMERA_START_X;
+    public static int CAMERA_START_Y;
+
+    public static int ZOOM_START;
+
+    public static String SAVEGAME;
 }
