@@ -26,7 +26,16 @@ import java.util.Objects;
 
 import static de.sg.ogl.Log.LOGGER;
 
+/**
+ * Represents the shipping.
+ */
 public class Shipping {
+
+    //-------------------------------------------------
+    // Constants
+    //-------------------------------------------------
+
+    private static final float HALF_ANGLE = 22.5f;
 
     //-------------------------------------------------
     // Member
@@ -68,6 +77,11 @@ public class Shipping {
     private Vector2i target;
 
     /**
+     * A normalized direction vector.
+     */
+    private Vector3f currentTargetDirection;
+
+    /**
      * The current search path of the {@link #currentShip}.
      */
     private ArrayList<Node> path;
@@ -105,6 +119,11 @@ public class Shipping {
         return provider;
     }
 
+    /**
+     * Get {@link #shipTileGraphics}.
+     *
+     * @return {@link #shipTileGraphics}
+     */
     public HashMap<Zoom, ArrayList<TileGraphic>> getShipTileGraphics() {
         return shipTileGraphics;
     }
@@ -125,6 +144,15 @@ public class Shipping {
      */
     public Vector2i getTarget() {
         return target;
+    }
+
+    /**
+     * Get {@link #currentTargetDirection}.
+     *
+     * @return {@link #currentTargetDirection}.
+     */
+    public Vector3f getCurrentTargetDirection() {
+        return currentTargetDirection;
     }
 
     /**
@@ -156,6 +184,92 @@ public class Shipping {
      */
     public void setTarget(Vector2i target) {
         this.target = target;
+
+        // update direction vector && current ship direction
+        if (target != null && currentShip != null) {
+            var d = new Vector2f(target).sub(new Vector2f(currentShip.getPosition()));
+            d.normalize();
+
+            currentTargetDirection = new Vector3f();
+
+            // direction vector
+            currentTargetDirection.x = d.x;
+            currentTargetDirection.y = d.y;
+
+            // store angle in z
+            var angle = Math.atan2(currentTargetDirection.y, currentTargetDirection.x);
+            var angleDeg = Math.toDegrees(angle) + 180.0;
+            currentTargetDirection.z = (float)angleDeg;
+
+            // current ship direction
+
+                    // 6
+
+            // 0 ... 22.5
+            if (angleDeg >= 0 && angleDeg <= HALF_ANGLE) {
+                currentShip.direction = 6;
+            }
+
+            // 337.5 ... 360
+            if (angleDeg >= 360 - HALF_ANGLE && angleDeg <= 360) {
+                currentShip.direction = 6;
+            }
+
+                    // 7
+
+            // 22.5 ... 67.5
+            if (angleDeg >= HALF_ANGLE && angleDeg <= 45 + HALF_ANGLE) {
+                currentShip.direction = 7;
+            }
+
+                    // 0
+
+            // 67.5 ... 112.5
+            if (angleDeg >= 45 + HALF_ANGLE && angleDeg <= 90 + HALF_ANGLE) {
+                currentShip.direction = 0;
+            }
+
+                    // 1
+
+            // 112.5 ... 157.5
+            if (angleDeg >= 90 + HALF_ANGLE && angleDeg <= 135 + HALF_ANGLE) {
+                currentShip.direction = 1;
+            }
+
+                    // 2
+
+            // 157.5 ... 202.5
+            if (angleDeg >= 135 + HALF_ANGLE && angleDeg <= 180 + HALF_ANGLE) {
+                currentShip.direction = 2;
+            }
+
+                    // 3
+
+            // 202.5 ... 247.5
+            if (angleDeg >= 180 + HALF_ANGLE && angleDeg <= 225 + HALF_ANGLE) {
+                currentShip.direction = 3;
+            }
+
+                    // 4
+
+            // 247.5 ... 292.5
+            if (angleDeg >= 225 + HALF_ANGLE && angleDeg <= 270 + HALF_ANGLE) {
+                currentShip.direction = 4;
+            }
+
+                    // 5
+
+            // 292.5 ... 337.5
+            if (angleDeg >= 270 + HALF_ANGLE && angleDeg <= 315 + HALF_ANGLE) {
+                currentShip.direction = 5;
+            }
+
+            // todo: hardcoded
+            shipTileGraphics.get(Zoom.GFX).get(0).gfx = currentShip.getCurrentGfx();
+
+        } else {
+            currentTargetDirection = null;
+        }
     }
 
     /**
@@ -195,6 +309,10 @@ public class Shipping {
             }
         }
         */
+    }
+
+    private void updateCurrentShipDirection() {
+
     }
 
     /**

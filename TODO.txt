@@ -3,14 +3,13 @@ TODO
 
 - Karte bzw Content drehen
 
-
-- Minimap mit der Kamera verbinden
+- KLick in die Minimap soll die Kameraposition ändern
 - Minimap ist momentan absolut statisch - ändern
 
 - Schiffe laden und anzeigen
 - Schiffe animieren
 - Schiffe von a nach b bewegen (A* Path Finding)
-- Schiffe auf der Minimap anzeigen
+- Alle Schiffe auf der Minimap anzeigen
 
 - Animation der Bebauung
 

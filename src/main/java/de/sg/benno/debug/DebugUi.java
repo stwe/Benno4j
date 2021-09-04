@@ -94,6 +94,7 @@ public class DebugUi {
         worldSpacePosition();
         currentShip();
         targetWorldSpacePosition();
+        targetDirection();
 
         ImGui.end();
     }
@@ -186,6 +187,14 @@ public class DebugUi {
             ImGui.text("Target y: " + target.y);
         } else {
             ImGui.text("Target: none");
+        }
+    }
+
+    private void targetDirection() {
+        var d = sandboxState.getSandbox().getShipping().getCurrentTargetDirection();
+        if (d != null) {
+            ImGui.text("dir x: " + d.x + " dir y: " + d.y);
+            ImGui.text("angle: " + d.z);
         }
     }
 }
