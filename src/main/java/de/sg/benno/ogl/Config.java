@@ -12,6 +12,11 @@ package de.sg.benno.ogl;
  * Screen/Window config.
  */
 public class Config {
+
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
+
     public static String TITLE;
     public static int WIDTH;
     public static int HEIGHT;

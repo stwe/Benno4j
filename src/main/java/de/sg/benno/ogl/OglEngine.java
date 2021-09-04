@@ -17,10 +17,19 @@ import static de.sg.benno.ogl.Log.LOGGER;
  */
 public class OglEngine implements Runnable {
 
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
+
     /**
      * The parent {@link OglApplication}.
      */
     private final OglApplication application;
+
+    /**
+     * A {@link Window} object.
+     */
+    private final Window window;
 
     //-------------------------------------------------
     // Ctors.
@@ -36,6 +45,21 @@ public class OglEngine implements Runnable {
 
         this.application = Objects.requireNonNull(application, "application must not be null");
         this.application.setEngine(this);
+
+        this.window = new Window();
+    }
+
+    //-------------------------------------------------
+    // Getter
+    //-------------------------------------------------
+
+    /**
+     * Get {@link Window}.
+     *
+     * @return {@link Window}
+     */
+    public Window getWindow() {
+        return window;
     }
 
     //-------------------------------------------------
@@ -70,11 +94,43 @@ public class OglEngine implements Runnable {
     private void init() throws Exception {
         LOGGER.debug("Initializing OglEngine.");
 
+        window.init();
         application.init();
     }
 
     //-------------------------------------------------
     // Logic
+    //-------------------------------------------------
+
+    private void input() {
+        application.input();
+    }
+
+    private void update(float dt) {
+        application.update(dt);
+    }
+
+    private void render() throws Exception {
+        startFrame();
+        frame();
+        endFrame();
+    }
+
+    private void startFrame() {
+        OpenGL.setClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        OpenGL.clear();
+    }
+
+    private void frame() throws Exception {
+        application.render();
+    }
+
+    private void endFrame() {
+        window.update();
+    }
+
+    //-------------------------------------------------
+    // Game loop
     //-------------------------------------------------
 
     /**
@@ -84,6 +140,40 @@ public class OglEngine implements Runnable {
      */
     private void gameLoop() throws Exception {
         LOGGER.debug("Starting the game loop.");
+
+        var lastTime = System.nanoTime();
+        var timer = System.currentTimeMillis();
+        final var frameTime = 1000000000.0 / Config.FPS;
+        final var frameTimeS = 1.0f / (float)Config.FPS;
+        var dt = 0.0;
+        var fps = 0;
+        var updates = 0;
+
+        while(!window.windowShouldClose()) {
+            var now = System.nanoTime();
+            dt += (now - lastTime) / frameTime;
+            lastTime = now;
+
+            input();
+
+            while (dt >= 1.0) {
+                update(frameTimeS);
+                updates++;
+                dt--;
+            }
+
+            render();
+            fps++;
+
+            if (System.currentTimeMillis() - timer > 1000) {
+                timer += 1000;
+                window.setTitle(window.getTitle() + "  |  " + fps + " frames  |  " + updates + " updates");
+                updates = 0;
+                fps = 0;
+            }
+
+            // todo vsync
+        }
     }
 
     //-------------------------------------------------
@@ -96,6 +186,7 @@ public class OglEngine implements Runnable {
     private void cleanUp() {
         LOGGER.debug("Clean up OglEngine.");
 
+        window.cleanUp();
         application.cleanUp();
     }
 }

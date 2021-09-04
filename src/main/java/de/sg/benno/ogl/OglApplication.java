@@ -18,6 +18,10 @@ import static de.sg.benno.ogl.Log.LOGGER;
  */
 public abstract class OglApplication implements Application {
 
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
+
     /**
      * The parent {@link OglEngine}.
      */

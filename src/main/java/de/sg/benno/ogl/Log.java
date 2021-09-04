@@ -17,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 public class Log {
 
     //-------------------------------------------------
-    // Public member
+    // Member
     //-------------------------------------------------
 
     static public final Logger LOGGER = LogManager.getRootLogger();
