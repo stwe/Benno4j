@@ -120,15 +120,6 @@ public class Shipping {
     }
 
     /**
-     * Get {@link #shipTileGraphics}.
-     *
-     * @return {@link #shipTileGraphics}
-     */
-    public HashMap<Zoom, ArrayList<TileGraphic>> getShipTileGraphics() {
-        return shipTileGraphics;
-    }
-
-    /**
      * Get {@link #currentShip}.
      *
      * @return {@link #currentShip}.
@@ -202,67 +193,7 @@ public class Shipping {
             currentTargetDirection.z = (float)angleDeg;
 
             // current ship direction
-
-                    // 6
-
-            // 0 ... 22.5
-            if (angleDeg >= 0 && angleDeg <= HALF_ANGLE) {
-                currentShip.direction = 6;
-            }
-
-            // 337.5 ... 360
-            if (angleDeg >= 360 - HALF_ANGLE && angleDeg <= 360) {
-                currentShip.direction = 6;
-            }
-
-                    // 7
-
-            // 22.5 ... 67.5
-            if (angleDeg >= HALF_ANGLE && angleDeg <= 45 + HALF_ANGLE) {
-                currentShip.direction = 7;
-            }
-
-                    // 0
-
-            // 67.5 ... 112.5
-            if (angleDeg >= 45 + HALF_ANGLE && angleDeg <= 90 + HALF_ANGLE) {
-                currentShip.direction = 0;
-            }
-
-                    // 1
-
-            // 112.5 ... 157.5
-            if (angleDeg >= 90 + HALF_ANGLE && angleDeg <= 135 + HALF_ANGLE) {
-                currentShip.direction = 1;
-            }
-
-                    // 2
-
-            // 157.5 ... 202.5
-            if (angleDeg >= 135 + HALF_ANGLE && angleDeg <= 180 + HALF_ANGLE) {
-                currentShip.direction = 2;
-            }
-
-                    // 3
-
-            // 202.5 ... 247.5
-            if (angleDeg >= 180 + HALF_ANGLE && angleDeg <= 225 + HALF_ANGLE) {
-                currentShip.direction = 3;
-            }
-
-                    // 4
-
-            // 247.5 ... 292.5
-            if (angleDeg >= 225 + HALF_ANGLE && angleDeg <= 270 + HALF_ANGLE) {
-                currentShip.direction = 4;
-            }
-
-                    // 5
-
-            // 292.5 ... 337.5
-            if (angleDeg >= 270 + HALF_ANGLE && angleDeg <= 315 + HALF_ANGLE) {
-                currentShip.direction = 5;
-            }
+            updateCurrentShipDirection(currentTargetDirection.z);
 
             // todo: hardcoded
             shipTileGraphics.get(Zoom.GFX).get(0).gfx = currentShip.getCurrentGfx();
@@ -311,8 +242,56 @@ public class Shipping {
         */
     }
 
-    private void updateCurrentShipDirection() {
+    /**
+     * The ship directs to the target.
+     *
+     * @param angleDeg An angle in degrees.
+     */
+    private void updateCurrentShipDirection(float angleDeg) {
+        // 67.5 ... 112.5
+        if (angleDeg >= 45 + HALF_ANGLE && angleDeg <= 90 + HALF_ANGLE) {
+            currentShip.direction = 0;
+        }
 
+        // 112.5 ... 157.5
+        if (angleDeg >= 90 + HALF_ANGLE && angleDeg <= 135 + HALF_ANGLE) {
+            currentShip.direction = 1;
+        }
+
+        // 157.5 ... 202.5
+        if (angleDeg >= 135 + HALF_ANGLE && angleDeg <= 180 + HALF_ANGLE) {
+            currentShip.direction = 2;
+        }
+
+        // 202.5 ... 247.5
+        if (angleDeg >= 180 + HALF_ANGLE && angleDeg <= 225 + HALF_ANGLE) {
+            currentShip.direction = 3;
+        }
+
+        // 247.5 ... 292.5
+        if (angleDeg >= 225 + HALF_ANGLE && angleDeg <= 270 + HALF_ANGLE) {
+            currentShip.direction = 4;
+        }
+
+        // 292.5 ... 337.5
+        if (angleDeg >= 270 + HALF_ANGLE && angleDeg <= 315 + HALF_ANGLE) {
+            currentShip.direction = 5;
+        }
+
+        // 337.5 ... 360
+        if (angleDeg >= 315 + HALF_ANGLE && angleDeg <= 360) {
+            currentShip.direction = 6;
+        }
+
+        // 0 ... 22.5
+        if (angleDeg >= 0 && angleDeg <= HALF_ANGLE) {
+            currentShip.direction = 6;
+        }
+
+        // 22.5 ... 67.5
+        if (angleDeg >= HALF_ANGLE && angleDeg <= 45 + HALF_ANGLE) {
+            currentShip.direction = 7;
+        }
     }
 
     /**

@@ -190,6 +190,9 @@ public class DebugUi {
         }
     }
 
+    /**
+     * The current direction and angle to the target.
+     */
     private void targetDirection() {
         var d = sandboxState.getSandbox().getShipping().getCurrentTargetDirection();
         if (d != null) {
