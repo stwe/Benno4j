@@ -8,7 +8,7 @@
 
 package de.sg.benno;
 
-import de.sg.ogl.SgOglEngine;
+import de.sg.benno.ogl.OglEngine;
 
 public class BennoMain {
 
@@ -18,7 +18,7 @@ public class BennoMain {
 
     public static void main(String[] args) {
         try {
-            var engine = new SgOglEngine(new BennoApp());
+            var engine = new OglEngine(new TestApp());
             engine.run();
         } catch (Exception e) {
             e.printStackTrace();

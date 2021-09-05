@@ -29,7 +29,7 @@ public class ConfigLoader {
      * @param configClass The config class.
      * @param path The path to the config file.
      * @throws IOException If an I/O error is thrown.
-     * @throws IllegalAccessException If an error is thrown.
+     * @throws IllegalAccessException If an access error is thrown.
      */
     public static void load(Class<?> configClass, String path) throws IOException, IllegalAccessException {
         Objects.requireNonNull(configClass, "configClass must not be null");

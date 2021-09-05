@@ -8,35 +8,45 @@
     <artifactId>benno-java</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <repositories>
+        <repository>
+            <id>jcenter</id>
+            <url>https://jcenter.bintray.com/</url>
+        </repository>
+    </repositories>
+
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <lwjgl.version>3.2.3</lwjgl.version>
+        <imgui.java.version>1.80-1.5.0</imgui.java.version>
     </properties>
 
     <profiles>
         <profile>
-            <id>windows-profile</id>
+            <id>Windows</id>
             <activation>
                 <os>
-                    <family>Windows</family>
+                    <family>windows</family>
                     <arch>amd64</arch>
                 </os>
             </activation>
             <properties>
-                <native.target>natives-windows</native.target>
+                <lwjgl.natives>natives-windows</lwjgl.natives>
+                <imgui.natives>imgui-java-natives-windows</imgui.natives>
             </properties>
         </profile>
         <profile>
-            <id>linux-profile</id>
+            <id>Linux</id>
             <activation>
                 <os>
-                    <family>Linux</family>
+                    <family>unix</family>
                     <arch>amd64</arch>
                 </os>
             </activation>
             <properties>
-                <native.target>natives-linux</native.target>
+                <lwjgl.natives>natives-linux</lwjgl.natives>
+                <imgui.natives>imgui-java-natives-linux</imgui.natives>
             </properties>
         </profile>
     </profiles>
@@ -45,8 +55,9 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.12.4</version>
+            <version>2.12.5</version>
         </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -84,22 +95,38 @@
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl</artifactId>
             <version>${lwjgl.version}</version>
-            <classifier>${native.target}</classifier>
+            <classifier>${lwjgl.natives}</classifier>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-glfw</artifactId>
             <version>${lwjgl.version}</version>
-            <classifier>${native.target}</classifier>
+            <classifier>${lwjgl.natives}</classifier>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-opengl</artifactId>
             <version>${lwjgl.version}</version>
-            <classifier>${native.target}</classifier>
+            <classifier>${lwjgl.natives}</classifier>
             <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.imgui.java</groupId>
+            <artifactId>imgui-java-binding</artifactId>
+            <version>${imgui.java.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.imgui.java</groupId>
+            <artifactId>imgui-java-lwjgl3</artifactId>
+            <version>${imgui.java.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.imgui.java</groupId>
+            <artifactId>${imgui.natives}</artifactId>
+            <version>${imgui.java.version}</version>
         </dependency>
 
         <dependency>

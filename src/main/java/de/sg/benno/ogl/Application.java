@@ -9,12 +9,12 @@
 package de.sg.benno.ogl;
 
 /**
- * Encapsulate game logic.
+ * Encapsulates the game logic.
  */
 public interface Application {
-    void init() throws Exception;
+    void init(Object... params) throws Exception;
     void input();
-    void update(float dt);
+    void update();
     void render();
     void renderImGui() throws Exception;
     void cleanUp();

@@ -8,14 +8,30 @@
 
 package de.sg.benno.ogl;
 
+import imgui.ImGui;
+import imgui.flag.ImGuiConfigFlags;
+import imgui.gl3.ImGuiImplGl3;
+import imgui.glfw.ImGuiImplGlfw;
+
 import java.util.Objects;
 
 import static de.sg.benno.ogl.Log.LOGGER;
+import static org.lwjgl.glfw.GLFW.glfwGetCurrentContext;
+import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 
 /**
  * Contains the game loop code.
  */
 public class OglEngine implements Runnable {
+
+    //-------------------------------------------------
+    // Constants
+    //-------------------------------------------------
+
+    /**
+     * Nanoseconds per frame.
+     */
+    private final double NANO_PER_FRAME = 1000000000.0 / Config.FPS;
 
     //-------------------------------------------------
     // Member
@@ -30,6 +46,16 @@ public class OglEngine implements Runnable {
      * A {@link Window} object.
      */
     private final Window window;
+
+    /**
+     * An {@link ImGuiImplGlfw} object.
+     */
+    private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
+
+    /**
+     * An {@link ImGuiImplGl3} object.
+     */
+    private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
 
     //-------------------------------------------------
     // Ctors.
@@ -83,7 +109,7 @@ public class OglEngine implements Runnable {
     }
 
     //-------------------------------------------------
-    // Init
+    // Logic
     //-------------------------------------------------
 
     /**
@@ -95,37 +121,74 @@ public class OglEngine implements Runnable {
         LOGGER.debug("Initializing OglEngine.");
 
         window.init();
+
+        imGuiGlfw.init(window.getWindowHandle(), true);
+        imGuiGl3.init("#version 130");
+
         application.init();
     }
 
-    //-------------------------------------------------
-    // Logic
-    //-------------------------------------------------
-
+    /**
+     * Get the input.
+     */
     private void input() {
         application.input();
     }
 
-    private void update(float dt) {
-        application.update(dt);
+    /**
+     * Update the game state.
+     */
+    private void update() {
+        application.update();
     }
 
+    /**
+     * Render game data.
+     *
+     * @throws Exception If an error is thrown.
+     */
     private void render() throws Exception {
         startFrame();
         frame();
         endFrame();
     }
 
+    /**
+     * Clear the screen.
+     */
     private void startFrame() {
         OpenGL.setClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         OpenGL.clear();
     }
 
+    /**
+     * Render application and ImGui stuff.
+     *
+     * @throws Exception If an error is thrown.
+     */
     private void frame() throws Exception {
         application.render();
+
+        imGuiGlfw.newFrame();
+        ImGui.newFrame();
+
+        application.renderImGui();
+        ImGui.render();
     }
 
+    /**
+     * Swap buffers.
+     */
     private void endFrame() {
+        imGuiGl3.renderDrawData(ImGui.getDrawData());
+
+        if (ImGui.getIO().hasConfigFlags(ImGuiConfigFlags.ViewportsEnable)) {
+            final long backupWindowPtr = glfwGetCurrentContext();
+            ImGui.updatePlatformWindows();
+            ImGui.renderPlatformWindowsDefault();
+            glfwMakeContextCurrent(backupWindowPtr);
+        }
+
         window.update();
     }
 
@@ -142,22 +205,21 @@ public class OglEngine implements Runnable {
         LOGGER.debug("Starting the game loop.");
 
         var lastTime = System.nanoTime();
-        var timer = System.currentTimeMillis();
-        final var frameTime = 1000000000.0 / Config.FPS;
-        final var frameTimeS = 1.0f / (float)Config.FPS;
+        var resetTimer = System.nanoTime();
+
         var dt = 0.0;
         var fps = 0;
         var updates = 0;
 
         while(!window.windowShouldClose()) {
             var now = System.nanoTime();
-            dt += (now - lastTime) / frameTime;
+            dt += (now - lastTime) / NANO_PER_FRAME;
             lastTime = now;
 
             input();
 
             while (dt >= 1.0) {
-                update(frameTimeS);
+                update();
                 updates++;
                 dt--;
             }
@@ -165,14 +227,12 @@ public class OglEngine implements Runnable {
             render();
             fps++;
 
-            if (System.currentTimeMillis() - timer > 1000) {
-                timer += 1000;
+            if (System.nanoTime() - resetTimer > 1000000000) {
+                resetTimer += 1000000000;
                 window.setTitle(window.getTitle() + "  |  " + fps + " frames  |  " + updates + " updates");
                 updates = 0;
                 fps = 0;
             }
-
-            // todo vsync
         }
     }
 
@@ -185,6 +245,9 @@ public class OglEngine implements Runnable {
      */
     private void cleanUp() {
         LOGGER.debug("Clean up OglEngine.");
+
+        imGuiGl3.dispose();
+        imGuiGlfw.dispose();
 
         window.cleanUp();
         application.cleanUp();

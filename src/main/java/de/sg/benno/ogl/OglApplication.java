@@ -19,6 +19,15 @@ import static de.sg.benno.ogl.Log.LOGGER;
 public abstract class OglApplication implements Application {
 
     //-------------------------------------------------
+    // Constants
+    //-------------------------------------------------
+
+    /**
+     * The file path to the app config file.
+     */
+    private static final String APPLICATION_CONFIG_FILE = "/config.properties";
+
+    //-------------------------------------------------
     // Member
     //-------------------------------------------------
 
@@ -35,12 +44,12 @@ public abstract class OglApplication implements Application {
      * Constructs a new {@link OglApplication} object.
      *
      * @throws IOException If an I/O error is thrown.
-     * @throws IllegalAccessException If an error is thrown.
+     * @throws IllegalAccessException If an access error is thrown.
      */
     public OglApplication() throws IOException, IllegalAccessException {
         LOGGER.debug("Creates OglApplication object and load config.");
 
-        ConfigLoader.load(Config.class, "/config.properties");
+        ConfigLoader.load(Config.class, APPLICATION_CONFIG_FILE);
         LOGGER.debug("Configuration loaded successfully.");
         LOGGER.debug("Title: {}", Config.TITLE);
         LOGGER.debug("Width: {}", Config.WIDTH);

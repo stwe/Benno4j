@@ -13,10 +13,6 @@ package de.sg.benno.ogl;
  */
 public class OglRuntimeException extends RuntimeException {
 
-    public OglRuntimeException() {
-        super();
-    }
-
     public OglRuntimeException(String message) {
         super(message);
     }

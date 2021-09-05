@@ -14,6 +14,10 @@ import org.lwjgl.system.MemoryStack;
 
 import java.util.Objects;
 
+import imgui.*;
+import imgui.flag.ImGuiCol;
+import imgui.flag.ImGuiConfigFlags;
+
 import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -21,7 +25,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
- * Encapsulate all the GLFW Window initialization code.
+ * Encapsulate all the window initialization code.
  */
 public class Window {
 
@@ -179,10 +183,11 @@ public class Window {
     //-------------------------------------------------
 
     /**
-     * Init class.
+     * Initializing class.
      */
     public void init() {
         initGlfw();
+        initImGui();
         initProjectionMatrix();
     }
 
@@ -204,10 +209,7 @@ public class Window {
         // Configure GLFW.
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-
-        // The size of the window can not be changed during runtime.
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -266,6 +268,29 @@ public class Window {
     }
 
     /**
+     * Initializing ImGui.
+     */
+    private void initImGui() {
+        LOGGER.debug("Initializing ImGui.");
+
+        ImGui.createContext();
+
+        final var io = ImGui.getIO();
+
+        io.setIniFilename(null);                                // We don't want to save .ini file
+        io.addConfigFlags(ImGuiConfigFlags.NavEnableKeyboard);  // Enable Keyboard Controls
+        io.addConfigFlags(ImGuiConfigFlags.DockingEnable);      // Enable Docking
+        io.addConfigFlags(ImGuiConfigFlags.ViewportsEnable);    // Enable Multi-Viewport / Platform Windows
+        io.setConfigViewportsNoTaskBarIcon(true);
+
+        if (io.hasConfigFlags(ImGuiConfigFlags.ViewportsEnable)) {
+            final var style = ImGui.getStyle();
+            style.setWindowRounding(0.0f);
+            style.setColor(ImGuiCol.WindowBg, ImGui.getColorU32(ImGuiCol.WindowBg, 1));
+        }
+    }
+
+    /**
      * Init projection matrices.
      */
     private void initProjectionMatrix() {
@@ -277,19 +302,33 @@ public class Window {
     // Helper
     //-------------------------------------------------
 
+    /**
+     * Encapsulates glfwWindowShouldClose.
+     *
+     * @return boolean
+     */
     public boolean windowShouldClose() {
         return glfwWindowShouldClose(windowHandle);
     }
 
+    /**
+     * Swaps the front and back buffers and checks if any events are triggered.
+     */
     public void update() {
         glfwSwapBuffers(windowHandle);
         glfwPollEvents();
     }
 
+    /**
+     * Update projection matrix.
+     */
     public void updateProjectionMatrix() {
         projectionMatrix.setPerspective(Config.FOV, (float) width / height, Config.NEAR, Config.FAR);
     }
 
+    /**
+     * Update orthographic projection matrix.
+     */
     public void updateOrthographicProjectionMatrix() {
         /*
         ---------------
@@ -312,6 +351,9 @@ public class Window {
      */
     public void cleanUp() {
         LOGGER.debug("Clean up Window.");
+
+        // Clean up ImGui.
+        ImGui.destroyContext();
 
         // Frees callbacks associated with the window.
         glfwFreeCallbacks(windowHandle);
