@@ -36,14 +36,14 @@ public class Texture implements Resource {
     /**
      * The texture file path.
      */
-    private String path;
+    private final String path;
 
     /**
      * OpenGL expects the 0.0 coordinate on the y-axis to be on the bottom side of the image,
      * but images usually have 0.0 at the top of the y-axis.
      * Setting this option flip the y-axis during image loading.
      */
-    private boolean loadVerticalFlipped;
+    private final boolean loadVerticalFlipped;
 
     /**
      * The texture id.
@@ -95,6 +95,113 @@ public class Texture implements Resource {
      */
     public Texture(String path) {
         this(path, false);
+    }
+
+    //-------------------------------------------------
+    // Getter
+    //-------------------------------------------------
+
+    /**
+     * Get {@link #path}.
+     *
+     * @return {@link #path}
+     */
+    public String getPath() {
+        return path;
+    }
+
+    /**
+     * Get {@link #loadVerticalFlipped}.
+     *
+     * @return {@link #loadVerticalFlipped}
+     */
+    public boolean isLoadVerticalFlipped() {
+        return loadVerticalFlipped;
+    }
+
+    /**
+     * Get {@link #id}.
+     *
+     * @return {@link #id}
+     */
+    public int getId() {
+        return id;
+    }
+
+    /**
+     * Get {@link #width}.
+     *
+     * @return {@link #width}
+     */
+    public int getWidth() {
+        return width;
+    }
+
+    /**
+     * Get {@link #height}.
+     *
+     * @return {@link #height}
+     */
+    public int getHeight() {
+        return height;
+    }
+
+    /**
+     * Get {@link #nrChannels}.
+     *
+     * @return {@link #nrChannels}
+     */
+    public int getNrChannels() {
+        return nrChannels;
+    }
+
+    /**
+     * Get {@link #format}.
+     *
+     * @return {@link #format}
+     */
+    public int getFormat() {
+        return format;
+    }
+
+    //-------------------------------------------------
+    // Setter
+    //-------------------------------------------------
+
+    /**
+     * Set {@link #width}.
+     *
+     * @param width The texture width.
+     */
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    /**
+     * Set {@link #height}.
+     *
+     * @param height The texture height.
+     */
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    /**
+     * Set {@link #nrChannels}.
+     *
+     * @param nrChannels The number of color channels.
+     */
+    public void setNrChannels(int nrChannels) {
+        this.nrChannels = nrChannels;
+    }
+
+    /**
+     * Set {@link #format}.
+     *
+     * @param format The internal format.
+     */
+    public void setFormat(int format) {
+        this.format = format;
     }
 
     //-------------------------------------------------
@@ -222,22 +329,48 @@ public class Texture implements Resource {
     // Static
     //-------------------------------------------------
 
+    /**
+     * Bind a named texture to a texturing target.
+     *
+     * @param id An texture id.
+     * @param target Specifies the target to which the texture is bound.
+     */
     public static void bind(int id, int target) {
         glBindTexture(target, id);
     }
 
+    /**
+     * Bind a named texture to a texturing target.
+     *
+     * @param id An texture id.
+     */
     public static void bind(int id) {
         bind(id, GL_TEXTURE_2D);
     }
 
+    /**
+     * Unbind texture.
+     *
+     * @param target Specifies the target to which the texture is bound.
+     */
     public static void unbind(int target) {
         glBindTexture(target, 0);
     }
 
+    /**
+     * Unbind texture.
+     */
     public static void unbind() {
         unbind(GL_TEXTURE_2D);
     }
 
+    /**
+     * Bind the texture to a texture unit (GL_TEXTURE0 to GL_TEXTURE15).
+     *
+     * @param id An texture id.
+     * @param textureUnit A texture unit (GL_TEXTURE0 to GL_TEXTURE15).
+     * @param target Specifies the target to which the texture is bound.
+     */
     public static void bindForReading(int id, int textureUnit, int target) {
         // make sure that the OpenGL constants are used here
         if (textureUnit < GL_TEXTURE0 || textureUnit > GL_TEXTURE15) {
@@ -248,7 +381,140 @@ public class Texture implements Resource {
         bind(id, target);
     }
 
+    /**
+     * Bind the texture to a texture unit (GL_TEXTURE0 to GL_TEXTURE15).
+     *
+     * @param id An texture id.
+     * @param textureUnit A texture unit (GL_TEXTURE0 to GL_TEXTURE15).
+     */
     public static void bindForReading(int id, int textureUnit) {
         bindForReading(id, textureUnit, GL_TEXTURE_2D);
+    }
+
+    //-------------------------------------------------
+    // Filter
+    //-------------------------------------------------
+
+    /**
+     * The default texture filtering method of OpenGL.
+     * OpenGL selects the texel that center is closest to the texture coordinate.
+     *
+     * @param target Specifies the target to which the texture is bound.
+     */
+    public static void useNoFilter(int target) {
+        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    }
+
+    /**
+     * The default texture filtering method of OpenGL.
+     * OpenGL selects the texel that center is closest to the texture coordinate.
+     */
+    public static void useNoFilter() {
+        useNoFilter(GL_TEXTURE_2D);
+    }
+
+    /**
+     * Takes an interpolated value from the texture coordinate's neighboring texels.
+     *
+     * @param target Specifies the target to which the texture is bound.
+     */
+    public static void useBilinearFilter(int target) {
+        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    }
+
+    /**
+     * Takes an interpolated value from the texture coordinate's neighboring texels.
+     */
+    public static void useBilinearFilter() {
+        useBilinearFilter(GL_TEXTURE_2D);
+    }
+
+    /**
+     * Linearly interpolates between the two closest mipmaps.
+     *
+     * @param target Specifies the target to which the texture is bound.
+     */
+    public static void useBilinearMipmapFilter(int target) {
+        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    }
+
+    /**
+     * Linearly interpolates between the two closest mipmaps.
+     */
+    public static void useBilinearMipmapFilter() {
+        useBilinearMipmapFilter(GL_TEXTURE_2D);
+    }
+
+    //-------------------------------------------------
+    // Wrapping
+    //-------------------------------------------------
+
+    /**
+     * Repeats the texture image.
+     *
+     * @param target Specifies the target to which the texture is bound.
+     */
+    public static void useRepeatWrapping(int target) {
+        glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    }
+
+    /**
+     * Repeats the texture image.
+     */
+    public static void useRepeatWrapping() {
+        useRepeatWrapping(GL_TEXTURE_2D);
+    }
+
+    /**
+     * Clamps the coordinates between 0 and 1.
+     * The result is that higher coordinates become clamped to the edge, resulting in a stretched edge pattern.
+     *
+     * @param target Specifies the target to which the texture is bound.
+     */
+    public static void useClampToEdgeWrapping(int target) {
+        glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    }
+
+    /**
+     * Clamps the coordinates between 0 and 1.
+     * The result is that higher coordinates become clamped to the edge, resulting in a stretched edge pattern.
+     */
+    public static void useClampToEdgeWrapping() {
+        useClampToEdgeWrapping(GL_TEXTURE_2D);
+    }
+
+    /**
+     * Coordinates outside the range are now given a user-specified border color.
+     *
+     * @param target Specifies the target to which the texture is bound.
+     */
+    public static void useClampToBorderWrapping(int target) {
+        glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    }
+
+    /**
+     * Coordinates outside the range are now given a user-specified border color.
+     */
+    public static void useClampToBorderWrapping() {
+        useClampToBorderWrapping(GL_TEXTURE_2D);
+    }
+
+    /**
+     * If we choose the {@link #useClampToBorderWrapping()} option we should also specify a border color.
+     *
+     * @param r red - range [0, 1].
+     * @param g green - range [0, 1].
+     * @param b blue - range [0, 1].
+     */
+    public static void setBorderColor(float r, float g, float b) {
+        float[] color = { r, g, b, 1.0f };
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
     }
 }
