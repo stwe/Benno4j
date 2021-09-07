@@ -307,7 +307,7 @@ public class Texture implements Resource {
     }
 
     //-------------------------------------------------
-    // Bind / Unbind
+    // Bind to texture unit / Unbind
     //-------------------------------------------------
 
     /**
@@ -325,9 +325,27 @@ public class Texture implements Resource {
         bind();
     }
 
+    /**
+     * Unbind texture.
+     *
+     * @param target Specifies the target to which the texture is bound.
+     */
+    public static void unbind(int target) {
+        glBindTexture(target, 0);
+    }
+
+    /**
+     * Unbind texture.
+     */
+    public static void unbind() {
+        unbind(GL_TEXTURE_2D);
+    }
+
     //-------------------------------------------------
     // Static
     //-------------------------------------------------
+
+    // alternative methods in case only the texture id is known
 
     /**
      * Bind a named texture to a texturing target.
@@ -346,22 +364,6 @@ public class Texture implements Resource {
      */
     public static void bind(int id) {
         bind(id, GL_TEXTURE_2D);
-    }
-
-    /**
-     * Unbind texture.
-     *
-     * @param target Specifies the target to which the texture is bound.
-     */
-    public static void unbind(int target) {
-        glBindTexture(target, 0);
-    }
-
-    /**
-     * Unbind texture.
-     */
-    public static void unbind() {
-        unbind(GL_TEXTURE_2D);
     }
 
     /**
