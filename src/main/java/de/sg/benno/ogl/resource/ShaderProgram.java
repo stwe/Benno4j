@@ -146,19 +146,6 @@ public class ShaderProgram implements Resource {
     }
 
     //-------------------------------------------------
-    // Getter
-    //-------------------------------------------------
-
-    /**
-     * Get {@link #id}.
-     *
-     * @return {@link #id}
-     */
-    public int getId() {
-        return id;
-    }
-
-    //-------------------------------------------------
     // Implement Resource
     //-------------------------------------------------
 
@@ -196,6 +183,11 @@ public class ShaderProgram implements Resource {
 
         linkAndValidateProgram();
         addFoundUniforms();
+    }
+
+    @Override
+    public int getId() {
+        return id;
     }
 
     @Override

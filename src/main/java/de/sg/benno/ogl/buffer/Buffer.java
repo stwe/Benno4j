@@ -6,16 +6,15 @@
  * License: GPLv2
  */
 
-package de.sg.benno.ogl.resource;
+package de.sg.benno.ogl.buffer;
 
-public interface Resource {
-    void load() throws Exception;
-
+public interface Buffer {
     int getId();
 
     void createId();
 
     void bind();
+    void unbind();
 
     void cleanUp();
 }

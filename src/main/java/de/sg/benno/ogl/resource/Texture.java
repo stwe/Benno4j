@@ -120,15 +120,6 @@ public class Texture implements Resource {
     }
 
     /**
-     * Get {@link #id}.
-     *
-     * @return {@link #id}
-     */
-    public int getId() {
-        return id;
-    }
-
-    /**
      * Get {@link #width}.
      *
      * @return {@link #width}
@@ -268,6 +259,11 @@ public class Texture implements Resource {
         stbi_image_free(imageBuffer);
 
         LOGGER.debug("Texture file {} was successfully loaded. The Id is {}.", path, id);
+    }
+
+    @Override
+    public int getId() {
+        return id;
     }
 
     /**
