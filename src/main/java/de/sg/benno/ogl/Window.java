@@ -331,15 +331,36 @@ public class Window {
      */
     public void updateOrthographicProjectionMatrix() {
         /*
+        Transforms all x coordinates between 0 and width to -1 and 1,
+        and all y coordinates between 0 and height to -1 and 1.
+        We specified that the top of the frustum has a y coordinate of 0,
+        while the bottom has a y coordinate of height. The result is that
+        the top-left coordinate of the scene will be at (0,0) and the
+        bottom-right part of the screen is at coordinate (width, height),
+        just like screen coordinates; the world-space coordinates directly
+        correspond to the resulting pixel coordinates.
+
+
+        World/Screen space coordinates
+
         ---------------
         | 0, 0        |
         |             |
         |             |
         |        w, h |
         ---------------
+
+        To normalized device coordinates
+
+        ---------------
+        | -1, -1      |
+        |             |
+        |             |
+        |        1, 1 |
+        ---------------
         */
 
-        orthographicProjectionMatrix.setOrtho(0.0f, width, height, 0.0f, 1.0f, -1.0f);
+        orthographicProjectionMatrix.setOrtho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
     }
 
     //-------------------------------------------------

@@ -9,7 +9,9 @@
 package de.sg.benno.ogl.buffer;
 
 import de.sg.benno.ogl.OglRuntimeException;
+import org.lwjgl.system.MemoryUtil;
 
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import static de.sg.benno.ogl.Log.LOGGER;
@@ -138,6 +140,62 @@ public class Vao implements Buffer {
         vbos.add(vbo);
 
         return vbo;
+    }
+
+    /**
+     * Adds a new {@link Vbo} object and copies vertices representing a 2D quad into the buffer's memory.
+     */
+    public void add2DQuadVbo() {
+        // vertices of a quad
+        var vertices = new float[] {
+                // pos      // uv
+                0.0f, 1.0f, 0.0f, 1.0f,
+                1.0f, 0.0f, 1.0f, 0.0f,
+                0.0f, 0.0f, 0.0f, 0.0f,
+
+                0.0f, 1.0f, 0.0f, 1.0f,
+                1.0f, 1.0f, 1.0f, 1.0f,
+                1.0f, 0.0f, 1.0f, 0.0f
+        };
+
+        // bind this Vao
+        bind();
+
+        // create a new Vbo
+        var vbo = addVbo();
+
+        // bind the new Vbo
+        vbo.bind();
+
+        // store vertices
+        FloatBuffer verticesBuffer = null;
+        try {
+            verticesBuffer = MemoryUtil.memAllocFloat(vertices.length);
+            verticesBuffer.put(vertices).flip();
+
+            glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW);
+
+            // enable location 0 (position)
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0L);
+
+            // enable location 1 (uv)
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(1, 2, GL_FLOAT, false, 4 * Float.BYTES, 2 * Float.BYTES);
+        } finally {
+            if (verticesBuffer != null) {
+                MemoryUtil.memFree(verticesBuffer);
+            }
+        }
+
+        // unbind Vbo
+        vbo.unbind();
+
+        // unbind Vao
+        unbind();
+
+        // set draw count
+        setDrawCount(drawCount);
     }
 
     //-------------------------------------------------
