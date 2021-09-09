@@ -8,8 +8,7 @@
 
 package de.sg.benno.ogl.buffer;
 
-import de.sg.ogl.Log;
-import de.sg.ogl.SgOglRuntimeException;
+import de.sg.benno.ogl.OglRuntimeException;
 
 import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL15.*;
@@ -51,10 +50,10 @@ public class Vbo implements Buffer {
     public void createId() {
         id = glGenBuffers();
         if (id == 0) {
-            throw new SgOglRuntimeException("Vbo creation has failed.");
+            throw new OglRuntimeException("Vbo creation has failed.");
         }
 
-        Log.LOGGER.debug("A new Vbo was created. The Id is {}.", id);
+        LOGGER.debug("A new Vbo was created. The Id is {}.", id);
     }
 
     @Override
@@ -69,13 +68,13 @@ public class Vbo implements Buffer {
 
     @Override
     public void cleanUp() {
-        Log.LOGGER.debug("Clean up Vbo.");
+        LOGGER.debug("Clean up Vbo.");
 
         unbind();
 
         if (id > 0) {
             glDeleteBuffers(id);
-            Log.LOGGER.debug("Vbo {} was deleted.", id);
+            LOGGER.debug("Vbo {} was deleted.", id);
         }
     }
 }

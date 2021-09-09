@@ -128,7 +128,17 @@ public class Vao implements Buffer {
     // Add Vbo
     //-------------------------------------------------
 
+    /**
+     * Adds a new {@link Vbo} object.
+     *
+     * @return {@link Vbo}
+     */
+    public Vbo addVbo() {
+        var vbo = new Vbo();
+        vbos.add(vbo);
 
+        return vbo;
+    }
 
     //-------------------------------------------------
     // Draw
