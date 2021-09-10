@@ -168,17 +168,17 @@ public class Sandbox {
      */
     public void update() {
         // change zoom
-        if (KeyInput.isKeyPressed(GLFW_KEY_1)) {
+        if (context.engine.getWindow().isKeyPressed(GLFW_KEY_1)) {
             currentZoom = Zoom.SGFX;
             camera.resetPosition(currentZoom);
         }
 
-        if (KeyInput.isKeyPressed(GLFW_KEY_2)) {
+        if (context.engine.getWindow().isKeyPressed(GLFW_KEY_2)) {
             currentZoom = Zoom.MGFX;
             camera.resetPosition(currentZoom);
         }
 
-        if (KeyInput.isKeyPressed(GLFW_KEY_3)) {
+        if (context.engine.getWindow().isKeyPressed(GLFW_KEY_3)) {
             currentZoom = Zoom.GFX;
             camera.resetPosition(currentZoom);
         }

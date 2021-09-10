@@ -15,6 +15,7 @@ import org.lwjgl.glfw.GLFW;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
+import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * Represents a orthographic camera.

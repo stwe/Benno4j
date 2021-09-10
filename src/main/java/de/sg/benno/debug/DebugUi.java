@@ -9,8 +9,7 @@
 package de.sg.benno.debug;
 
 import de.sg.benno.chunk.Ship4;
-import de.sg.ogl.Config;
-import de.sg.ogl.input.MouseInput;
+import de.sg.benno.ogl.Config;
 import imgui.ImColor;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiCond;
@@ -20,7 +19,7 @@ import imgui.internal.ImGui;
 import java.io.IOException;
 import java.util.Objects;
 
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * An ImGui.

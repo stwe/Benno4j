@@ -15,8 +15,6 @@ import de.sg.benno.ogl.state.StateMachine;
 import de.sg.benno.state.Context;
 
 import static de.sg.benno.ogl.Log.LOGGER;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
-import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 
 public class SandboxState extends ApplicationState {
 
@@ -67,10 +65,8 @@ public class SandboxState extends ApplicationState {
 
     @Override
     public void input() {
-        if (KeyInput.isKeyPressed(GLFW_KEY_ESCAPE)) {
-            var context = (Context)getStateMachine().getStateContext();
-            glfwSetWindowShouldClose(context.engine.getWindow().getWindowHandle(), true);
-        }
+        var context = (Context)getStateMachine().getStateContext();
+        context.engine.getWindow().closeIfEscKeyPressed();
 
         sandbox.input();
     }

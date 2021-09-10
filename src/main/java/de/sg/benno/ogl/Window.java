@@ -364,6 +364,30 @@ public class Window {
     }
 
     //-------------------------------------------------
+    // Input
+    //-------------------------------------------------
+
+    /**
+     * Poll the key status.
+     *
+     * @param keyCode A constant such as GLFW_KEY_W or GLFW_KEY_SPACE
+     *
+     * @return true if GLFW_PRESS
+     */
+    public boolean isKeyPressed(int keyCode) {
+        return glfwGetKey(windowHandle, keyCode) == GLFW_PRESS;
+    }
+
+    /**
+     * Close if Esc key was pressed.
+     */
+    public void closeIfEscKeyPressed() {
+        if (isKeyPressed(GLFW_KEY_ESCAPE)) {
+            glfwSetWindowShouldClose(windowHandle, true);
+        }
+    }
+
+    //-------------------------------------------------
     // Clean up
     //-------------------------------------------------
 
