@@ -1,7 +1,15 @@
+/*
+ * This file is part of the Benno4j project.
+ *
+ * Copyright (c) 2021. stwe <https://github.com/stwe/Benno4j>
+ *
+ * License: GPLv2
+ */
+
 package de.sg.benno;
 
 import de.sg.benno.file.ImageFile;
-import de.sg.ogl.resource.Texture;
+import de.sg.benno.ogl.resource.Texture;
 import org.joml.Vector2f;
 
 import java.io.IOException;
@@ -15,7 +23,7 @@ import static org.lwjgl.opengl.GL30.GL_TEXTURE_2D_ARRAY;
 import static org.lwjgl.opengl.GL45.glTextureStorage3D;
 import static org.lwjgl.opengl.GL45.glTextureSubImage3D;
 
-public final class TileAtlas {
+public class TileAtlas {
 
     //-------------------------------------------------
     // Constants GFX
@@ -133,19 +141,19 @@ public final class TileAtlas {
     private static final ArrayList<ImageFile> sgfxAtlasImages = new ArrayList<>();
 
     /**
-     * The GFX texture array Id.
+     * The GFX texture array.
      */
-    private static int gfxTextureArrayId;
+    private static Texture gfxTextureArray;
 
     /**
-     * The MGFX texture array Id.
+     * The MGFX texture array.
      */
-    private static int mgfxTextureArrayId;
+    private static Texture mgfxTextureArray;
 
     /**
-     * The SGFX texture array Id.
+     * The SGFX texture array.
      */
-    private static int sgfxTextureArrayId;
+    private static Texture sgfxTextureArray;
 
     //-------------------------------------------------
     // Ctors.
@@ -162,30 +170,30 @@ public final class TileAtlas {
     //-------------------------------------------------
 
     /**
-     * Get {@link #gfxTextureArrayId}.
+     * Get {@link #gfxTextureArray}.
      *
-     * @return {@link #gfxTextureArrayId}
+     * @return {@link #gfxTextureArray}
      */
-    public static int getGfxTextureArrayId() {
-        return gfxTextureArrayId;
+    public static Texture getGfxTextureArray() {
+        return gfxTextureArray;
     }
 
     /**
-     * Get {@link #mgfxTextureArrayId}.
+     * Get {@link #mgfxTextureArray}.
      *
-     * @return {@link #mgfxTextureArrayId}
+     * @return {@link #mgfxTextureArray}
      */
-    public static int getMgfxTextureArrayId() {
-        return mgfxTextureArrayId;
+    public static Texture getMgfxTextureArray() {
+        return mgfxTextureArray;
     }
 
     /**
-     * Get {@link #sgfxTextureArrayId}.
+     * Get {@link #sgfxTextureArray}.
      *
-     * @return {@link #sgfxTextureArrayId}
+     * @return {@link #sgfxTextureArray}
      */
-    public static int getSgfxTextureArrayId() {
-        return sgfxTextureArrayId;
+    public static Texture getSgfxTextureArray() {
+        return sgfxTextureArray;
     }
 
     //-------------------------------------------------
@@ -305,11 +313,11 @@ public final class TileAtlas {
      * Create GFX texture array.
      */
     private static void createGfxTextureArray() {
-        gfxTextureArrayId = Texture.generateNewTextureId();
-        Texture.bind(gfxTextureArrayId, GL_TEXTURE_2D_ARRAY);
+        gfxTextureArray = new Texture();
+        Texture.bind(gfxTextureArray.getId(), GL_TEXTURE_2D_ARRAY);
 
         glTextureStorage3D(
-                gfxTextureArrayId,
+                gfxTextureArray.getId(),
                 1,
                 GL_RGBA8,
                 (int)MAX_GFX_WIDTH * NR_OF_GFX_ROWS,
@@ -320,7 +328,7 @@ public final class TileAtlas {
         var zOffset = 0;
         for (var atlas : gfxAtlasImages) {
             glTextureSubImage3D(
-                    gfxTextureArrayId,
+                    gfxTextureArray.getId(),
                     0,
                     0, 0,
                     zOffset,
@@ -342,11 +350,11 @@ public final class TileAtlas {
      * Create MGFX texture array.
      */
     private static void createMGfxTextureArray() {
-        mgfxTextureArrayId = Texture.generateNewTextureId();
-        Texture.bind(mgfxTextureArrayId, GL_TEXTURE_2D_ARRAY);
+        mgfxTextureArray = new Texture();
+        Texture.bind(mgfxTextureArray.getId(), GL_TEXTURE_2D_ARRAY);
 
         glTextureStorage3D(
-                mgfxTextureArrayId,
+                mgfxTextureArray.getId(),
                 1,
                 GL_RGBA8,
                 (int)MAX_MGFX_WIDTH * NR_OF_MGFX_ROWS,
@@ -357,7 +365,7 @@ public final class TileAtlas {
         var zOffset = 0;
         for (var atlas : mgfxAtlasImages) {
             glTextureSubImage3D(
-                    mgfxTextureArrayId,
+                    mgfxTextureArray.getId(),
                     0,
                     0, 0,
                     zOffset,
@@ -379,11 +387,11 @@ public final class TileAtlas {
      * Create SGFX texture array.
      */
     private static void createSGfxTextureArray() {
-        sgfxTextureArrayId = Texture.generateNewTextureId();
-        Texture.bind(sgfxTextureArrayId, GL_TEXTURE_2D_ARRAY);
+        sgfxTextureArray = new Texture();
+        Texture.bind(sgfxTextureArray.getId(), GL_TEXTURE_2D_ARRAY);
 
         glTextureStorage3D(
-                sgfxTextureArrayId,
+                sgfxTextureArray.getId(),
                 1,
                 GL_RGBA8,
                 (int)MAX_SGFX_WIDTH * NR_OF_SGFX_ROWS,
@@ -394,7 +402,7 @@ public final class TileAtlas {
         var zOffset = 0;
         for (var atlas : sgfxAtlasImages) {
             glTextureSubImage3D(
-                    sgfxTextureArrayId,
+                    sgfxTextureArray.getId(),
                     0,
                     0, 0,
                     zOffset,

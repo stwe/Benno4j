@@ -12,15 +12,9 @@ import de.sg.benno.BennoConfig;
 import de.sg.benno.TileAtlas;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.input.Camera;
+import de.sg.benno.ogl.Config;
+import de.sg.benno.ogl.OpenGL;
 import de.sg.benno.state.Context;
-import de.sg.ogl.Config;
-import de.sg.ogl.OpenGL;
-import de.sg.ogl.buffer.Vao;
-import de.sg.ogl.buffer.Vbo;
-import de.sg.ogl.buffer.Vertex2D;
-import de.sg.ogl.resource.Geometry;
-import de.sg.ogl.resource.Shader;
-import de.sg.ogl.resource.Texture;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 
@@ -29,7 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import static de.sg.benno.TileAtlas.*;
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL15.GL_DYNAMIC_DRAW;
@@ -475,10 +469,8 @@ public class IslandRenderer {
 
     /**
      * Update renderer.
-     *
-     * @param dt The delta time.
      */
-    public void update(float dt) {
+    public void update() {
         /*
         max values:
         max anzahl 16 (time 90) = 1440 ms

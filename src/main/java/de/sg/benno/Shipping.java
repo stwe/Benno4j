@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * Represents the shipping.
@@ -218,10 +218,8 @@ public class Shipping {
 
     /**
      * Updates all ships.
-     *
-     * @param dt The delta time.
      */
-    public void update(float dt) {
+    public void update() {
         /*
         dt *= 16.0f;
         if (target != null) {

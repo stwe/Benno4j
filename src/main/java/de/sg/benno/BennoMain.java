@@ -18,7 +18,7 @@ public class BennoMain {
 
     public static void main(String[] args) {
         try {
-            var engine = new OglEngine(new TestApp());
+            var engine = new OglEngine(new GameApp());
             engine.run();
         } catch (Exception e) {
             e.printStackTrace();

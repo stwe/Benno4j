@@ -16,7 +16,7 @@ import java.awt.image.DataBufferByte;
 import java.io.IOException;
 import java.util.Objects;
 
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * Represents an ImageFile.

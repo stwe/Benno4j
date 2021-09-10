@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Objects;
 
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * Represents a PaletteFile.

@@ -8,15 +8,15 @@
 
 package de.sg.benno.input;
 
+import de.sg.benno.ogl.Config;
+import de.sg.benno.ogl.resource.Texture;
 import de.sg.benno.renderer.TileGraphicRenderer;
 import de.sg.benno.state.Context;
-import de.sg.ogl.Config;
-import de.sg.ogl.resource.Texture;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * 2D collision detection with axis-aligned bounding boxes (AABB).

@@ -13,19 +13,17 @@ import de.sg.benno.Water;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.file.ImageFile;
 import de.sg.benno.input.Camera;
+import de.sg.benno.ogl.resource.Texture;
 import de.sg.benno.renderer.TileGraphicRenderer;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
-import de.sg.ogl.input.MouseInput;
-import de.sg.ogl.renderer.TileRenderer;
-import de.sg.ogl.resource.Texture;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
 import java.util.HashMap;
 import java.util.Objects;
 
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_2;
 
@@ -169,11 +167,10 @@ public class MousePicker {
     /**
      * Handle mouse clicks.
      *
-     * @param dt The delta time.
      * @param camera The {@link Camera} object.
      * @param zoom The current {@link Zoom}.
      */
-    public void update(float dt, Camera camera, Zoom zoom) {
+    public void update(Camera camera, Zoom zoom) {
         if (MouseInput.isMouseInWindow()) {
 
             // select ship with left mouse button

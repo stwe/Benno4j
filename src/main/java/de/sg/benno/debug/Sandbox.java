@@ -17,11 +17,10 @@ import de.sg.benno.chunk.WorldData;
 import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
-import de.sg.ogl.input.KeyInput;
 
 import java.util.Objects;
 
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_3;
 
@@ -166,10 +165,8 @@ public class Sandbox {
 
     /**
      * Update sandbox.
-     *
-     * @param dt The delta time.
      */
-    public void update(float dt) {
+    public void update() {
         // change zoom
         if (KeyInput.isKeyPressed(GLFW_KEY_1)) {
             currentZoom = Zoom.SGFX;
@@ -187,8 +184,8 @@ public class Sandbox {
         }
 
         camera.update(currentZoom);
-        shipping.update(dt);
-        mousePicker.update(dt, camera, currentZoom);
+        shipping.update();
+        mousePicker.update(camera, currentZoom);
     }
 
     /**

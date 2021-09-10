@@ -9,10 +9,10 @@
 package de.sg.benno.state;
 
 import de.sg.benno.file.BennoFiles;
-import de.sg.ogl.SgOglEngine;
-import de.sg.ogl.state.StateContext;
+import de.sg.benno.ogl.OglEngine;
+import de.sg.benno.ogl.state.StateContext;
 
 public class Context implements StateContext {
-    public SgOglEngine engine;
+    public OglEngine engine;
     public BennoFiles bennoFiles;
 }

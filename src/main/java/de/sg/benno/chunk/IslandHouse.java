@@ -16,7 +16,7 @@ import java.util.Optional;
 
 import static de.sg.benno.Util.*;
 import static de.sg.benno.chunk.Tile.BYTES_PER_TILE;
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * Represents a tile layer consists of many tiles.

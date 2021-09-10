@@ -10,13 +10,9 @@ package de.sg.benno.input;
 
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
-import de.sg.ogl.camera.OrthographicCamera;
-import de.sg.ogl.input.KeyInput;
-import de.sg.ogl.input.MouseInput;
 import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFW;
 
-import static de.sg.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
 

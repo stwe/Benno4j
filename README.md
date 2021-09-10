@@ -13,15 +13,12 @@ Due to copyright law, I cannot include the original graphics.
 
 The project works with:
 
-- NINA ("Neue Inseln, Neue Abenteuer")
-- History Edition
+-  NINA ("Neue Inseln, Neue Abenteuer")
+-  History Edition
 
 ## Build instructions
 
 **For different reasons, two files (`base.json`, `buildings.json`) are currently missing for a build. Let me know if these are needed.**
-
-The project comes with the `SgOgl4j` jar file for windows and linux. 
-This library is under the "lib" folder and is needed to build. Right click on it and select "Add as library".
 
 The file `benno.properties` must be edited. Enter the correct path to the savegames and the game there.
 

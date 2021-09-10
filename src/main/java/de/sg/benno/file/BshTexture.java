@@ -8,7 +8,7 @@
 
 package de.sg.benno.file;
 
-import de.sg.ogl.resource.Texture;
+import de.sg.benno.ogl.resource.Texture;
 
 import java.awt.image.BufferedImage;
 import java.util.Objects;

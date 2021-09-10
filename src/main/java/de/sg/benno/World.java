@@ -15,12 +15,11 @@ import de.sg.benno.input.Camera;
 import de.sg.benno.input.MousePicker;
 import de.sg.benno.renderer.*;
 import de.sg.benno.state.Context;
-import de.sg.ogl.input.KeyInput;
 import org.joml.Vector2f;
 
 import java.util.Objects;
 
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_3;
 
@@ -222,10 +221,8 @@ public class World {
 
     /**
      * Update world.
-     *
-     * @param dt The delta time.
      */
-    public void update(float dt) {
+    public void update() {
         // wireframe flag
         if (KeyInput.isKeyPressed(GLFW_KEY_G)) {
             KeyInput.input(); // todo: a workaround
@@ -250,10 +247,10 @@ public class World {
 
         camera.update(currentZoom);
         //water.update();
-        terrain.update(dt);
-        shipping.update(dt);
+        terrain.update();
+        shipping.update();
         miniMap.update(currentZoom);
-        mousePicker.update(dt, camera, currentZoom);
+        mousePicker.update(camera, currentZoom);
     }
 
     /**

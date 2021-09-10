@@ -10,12 +10,11 @@ package de.sg.benno.debug;
 
 import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.chunk.WorldData;
+import de.sg.benno.ogl.state.ApplicationState;
+import de.sg.benno.ogl.state.StateMachine;
 import de.sg.benno.state.Context;
-import de.sg.ogl.input.KeyInput;
-import de.sg.ogl.state.ApplicationState;
-import de.sg.ogl.state.StateMachine;
 
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 
@@ -77,8 +76,8 @@ public class SandboxState extends ApplicationState {
     }
 
     @Override
-    public void update(float dt) {
-        sandbox.update(dt);
+    public void update() {
+        sandbox.update();
     }
 
     @Override

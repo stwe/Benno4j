@@ -25,7 +25,7 @@ import java.util.*;
 
 import static de.sg.benno.World.WORLD_HEIGHT;
 import static de.sg.benno.World.WORLD_WIDTH;
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * Represents the terrain, i.e. all islands in the world.
@@ -152,11 +152,9 @@ public class Terrain {
 
     /**
      * Update {@link #islandRenderer}.
-     *
-     * @param dt The delta time.
      */
-    public void update(float dt) {
-        islandRenderer.forEach((k, v) -> v.update(dt));
+    public void update() {
+        islandRenderer.forEach((k, v) -> v.update());
     }
 
     /**

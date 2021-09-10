@@ -12,13 +12,13 @@ import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.World;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.gui.WorldUi;
+import de.sg.benno.ogl.state.ApplicationState;
+import de.sg.benno.ogl.state.StateMachine;
 import de.sg.ogl.input.KeyInput;
-import de.sg.ogl.state.ApplicationState;
-import de.sg.ogl.state.StateMachine;
 
 import java.io.IOException;
 
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class GameState extends ApplicationState {
@@ -95,8 +95,8 @@ public class GameState extends ApplicationState {
     }
 
     @Override
-    public void update(float dt) {
-        world.update(dt);
+    public void update() {
+        world.update();
     }
 
     @Override

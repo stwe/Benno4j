@@ -11,8 +11,8 @@ package de.sg.benno.file;
 import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.Util;
 import de.sg.benno.chunk.Chunk;
+import de.sg.benno.ogl.resource.Texture;
 import de.sg.benno.renderer.Zoom;
-import de.sg.ogl.resource.Texture;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -24,7 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.GL_RGBA8;
 import static org.lwjgl.opengl.GL12.GL_BGRA;

@@ -15,7 +15,7 @@ import java.util.Objects;
 
 import static de.sg.benno.Util.shortToInt;
 import static de.sg.benno.chunk.Ship4.ShipType.*;
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * Represents a Ship4. Maps th C structure Ship.

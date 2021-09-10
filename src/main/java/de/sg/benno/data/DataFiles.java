@@ -17,7 +17,7 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Objects;
 
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * Represents a DataFiles object.

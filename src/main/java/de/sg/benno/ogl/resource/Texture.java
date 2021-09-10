@@ -36,14 +36,14 @@ public class Texture implements Resource {
     /**
      * The texture file path.
      */
-    private final String path;
+    private String path;
 
     /**
      * OpenGL expects the 0.0 coordinate on the y-axis to be on the bottom side of the image,
      * but images usually have 0.0 at the top of the y-axis.
      * Setting this option flip the y-axis during image loading.
      */
-    private final boolean loadVerticalFlipped;
+    private boolean loadVerticalFlipped;
 
     /**
      * The texture id.
@@ -95,6 +95,14 @@ public class Texture implements Resource {
      */
     public Texture(String path) {
         this(path, false);
+    }
+
+    /**
+     * Constructs a new {@link Texture} object.
+     * Only an Id is created.
+     */
+    public Texture() {
+        createId();
     }
 
     //-------------------------------------------------
@@ -183,7 +191,11 @@ public class Texture implements Resource {
      * @param nrChannels The number of color channels.
      */
     public void setNrChannels(int nrChannels) {
-        this.nrChannels = nrChannels;
+        if (nrChannels == 1 || nrChannels == 3 || nrChannels == 4) {
+            this.nrChannels = nrChannels;
+        } else {
+            throw new OglRuntimeException("Invalid number of channels given.");
+        }
     }
 
     /**
@@ -192,7 +204,11 @@ public class Texture implements Resource {
      * @param format The internal format.
      */
     public void setFormat(int format) {
-        this.format = format;
+        if (format == GL_RED || format == GL_RGB || format == GL_RGBA) {
+            this.format = format;
+        } else {
+            throw new OglRuntimeException("Invalid format given.");
+        }
     }
 
     //-------------------------------------------------
@@ -238,17 +254,17 @@ public class Texture implements Resource {
                         + System.lineSeparator() + stbi_failure_reason());
             }
 
-            width = x.get();
-            height = y.get();
-            nrChannels = channels.get();
+            setWidth(x.get());
+            setHeight(y.get());
+            setNrChannels(channels.get());
         }
 
         if (nrChannels == STBI_grey)
-            format = GL_RED;
+            setFormat(GL_RED);
         else if (nrChannels == STBI_rgb)
-            format = GL_RGB;
+            setFormat(GL_RGB);
         else if (nrChannels == STBI_rgb_alpha)
-            format = GL_RGBA;
+            setFormat(GL_RGBA);
 
         createId();
         bind();

@@ -27,7 +27,7 @@ import java.util.*;
 
 import static de.sg.benno.World.WORLD_HEIGHT;
 import static de.sg.benno.World.WORLD_WIDTH;
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * Represents Water.

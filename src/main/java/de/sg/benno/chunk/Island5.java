@@ -23,7 +23,7 @@ import java.util.*;
 
 import static de.sg.benno.TileUtil.ANGLE_TO_THE_HORIZONTAL;
 import static de.sg.benno.Util.*;
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * Represents an Island5. An Island5 includes one or more {@link IslandHouse} chunks.

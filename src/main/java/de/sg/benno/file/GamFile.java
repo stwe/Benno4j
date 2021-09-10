@@ -19,7 +19,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.*;
 
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * Loads a savegame (GAM file).

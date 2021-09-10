@@ -13,10 +13,10 @@ import de.sg.benno.chunk.Tile;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.input.Aabb;
 import de.sg.benno.input.Camera;
+import de.sg.benno.ogl.resource.Texture;
 import de.sg.benno.renderer.MiniMapRenderer;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
-import de.sg.ogl.resource.Texture;
 import org.joml.Vector2f;
 import org.joml.Vector4i;
 import org.lwjgl.BufferUtils;
@@ -27,7 +27,7 @@ import java.util.Objects;
 
 import static de.sg.benno.World.WORLD_HEIGHT;
 import static de.sg.benno.World.WORLD_WIDTH;
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
@@ -139,6 +139,7 @@ public class MiniMap {
      * @param provider The {@link WorldData} object.
      * @param context The {@link Context} object.
      * @param camera The {@link Camera} object to display in the minimap.
+     * @param zoom The current {@link Zoom}.
      * @throws Exception If an error is thrown.
      */
     public MiniMap(WorldData provider, Context context, Camera camera, Zoom zoom) throws Exception {

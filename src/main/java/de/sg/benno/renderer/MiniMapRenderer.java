@@ -8,19 +8,16 @@
 
 package de.sg.benno.renderer;
 
+import de.sg.benno.ogl.OpenGL;
+import de.sg.benno.ogl.resource.Texture;
 import de.sg.benno.state.Context;
-import de.sg.ogl.OpenGL;
-import de.sg.ogl.buffer.Vao;
-import de.sg.ogl.resource.Geometry;
-import de.sg.ogl.resource.Shader;
-import de.sg.ogl.resource.Texture;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import java.util.Objects;
 
-import static de.sg.ogl.Log.LOGGER;
+import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL13.*;
 
