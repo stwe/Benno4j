@@ -56,6 +56,11 @@ public class MousePicker {
     //-------------------------------------------------
 
     /**
+     * The {@link Context} object.
+     */
+    private final Context context;
+
+    /**
      * Renders a highlighted tile.
      */
     private final TileRenderer tileRenderer;
@@ -117,7 +122,7 @@ public class MousePicker {
     public MousePicker(Context context, Water water, Shipping shipping, TileGraphic.TileHeight searchMode) throws Exception {
         LOGGER.debug("Creates MousePicker object.");
 
-        Objects.requireNonNull(context, "context must not be null");
+        this.context = Objects.requireNonNull(context, "context must not be null");
         this.tileRenderer = new TileRenderer(context.engine);
         this.tileGraphicRenderer = new TileGraphicRenderer(context);
 
@@ -171,10 +176,11 @@ public class MousePicker {
      * @param zoom The current {@link Zoom}.
      */
     public void update(Camera camera, Zoom zoom) {
-        if (MouseInput.isMouseInWindow()) {
+        var mouseInput = context.engine.getMouseInput();
+        if (mouseInput.isInWindow()) {
 
             // select ship with left mouse button
-            if (MouseInput.isMouseButtonDown(GLFW_MOUSE_BUTTON_1)) {
+            if (mouseInput.isLeftButtonPressed()) {
                 // todo: selected evtl. besser mit Aabb's ausarbeiten
 
                 // get world position of the tile under mouse
@@ -193,7 +199,7 @@ public class MousePicker {
             }
 
             // set target with right mouse button
-            if (MouseInput.isMouseButtonDown(GLFW_MOUSE_BUTTON_2)) {
+            if (mouseInput.isRightButtonPressed()) {
                 // get world position of the tile under mouse
                 var selected = getTileUnderMouse(camera, zoom);
 
@@ -224,7 +230,7 @@ public class MousePicker {
      * @param zoom The current {@link Zoom}
      */
     public void render(Camera camera, Zoom zoom) {
-        if (MouseInput.isMouseInWindow()) {
+        if (context.engine.getMouseInput().isInWindow()) {
             // get world position of the tile under mouse
             var worldPosition = getTileUnderMouse(camera, zoom);
 
@@ -304,13 +310,15 @@ public class MousePicker {
     private Vector2i getActiveCell(Zoom zoom) {
         var wh = getTileWidthAndHeight(zoom);
 
+        var mouseInput = context.engine.getMouseInput();
+
         var cell = new Vector2i();
-        cell.x = (int)MouseInput.getX() / wh.x;
+        cell.x = (int)mouseInput.getX() / wh.x;
 
         if (searchMode == TileGraphic.TileHeight.CLIFF) {
-            cell.y = ((int) MouseInput.getY() + zoom.defaultTileHeightHalf) / wh.y;
+            cell.y = ((int)mouseInput.getY() + zoom.defaultTileHeightHalf) / wh.y;
         } else {
-            cell.y = (int) MouseInput.getY() / wh.y;
+            cell.y = (int)mouseInput.getY() / wh.y;
         }
 
         return cell;
@@ -326,13 +334,15 @@ public class MousePicker {
     private Vector2i getCellOffset(Zoom zoom) {
         var wh = getTileWidthAndHeight(zoom);
 
+        var mouseInput = context.engine.getMouseInput();
+
         var offset = new Vector2i();
-        offset.x = (int)MouseInput.getX() % wh.x;
+        offset.x = (int)mouseInput.getX() % wh.x;
 
         if (searchMode == TileGraphic.TileHeight.CLIFF) {
-            offset.y = ((int) MouseInput.getY() + zoom.defaultTileHeightHalf) % wh.y;
+            offset.y = ((int)mouseInput.getY() + zoom.defaultTileHeightHalf) % wh.y;
         } else {
-            offset.y = (int) MouseInput.getY() % wh.y;
+            offset.y = (int)mouseInput.getY() % wh.y;
         }
 
         return offset;

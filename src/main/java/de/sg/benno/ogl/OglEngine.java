@@ -8,6 +8,8 @@
 
 package de.sg.benno.ogl;
 
+import de.sg.benno.ogl.input.MouseInput;
+import de.sg.benno.ogl.resource.ResourceManager;
 import imgui.ImGui;
 import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
@@ -48,6 +50,16 @@ public class OglEngine implements Runnable {
     private final Window window;
 
     /**
+     * A {@link MouseInput} object for mouse access.
+     */
+    private final MouseInput mouseInput;
+
+    /**
+     * The {@link ResourceManager} object.
+     */
+    private final ResourceManager resourceManager;
+
+    /**
      * An {@link ImGuiImplGlfw} object.
      */
     private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
@@ -73,6 +85,8 @@ public class OglEngine implements Runnable {
         this.application.setEngine(this);
 
         this.window = new Window();
+        this.mouseInput = new MouseInput();
+        this.resourceManager = new ResourceManager();
     }
 
     //-------------------------------------------------
@@ -86,6 +100,24 @@ public class OglEngine implements Runnable {
      */
     public Window getWindow() {
         return window;
+    }
+
+    /**
+     * Get {@link MouseInput}.
+     *
+     * @return {@link MouseInput}
+     */
+    public MouseInput getMouseInput() {
+        return mouseInput;
+    }
+
+    /**
+     * Get {@link ResourceManager}.
+     *
+     * @return {@link ResourceManager}
+     */
+    public ResourceManager getResourceManager() {
+        return resourceManager;
     }
 
     //-------------------------------------------------
@@ -121,6 +153,7 @@ public class OglEngine implements Runnable {
         LOGGER.debug("Initializing OglEngine.");
 
         window.init();
+        mouseInput.init(window);
 
         imGuiGlfw.init(window.getWindowHandle(), true);
         imGuiGl3.init("#version 130");
@@ -132,6 +165,7 @@ public class OglEngine implements Runnable {
      * Get the input.
      */
     private void input() {
+        mouseInput.input();
         application.input();
     }
 
@@ -250,6 +284,8 @@ public class OglEngine implements Runnable {
         imGuiGlfw.dispose();
 
         window.cleanUp();
+        resourceManager.cleanUp();
+
         application.cleanUp();
     }
 }

@@ -10,6 +10,7 @@ package de.sg.benno.debug;
 
 import de.sg.benno.chunk.Ship4;
 import de.sg.benno.ogl.Config;
+import de.sg.benno.state.Context;
 import imgui.ImColor;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiCond;
@@ -121,8 +122,9 @@ public class DebugUi {
         ImGui.text("Mouse position in screen space");
         ImGui.popStyleColor();
 
-        ImGui.text("Screen x: " + MouseInput.getX());
-        ImGui.text("Screen y: " + MouseInput.getY());
+        var context = (Context)sandboxState.getStateMachine().getStateContext();
+        ImGui.text("Screen x: " + context.engine.getMouseInput().getX());
+        ImGui.text("Screen y: " + context.engine.getMouseInput().getY());
     }
 
     /**

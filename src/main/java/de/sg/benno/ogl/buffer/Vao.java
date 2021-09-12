@@ -195,7 +195,7 @@ public class Vao implements Buffer {
         unbind();
 
         // set draw count
-        setDrawCount(drawCount);
+        setDrawCount(6);
     }
 
     //-------------------------------------------------

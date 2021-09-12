@@ -12,6 +12,7 @@ import de.sg.benno.*;
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.file.ImageFile;
+import de.sg.benno.ogl.resource.Texture;
 import de.sg.benno.renderer.TileGraphicRenderer;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
@@ -22,6 +23,7 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
 
+import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_2;
 
@@ -57,6 +59,11 @@ public class MousePicker {
     //-------------------------------------------------
     // Member
     //-------------------------------------------------
+
+    /**
+     * The {@link Context} object.
+     */
+    private final Context context;
 
     /**
      * Renders a highlighted tile.
@@ -133,7 +140,7 @@ public class MousePicker {
     public MousePicker(Context context, Water water, Terrain terrain, Shipping shipping, TileGraphic.TileHeight searchMode) throws Exception {
         LOGGER.debug("Creates MousePicker object.");
 
-        Objects.requireNonNull(context, "context must not be null");
+        this.context = Objects.requireNonNull(context, "context must not be null");
         this.tileRenderer = new TileRenderer(context.engine);
         this.tileGraphicRenderer = new TileGraphicRenderer(context);
 
@@ -225,10 +232,11 @@ public class MousePicker {
      * @param zoom The current {@link Zoom}.
      */
     public void update(Camera camera, Zoom zoom) {
-        if (MouseInput.isMouseInWindow()) {
+        var mouseInput = context.engine.getMouseInput();
+        if (mouseInput.isInWindow()) {
 
             // select ship
-            if (MouseInput.isMouseButtonDown(GLFW_MOUSE_BUTTON_1)) {
+            if (mouseInput.isLeftButtonPressed()) {
                 // todo: selected evtl. besser mit Aabb's ausarbeiten
 
                 // get tile under mouse
@@ -247,7 +255,7 @@ public class MousePicker {
             }
 
             // set target
-            if (MouseInput.isMouseButtonDown(GLFW_MOUSE_BUTTON_2)) {
+            if (mouseInput.isRightButtonPressed()) {
                 // get tile under mouse
                 var selected = getTileUnderMouse(camera, zoom);
 
@@ -300,7 +308,7 @@ public class MousePicker {
      * @param zoom The current {@link Zoom}
      */
     public void render(Camera camera, Zoom zoom) {
-        if (MouseInput.isMouseInWindow()) {
+        if (context.engine.getMouseInput().isInWindow()) {
             // get tile under mouse
             var worldPosition = getTileUnderMouse(camera, zoom);
 
@@ -415,13 +423,15 @@ public class MousePicker {
     private Vector2i getActiveCell(Zoom zoom) {
         var wh = getTileWidthAndHeight(zoom);
 
+        var mouseInput = context.engine.getMouseInput();
+
         var cell = new Vector2i();
-        cell.x = (int)MouseInput.getX() / wh.x;
+        cell.x = (int)mouseInput.getX() / wh.x;
 
         if (searchMode == TileGraphic.TileHeight.CLIFF) {
-            cell.y = ((int) MouseInput.getY() + zoom.defaultTileHeightHalf) / wh.y;
+            cell.y = ((int)mouseInput.getY() + zoom.defaultTileHeightHalf) / wh.y;
         } else {
-            cell.y = (int) MouseInput.getY() / wh.y;
+            cell.y = (int)mouseInput.getY() / wh.y;
         }
 
         return cell;
@@ -437,13 +447,15 @@ public class MousePicker {
     private Vector2i getCellOffset(Zoom zoom) {
         var wh = getTileWidthAndHeight(zoom);
 
+        var mouseInput = context.engine.getMouseInput();
+
         var offset = new Vector2i();
-        offset.x = (int)MouseInput.getX() % wh.x;
+        offset.x = (int)mouseInput.getX() % wh.x;
 
         if (searchMode == TileGraphic.TileHeight.CLIFF) {
-            offset.y = ((int) MouseInput.getY() + zoom.defaultTileHeightHalf) % wh.y;
+            offset.y = ((int)mouseInput.getY() + zoom.defaultTileHeightHalf) % wh.y;
         } else {
-            offset.y = (int) MouseInput.getY() % wh.y;
+            offset.y = (int)mouseInput.getY() % wh.y;
         }
 
         return offset;

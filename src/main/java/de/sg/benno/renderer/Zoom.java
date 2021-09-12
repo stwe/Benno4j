@@ -9,12 +9,14 @@
 package de.sg.benno.renderer;
 
 import de.sg.benno.BennoConfig;
+import de.sg.benno.ogl.camera.CameraZoom;
 import org.joml.Vector2i;
 
 /**
  * Represents a zoom level with the respective constants.
  */
-public enum Zoom {
+public enum Zoom implements CameraZoom {
+
     /**
      * Small zoom graphics.
      */
@@ -34,45 +36,106 @@ public enum Zoom {
     // Member
     //-------------------------------------------------
 
-    public int defaultTileWidthHalf;
-    public int defaultTileHeightHalf;
-    public int elevation;
-    public int defaultTileWidth;
-    public int defaultTileHeight;
-    public int speedFactor;
+    /**
+     * The tile width half.
+     */
+    private int tileWidthHalf;
 
+    /**
+     * The tile height half.
+     */
+    private int tileHeightHalf;
+
+    /**
+     * The tile elevation.
+     */
+    private int elevation;
+
+    /**
+     * The tile width.
+     */
+    private int tileWidth;
+
+    /**
+     * The tile height.
+     */
+    private int tileHeight;
+
+    /**
+     * The configured speed factor.
+     */
+    private int speedFactor;
+
+    /**
+     * The camera speed.
+     */
     private final Vector2i cameraSpeed = new Vector2i();
 
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
+    /**
+     * Constructs a new {@link Zoom}.
+     *
+     * @param tileWidthHalf The tile width half.
+     * @param tileHeightHalf The tile height half.
+     * @param elevation The tile elevation.
+     * @param tileWidth The tile width.
+     * @param tileHeight The tile height.
+     * @param speedFactor The camera speed.
+     */
     Zoom(
-            int defaultTileWidthHalf, int defaultTileHeightHalf,
+            int tileWidthHalf, int tileHeightHalf,
             int elevation,
-            int defaultTileWidth, int defaultTileHeight,
+            int tileWidth, int tileHeight,
             int speedFactor
     ) {
-        this.defaultTileWidthHalf = defaultTileWidthHalf;
-        this.defaultTileHeightHalf = defaultTileHeightHalf;
+        this.tileWidthHalf = tileWidthHalf;
+        this.tileHeightHalf = tileHeightHalf;
         this.elevation = elevation;
-        this.defaultTileWidth = defaultTileWidth;
-        this.defaultTileHeight = defaultTileHeight;
-
+        this.tileWidth = tileWidth;
+        this.tileHeight = tileHeight;
         this.speedFactor = speedFactor;
 
         calcCameraSpeed();
     }
 
     //-------------------------------------------------
-    // Getter
+    // Implement CameraZoom
     //-------------------------------------------------
 
-    /**
-     * Get {@link #cameraSpeed}.
-     *
-     * @return {@link #cameraSpeed}
-     */
+    @Override
+    public int getTileWidthHalf() {
+        return tileWidthHalf;
+    }
+
+    @Override
+    public int getTileHeightHalf() {
+        return tileHeightHalf;
+    }
+
+    @Override
+    public int getElevation() {
+        return elevation;
+    }
+
+    @Override
+    public int getTileWidth() {
+        return tileWidth;
+    }
+
+    @Override
+    public int getTileHeight() {
+        return tileHeight;
+    }
+
+    @Override
+    public int getSpeedFactor() {
+        return speedFactor;
+    }
+
+    @Override
     public Vector2i getCameraSpeed() {
         return cameraSpeed;
     }
@@ -86,13 +149,7 @@ public enum Zoom {
      * The camera moves in world space units.
      */
     private void calcCameraSpeed() {
-        this.cameraSpeed.x = defaultTileWidth * speedFactor;
-
-        // the default tile height in GFX is 31, which must be corrected to 32
-        if (defaultTileHeight != 31) {
-            this.cameraSpeed.y = defaultTileHeight * speedFactor;
-        } else {
-            this.cameraSpeed.y = 32 * speedFactor;
-        }
+        this.cameraSpeed.x = tileWidth * speedFactor;
+        this.cameraSpeed.y = (tileHeightHalf * 2) * speedFactor; // GFX height is 31, which must be corrected to 32
     }
 }
