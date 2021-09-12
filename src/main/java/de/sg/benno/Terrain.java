@@ -12,8 +12,8 @@ import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.file.BennoFiles;
-import de.sg.benno.input.Aabb;
 import de.sg.benno.input.Camera;
+import de.sg.benno.ogl.physics.Aabb;
 import de.sg.benno.renderer.IslandRenderer;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
@@ -303,10 +303,10 @@ public class Terrain {
                     tileGraphic.worldPosition.y = y;
 
                     // calc screen position
-                    var screenPosition = TileUtil.worldToScreen(x, y, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf);
+                    var screenPosition = TileUtil.worldToScreen(x, y, zoom.getTileWidthHalf(), zoom.getTileHeightHalf());
 
                     // calc height correction
-                    var adjustHeight = TileUtil.adjustHeight(zoom.defaultTileHeightHalf, tileGraphic.tileHeight.value, zoom.elevation);
+                    var adjustHeight = TileUtil.adjustHeight(zoom.getTileHeightHalf(), tileGraphic.tileHeight.value, zoom.getElevation());
 
                     // set screen position
                     screenPosition.y += adjustHeight;

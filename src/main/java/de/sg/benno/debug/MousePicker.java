@@ -24,8 +24,6 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import static de.sg.benno.ogl.Log.LOGGER;
-import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
-import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_2;
 
 /**
  * Represents a MousePicker
@@ -152,12 +150,12 @@ public class MousePicker {
 
         var cornerMgfxImage = ImageFile.resizeImage(
                 cornerGfxImageFile.getImage(),
-                Zoom.MGFX.defaultTileWidth, Zoom.MGFX.defaultTileHeight
+                Zoom.MGFX.getTileWidth(), Zoom.MGFX.getTileHeight()
         );
 
         var cornerSgfxImage = ImageFile.resizeImage(
                 cornerGfxImageFile.getImage(),
-                Zoom.SGFX.defaultTileWidth, Zoom.SGFX.defaultTileHeight
+                Zoom.SGFX.getTileWidth(), Zoom.SGFX.getTileHeight()
         );
 
         corners.put(Zoom.GFX, cornerGfxImageFile);
@@ -271,7 +269,7 @@ public class MousePicker {
         var scale = new Vector2f(size.x, size.y);
 
         if (searchMode == TileGraphic.TileHeight.CLIFF) {
-            pos.y -= (float)TileGraphic.TileHeight.CLIFF.value / zoom.elevation;
+            pos.y -= (float)TileGraphic.TileHeight.CLIFF.value / zoom.getElevation();
         }
 
         tileRenderer.render(rectangleTexture.getId(), pos, scale);
@@ -290,12 +288,8 @@ public class MousePicker {
      * @return The width and height as {@link Vector2i}
      */
     private static Vector2i getTileWidthAndHeight(Zoom zoom) {
-        var width = zoom.defaultTileWidth;
-
-        var height = zoom.defaultTileHeight;
-        if (height == 31) {
-            height = 32;
-        }
+        var width = zoom.getTileWidth();
+        var height = zoom.getTileHeightHalf() * 2;
 
         return new Vector2i(width, height);
     }
@@ -316,7 +310,7 @@ public class MousePicker {
         cell.x = (int)mouseInput.getX() / wh.x;
 
         if (searchMode == TileGraphic.TileHeight.CLIFF) {
-            cell.y = ((int)mouseInput.getY() + zoom.defaultTileHeightHalf) / wh.y;
+            cell.y = ((int)mouseInput.getY() + zoom.getTileHeightHalf()) / wh.y;
         } else {
             cell.y = (int)mouseInput.getY() / wh.y;
         }
@@ -340,7 +334,7 @@ public class MousePicker {
         offset.x = (int)mouseInput.getX() % wh.x;
 
         if (searchMode == TileGraphic.TileHeight.CLIFF) {
-            offset.y = ((int)mouseInput.getY() + zoom.defaultTileHeightHalf) % wh.y;
+            offset.y = ((int)mouseInput.getY() + zoom.getTileHeightHalf()) % wh.y;
         } else {
             offset.y = (int)mouseInput.getY() % wh.y;
         }

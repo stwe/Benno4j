@@ -13,7 +13,7 @@ import de.sg.benno.TileUtil;
 import de.sg.benno.data.Building;
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.file.ScpFile;
-import de.sg.benno.input.Aabb;
+import de.sg.benno.ogl.physics.Aabb;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
 import org.joml.Vector2f;
@@ -152,7 +152,7 @@ public class Island5 {
     private IslandHouse bottomLayer;
 
     /**
-     * An {@link Aabb} object for each {@link de.sg.benno.renderer.Zoom}.
+     * An {@link Aabb} object for each {@link Zoom}.
      */
     private final HashMap<Zoom, Aabb> aabbs = new HashMap<>();
 
@@ -400,7 +400,7 @@ public class Island5 {
      */
     private void createAabbs(Context context) throws Exception {
         for (var zoom : Zoom.values()) {
-            float l = (zoom.defaultTileWidthHalf * zoom.defaultTileWidthHalf) + (zoom.defaultTileHeightHalf * zoom.defaultTileHeightHalf);
+            float l = (zoom.getTileWidthHalf() * zoom.getTileWidthHalf()) + (zoom.getTileHeightHalf() * zoom.getTileHeightHalf());
             l = (float)Math.sqrt(l);
 
             float c = l * height;
@@ -409,8 +409,8 @@ public class Island5 {
             float b = (c * c) - (a * a);
             b = (float)Math.sqrt(b);
 
-            var aabb = new Aabb(context);
-            var screenStart = TileUtil.worldToScreen(xPos, yPos, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf);
+            var aabb = new Aabb(context.engine);
+            var screenStart = TileUtil.worldToScreen(xPos, yPos, zoom.getTileWidthHalf(), zoom.getTileHeightHalf());
             aabb.position = new Vector2f(screenStart);
             aabb.position.x -= a;
 

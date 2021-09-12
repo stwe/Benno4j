@@ -11,8 +11,8 @@ package de.sg.benno;
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.Tile;
 import de.sg.benno.chunk.WorldData;
-import de.sg.benno.input.Aabb;
 import de.sg.benno.input.Camera;
+import de.sg.benno.ogl.physics.Aabb;
 import de.sg.benno.ogl.resource.Texture;
 import de.sg.benno.renderer.MiniMapRenderer;
 import de.sg.benno.renderer.Zoom;
@@ -289,10 +289,10 @@ public class MiniMap {
 
         for (var y = 0; y < WORLD_HEIGHT; y++) {
             for (var x = 0; x < WORLD_WIDTH; x++) {
-                var ws = new Vector2f(TileUtil.worldToScreen(x, y, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf));
-                var wsXMinusOne = new Vector2f(TileUtil.worldToScreen(x - FIELD_OF_VIEW_EDGE_THICKNESS, y, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf));
-                var wsYMinusOne = new Vector2f(TileUtil.worldToScreen(x, y - FIELD_OF_VIEW_EDGE_THICKNESS, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf));
-                var wsYPlusOne = new Vector2f(TileUtil.worldToScreen(x, y + FIELD_OF_VIEW_EDGE_THICKNESS, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf));
+                var ws = new Vector2f(TileUtil.worldToScreen(x, y, zoom.getTileWidthHalf(), zoom.getTileHeightHalf()));
+                var wsXMinusOne = new Vector2f(TileUtil.worldToScreen(x - FIELD_OF_VIEW_EDGE_THICKNESS, y, zoom.getTileWidthHalf(), zoom.getTileHeightHalf()));
+                var wsYMinusOne = new Vector2f(TileUtil.worldToScreen(x, y - FIELD_OF_VIEW_EDGE_THICKNESS, zoom.getTileWidthHalf(), zoom.getTileHeightHalf()));
+                var wsYPlusOne = new Vector2f(TileUtil.worldToScreen(x, y + FIELD_OF_VIEW_EDGE_THICKNESS, zoom.getTileWidthHalf(), zoom.getTileHeightHalf()));
 
                 if (Aabb.pointVsAabb(ws, camera.getAabb())) {
                     if (!Aabb.pointVsAabb(wsXMinusOne, camera.getAabb()) ||
