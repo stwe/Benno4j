@@ -12,10 +12,9 @@ import de.sg.benno.ogl.Config;
 import de.sg.benno.ogl.OglEngine;
 import de.sg.benno.ogl.camera.OrthographicCamera;
 import de.sg.benno.ogl.renderer.SpriteRenderer;
+import de.sg.benno.ogl.renderer.RenderUtil;
 import de.sg.benno.ogl.resource.Texture;
-import org.joml.Matrix4f;
 import org.joml.Vector2f;
-import org.joml.Vector3f;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -87,7 +86,7 @@ public class Aabb {
      * @param camera The {@link OrthographicCamera} object.
      */
     public void render(OrthographicCamera camera) {
-        spriteRenderer.render(camera, aabbTexture, getModelMatrix());
+        spriteRenderer.render(camera.getViewMatrix(), aabbTexture, RenderUtil.createModelMatrix(position, size));
     }
 
     //-------------------------------------------------
@@ -124,25 +123,6 @@ public class Aabb {
                 a.position.x + a.size.x > b.position.x &&
                 a.position.y < b.position.y + b.size.y &&
                 a.position.y + a.size.y > b.position.y;
-    }
-
-    //-------------------------------------------------
-    // Helper
-    //-------------------------------------------------
-
-    /**
-     * Creates a model matrix for rendering.
-     *
-     * @return {@link Matrix4f}
-     */
-    private Matrix4f getModelMatrix() {
-        Matrix4f modelMatrix = new Matrix4f();
-        modelMatrix
-                .identity()
-                .translate(new Vector3f(position, 0.0f))
-                .scale(new Vector3f(size, 1.0f));
-
-        return modelMatrix;
     }
 
     //-------------------------------------------------

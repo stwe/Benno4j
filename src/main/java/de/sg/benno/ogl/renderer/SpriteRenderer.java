@@ -11,7 +11,6 @@ package de.sg.benno.ogl.renderer;
 import de.sg.benno.ogl.OglEngine;
 import de.sg.benno.ogl.OpenGL;
 import de.sg.benno.ogl.buffer.Vao;
-import de.sg.benno.ogl.camera.OrthographicCamera;
 import de.sg.benno.ogl.resource.ShaderProgram;
 import de.sg.benno.ogl.resource.Texture;
 import org.joml.Matrix4f;
@@ -82,11 +81,11 @@ public class SpriteRenderer {
     /**
      * Renders a single textured 2D quad.
      *
-     * @param camera The {@link OrthographicCamera} object.
+     * @param viewMatrix The view {@link Matrix4f} object.
      * @param texture The {@link Texture} to render.
-     * @param modelMatrix The model matrix.
+     * @param modelMatrix The model {@link Matrix4f} object.
      */
-    public void render(OrthographicCamera camera, Texture texture, Matrix4f modelMatrix) {
+    public void render(Matrix4f viewMatrix, Texture texture, Matrix4f modelMatrix) {
         var textureId = texture.getId();
 
         OpenGL.enableAlphaBlending();
@@ -95,7 +94,7 @@ public class SpriteRenderer {
         Texture.bindForReading(textureId, GL_TEXTURE0);
 
         shaderProgram.setUniform("projection", engine.getWindow().getOrthographicProjectionMatrix());
-        shaderProgram.setUniform("view", camera.getViewMatrix());
+        shaderProgram.setUniform("view", viewMatrix);
         shaderProgram.setUniform("model", modelMatrix);
         shaderProgram.setUniform("diffuseMap", 0);
 

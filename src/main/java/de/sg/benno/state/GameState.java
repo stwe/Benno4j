@@ -11,6 +11,7 @@ package de.sg.benno.state;
 import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.World;
 import de.sg.benno.chunk.WorldData;
+import de.sg.benno.gui.WorldUi;
 import de.sg.benno.ogl.state.ApplicationState;
 import de.sg.benno.ogl.state.StateMachine;
 

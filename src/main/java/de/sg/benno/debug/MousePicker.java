@@ -13,10 +13,12 @@ import de.sg.benno.Water;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.file.ImageFile;
 import de.sg.benno.input.Camera;
+import de.sg.benno.ogl.renderer.RenderUtil;
+import de.sg.benno.ogl.renderer.SpriteRenderer;
 import de.sg.benno.ogl.resource.Texture;
-import de.sg.benno.renderer.TileGraphicRenderer;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
@@ -59,14 +61,9 @@ public class MousePicker {
     private final Context context;
 
     /**
-     * Renders a highlighted tile.
+     * Renders a texture.
      */
-    private final TileRenderer tileRenderer;
-
-    /**
-     * Renders a single texture.
-     */
-    private final TileGraphicRenderer tileGraphicRenderer;
+    private final SpriteRenderer spriteRenderer;
 
     /**
      * Highlights a cell.
@@ -121,8 +118,7 @@ public class MousePicker {
         LOGGER.debug("Creates MousePicker object.");
 
         this.context = Objects.requireNonNull(context, "context must not be null");
-        this.tileRenderer = new TileRenderer(context.engine);
-        this.tileGraphicRenderer = new TileGraphicRenderer(context);
+        this.spriteRenderer = new SpriteRenderer(context.engine);
 
         this.water = Objects.requireNonNull(water, "water must not be null");
         this.shipping = Objects.requireNonNull(shipping, "shipping must not be null");
@@ -143,8 +139,8 @@ public class MousePicker {
      * @throws Exception If an error is thrown.
      */
     private void init(Context context) throws Exception {
-        rectangleTexture = context.engine.getResourceManager().loadResource(Texture.class, CELL_FILE);
-        tileTexture = context.engine.getResourceManager().loadResource(Texture.class, RED_TILE_FILE);
+        rectangleTexture = context.engine.getResourceManager().getTextureResource(CELL_FILE);
+        tileTexture = context.engine.getResourceManager().getTextureResource(RED_TILE_FILE);
 
         var cornerGfxImageFile = new ImageFile(CORNER_FILE);
 
@@ -253,7 +249,7 @@ public class MousePicker {
      * @param camera The {@link Camera} object.
      */
     private void renderHighlighting(Camera camera) {
-        tileGraphicRenderer.render(camera, tileTexture, currentTileGraphic.getModelMatrix());
+        spriteRenderer.render(camera.getViewMatrix(), tileTexture, currentTileGraphic.getModelMatrix());
     }
 
     /**
@@ -272,8 +268,8 @@ public class MousePicker {
             pos.y -= (float)TileGraphic.TileHeight.CLIFF.value / zoom.getElevation();
         }
 
-        tileRenderer.render(rectangleTexture.getId(), pos, scale);
-        tileRenderer.render(tileTexture.getId(), pos, scale);
+        spriteRenderer.render(new Matrix4f(), rectangleTexture, RenderUtil.createModelMatrix(pos, scale));
+        spriteRenderer.render(new Matrix4f(), tileTexture, RenderUtil.createModelMatrix(pos, scale));
     }
 
     //-------------------------------------------------
@@ -407,7 +403,6 @@ public class MousePicker {
 
         corners.forEach((k, v) -> v.cleanUp());
 
-        tileRenderer.cleanUp();
-        tileGraphicRenderer.cleanUp();
+        spriteRenderer.cleanUp();
     }
 }
