@@ -357,7 +357,7 @@ public class Texture implements Resource {
     // Static
     //-------------------------------------------------
 
-    // alternative methods in case only the texture id is known
+    // alternative methods in case only the texture id is set
 
     /**
      * Bind a named texture to a texturing target.

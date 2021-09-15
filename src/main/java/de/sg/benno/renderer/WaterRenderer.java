@@ -13,6 +13,10 @@ import de.sg.benno.input.Camera;
 import de.sg.benno.data.Building;
 import de.sg.benno.file.BshFile;
 import de.sg.benno.ogl.OpenGL;
+import de.sg.benno.ogl.buffer.Vao;
+import de.sg.benno.ogl.buffer.Vbo;
+import de.sg.benno.ogl.resource.ShaderProgram;
+import de.sg.benno.ogl.resource.Texture;
 import de.sg.benno.state.Context;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -22,6 +26,7 @@ import java.awt.image.DataBufferInt;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL30.GL_TEXTURE_2D_ARRAY;
 import static org.lwjgl.opengl.GL45.glTextureStorage3D;
@@ -96,9 +101,9 @@ public class WaterRenderer {
     private final Zoom zoom;
 
     /**
-     * The {@link Shader} using in this renderer.
+     * The {@link ShaderProgram} using in this renderer.
      */
-    private final Shader shader;
+    private final ShaderProgram shaderProgram;
 
     /**
      * The {@link Vao} object.
@@ -126,9 +131,9 @@ public class WaterRenderer {
     private final BshFile bshFile;
 
     /**
-     * The texture array id.
+     * The texture array.
      */
-    private int textureArrayId;
+    private Texture textureArray;
 
     /**
      * The {@link Vbo} for texture index data.
@@ -177,12 +182,12 @@ public class WaterRenderer {
         this.building = building;
         this.context = context;
         this.zoom = zoom;
-        this.shader = context.engine.getResourceManager().loadResource(Shader.class, SHADER_NAME);
+        this.shaderProgram = context.engine.getResourceManager().getShaderProgramResource(SHADER_NAME);
         this.vao = new Vao();
         this.vao.setDrawCount(DRAW_COUNT);
         this.instances = modelMatrices.size();
-        this.textureWidth = zoom.defaultTileWidth;
-        this.textureHeight = zoom.defaultTileHeight;
+        this.textureWidth = zoom.getTileWidth();
+        this.textureHeight = zoom.getTileHeight();
         this.bshFile = context.bennoFiles.getStadtfldBshFile(zoom);
 
         initVao();
@@ -215,19 +220,19 @@ public class WaterRenderer {
             OpenGL.enableWireframeMode();
         }
 
-        shader.bind();
+        shaderProgram.bind();
 
-        Texture.bindForReading(textureArrayId, GL_TEXTURE0, GL_TEXTURE_2D_ARRAY);
+        Texture.bindForReading(textureArray.getId(), GL_TEXTURE0, GL_TEXTURE_2D_ARRAY);
 
-        shader.setUniform("projection", context.engine.getWindow().getOrthographicProjectionMatrix());
-        shader.setUniform("view", camera.getViewMatrix());
-        shader.setUniform("sampler", 0);
+        shaderProgram.setUniform("projection", context.engine.getWindow().getOrthographicProjectionMatrix());
+        shaderProgram.setUniform("view", camera.getViewMatrix());
+        shaderProgram.setUniform("sampler", 0);
 
         vao.bind();
         vao.drawInstanced(GL_TRIANGLES, instances);
         vao.unbind();
 
-        Shader.unbind();
+        ShaderProgram.unbind();
 
         if (!wireframe) {
             OpenGL.disableBlending();
@@ -253,19 +258,14 @@ public class WaterRenderer {
     }
 
     /**
-     * Add a 2DQuad to a new {@link de.sg.ogl.buffer.Vbo}.
+     * Add a 2DQuad to a new {@link Vbo}.
      */
     private void addMeshVbo() {
-        var quadGeometry = context.engine.getResourceManager().loadGeometry(Geometry.GeometryId.QUAD_2D);
-        for (var vertex : quadGeometry.vertices) {
-            vertex.color = WATER_COLOR;
-        }
-
-        vao.addVbo(Vertex2D.toFloatArray(quadGeometry.vertices), quadGeometry.defaultBufferLayout);
+        vao.add2DQuadVbo();
     }
 
     /**
-     * Add {@link #modelMatrices} to a new {@link de.sg.ogl.buffer.Vbo}.
+     * Add {@link #modelMatrices} to a new {@link Vbo}.
      */
     private void addModelMatricesVbo() {
         // bind vao
@@ -275,7 +275,7 @@ public class WaterRenderer {
         var vbo = vao.addVbo();
 
         // store model matrices (static draw)
-        vbo.storeMatrix4fInstances(modelMatrices, instances);
+        vbo.storeMatrix4f(modelMatrices);
 
         // set buffer layout
         vbo.addFloatAttribute(3, 4, 16, 0, true);
@@ -288,7 +288,7 @@ public class WaterRenderer {
     }
 
     /**
-     * Add {@link #waterGfxStartIndex} to a new {@link de.sg.ogl.buffer.Vbo}.
+     * Add {@link #waterGfxStartIndex} to a new {@link Vbo}.
      */
     private void addTextureStartIndexVbo() {
         // bind vao
@@ -309,7 +309,7 @@ public class WaterRenderer {
 
     /**
      * Every tile has a flag indicating whether it has been selected.
-     * Add this data to a new {@link de.sg.ogl.buffer.Vbo}.
+     * Add this data to a new {@link Vbo}.
      * 1 = {@link #WATER_TILE_IS_UNSELECTED}; 2 = {@link #WATER_TILE_IS_SELECTED} (results in a darker color)
      */
     private void addSelectedVbo() {
@@ -377,14 +377,14 @@ public class WaterRenderer {
      * Creates a texture array from {@link #building}.
      */
     private void createTextureArray() {
-        textureArrayId = Texture.generateNewTextureId();
-        Texture.bind(textureArrayId, GL_TEXTURE_2D_ARRAY);
+        textureArray = new Texture();
+        Texture.bind(textureArray.getId(), GL_TEXTURE_2D_ARRAY);
 
         var gfxCount = building.animAnz * building.animAdd;
         var startGfx = building.gfx;
         var endGfx = startGfx + gfxCount;
 
-        glTextureStorage3D(textureArrayId, MIP_LEVEL_COUNT, GL_RGBA8, textureWidth, textureHeight, gfxCount);
+        glTextureStorage3D(textureArray.getId(), MIP_LEVEL_COUNT, GL_RGBA8, textureWidth, textureHeight, gfxCount);
 
         var zOffset = 0;
 
@@ -397,7 +397,7 @@ public class WaterRenderer {
             var dbb = (DataBufferInt) currentTexture.getBufferedImage().getRaster().getDataBuffer();
 
             glTextureSubImage3D(
-                    textureArrayId,
+                    textureArray.getId(),
                     0,
                     0, 0,
                     zOffset,
@@ -424,6 +424,7 @@ public class WaterRenderer {
     public void cleanUp() {
         LOGGER.debug("Clean up WaterRenderer for {}.", zoom);
 
-        this.vao.cleanUp();
+        vao.cleanUp();
+        textureArray.cleanUp();
     }
 }

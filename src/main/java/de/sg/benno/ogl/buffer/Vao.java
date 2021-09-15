@@ -31,7 +31,7 @@ public class Vao implements Buffer {
     private int id;
 
     /**
-     * The Vbo buffers assigned to the Vao.
+     * The {@link Vbo} objects assigned to the Vao.
      */
     private final ArrayList<Vbo> vbos = new ArrayList<>();
 
@@ -164,32 +164,27 @@ public class Vao implements Buffer {
         // create a new Vbo
         var vbo = addVbo();
 
-        // bind the new Vbo
-        vbo.bind();
-
         // store vertices
         FloatBuffer verticesBuffer = null;
         try {
             verticesBuffer = MemoryUtil.memAllocFloat(vertices.length);
             verticesBuffer.put(vertices).flip();
 
+            // todo
+            vbo.bind();
             glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW);
+            vbo.unbind();
 
             // enable location 0 (position)
-            glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0L);
+            vbo.addFloatAttribute(0, 2, 4, 0);
 
             // enable location 1 (uv)
-            glEnableVertexAttribArray(1);
-            glVertexAttribPointer(1, 2, GL_FLOAT, false, 4 * Float.BYTES, 2 * Float.BYTES);
+            vbo.addFloatAttribute(1, 2, 4, 2);
         } finally {
             if (verticesBuffer != null) {
                 MemoryUtil.memFree(verticesBuffer);
             }
         }
-
-        // unbind Vbo
-        vbo.unbind();
 
         // unbind Vao
         unbind();

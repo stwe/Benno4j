@@ -13,7 +13,7 @@ import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.file.BshFile;
 import de.sg.benno.input.Camera;
-import de.sg.benno.renderer.TileGraphicRenderer;
+import de.sg.benno.ogl.renderer.SpriteRenderer;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
 import org.joml.Vector2f;
@@ -62,9 +62,9 @@ public class Shipping {
     private final HashMap<Zoom, ArrayList<TileGraphic>> shipTileGraphics = new HashMap<>();
 
     /**
-     * A {@link TileGraphicRenderer} object.
+     * A {@link SpriteRenderer} object.
      */
-    private TileGraphicRenderer tileGraphicRenderer;
+    private SpriteRenderer spriteRenderer;
 
     /**
      * The current selected {@link Ship4}.
@@ -300,7 +300,8 @@ public class Shipping {
      */
     public void render(Camera camera, Zoom zoom) {
         for (var ship : shipTileGraphics.get(zoom)) {
-            tileGraphicRenderer.render(camera, ship, shipBshFiles.get(zoom));
+            var bshTexture = shipBshFiles.get(zoom).getBshTextures().get(ship.gfx);
+            spriteRenderer.render(camera.getViewMatrix(), bshTexture.getTexture(), ship.getModelMatrix());
         }
     }
 
@@ -315,7 +316,7 @@ public class Shipping {
      */
     void init() throws Exception {
         // create renderer
-        tileGraphicRenderer = new TileGraphicRenderer(context);
+        spriteRenderer = new SpriteRenderer(context.engine);
 
         // crate tile graphics
         for (var zoom : Zoom.values()) {
@@ -341,14 +342,14 @@ public class Shipping {
                 tileGraphic.worldPosition.x = xWorldPos;
                 tileGraphic.worldPosition.y = yWorldPos;
 
-                var screenPosition = TileUtil.worldToScreen(xWorldPos, yWorldPos, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf);
-                var adjustHeight = TileUtil.adjustHeight(zoom.defaultTileHeightHalf, tileGraphic.tileHeight.value, zoom.elevation);
+                var screenPosition = TileUtil.worldToScreen(xWorldPos, yWorldPos, zoom.getTileWidthHalf(), zoom.getTileHeightHalf());
+                var adjustHeight = TileUtil.adjustHeight(zoom.getTileHeightHalf(), tileGraphic.tileHeight.value, zoom.getElevation());
                 screenPosition.y += adjustHeight;
                 screenPosition.x -= shipBshTexture.getWidth();
                 screenPosition.y -= shipBshTexture.getHeight();
                 tileGraphic.screenPosition = new Vector2f(screenPosition);
-                tileGraphic.screenPosition.x -= zoom.defaultTileWidthHalf * 0.5f;
-                tileGraphic.screenPosition.y -= zoom.defaultTileHeightHalf * 0.5f;
+                tileGraphic.screenPosition.x -= zoom.getTileWidthHalf() * 0.5f;
+                tileGraphic.screenPosition.y -= zoom.getTileHeightHalf() * 0.5f;
 
                 tileGraphic.size = new Vector2f(shipBshTexture.getWidth(), shipBshTexture.getHeight());
                 tileGraphic.color = new Vector3f();
@@ -370,6 +371,6 @@ public class Shipping {
     public void cleanUp() {
         LOGGER.debug("Start clean up for the Shipping.");
 
-        tileGraphicRenderer.cleanUp();
+        spriteRenderer.cleanUp();
     }
 }
