@@ -174,7 +174,6 @@ public class Vao implements Buffer {
             verticesBuffer = MemoryUtil.memAllocFloat(vertices.length);
             verticesBuffer.put(vertices).flip();
 
-            // todo
             vbo.bind();
             glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW);
             vbo.unbind();

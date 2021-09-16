@@ -117,7 +117,7 @@ public class World {
             currentZoom = Zoom.values()[BennoConfig.ZOOM_START - 1];
         }
 
-        this.camera = new Camera(BennoConfig.CAMERA_START_X, BennoConfig.CAMERA_START_Y, context, currentZoom);
+        this.camera = new Camera(BennoConfig.CAMERA_START_X, BennoConfig.CAMERA_START_Y, context.engine, currentZoom);
 
         init();
     }
@@ -244,7 +244,7 @@ public class World {
             camera.resetPosition(currentZoom);
         }
 
-        camera.update(currentZoom);
+        camera.update(context.engine.getWindow(), context.engine.getMouseInput(), currentZoom);
         //water.update();
         terrain.update();
         shipping.update();

@@ -8,6 +8,7 @@
 
 package de.sg.benno.input;
 
+import de.sg.benno.ogl.OglEngine;
 import de.sg.benno.ogl.camera.OrthographicCamera;
 import de.sg.benno.ogl.state.StateContext;
 import de.sg.benno.renderer.Zoom;
@@ -22,11 +23,11 @@ public class Camera extends OrthographicCamera {
      *
      * @param x The start x position in tile units.
      * @param y The start y position in tile units.
-     * @param stateContext {@link StateContext}
+     * @param engine The parent {@link OglEngine} object.
      * @param zoom The curreent {@link Zoom}
      * @throws Exception If an error is thrown.
      */
-    public Camera(int x, int y, StateContext stateContext, Zoom zoom) throws Exception {
-        super(x, y, stateContext, zoom);
+    public Camera(int x, int y, OglEngine engine, Zoom zoom) throws Exception {
+        super(x, y, engine, zoom);
     }
 }

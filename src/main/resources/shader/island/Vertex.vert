@@ -1,15 +1,14 @@
 #version 430
 
 layout (location = 0) in vec2 aPosition;
-layout (location = 1) in vec3 aColor;
-layout (location = 2) in vec2 aUv;
-layout (location = 3) in mat4 aModelMatrix;
-layout (location = 7) in ivec4 aAnimInfo;
-layout (location = 8) in int aTextureAtlasIndex;
-layout (location = 9) in vec2 aOffset;
-layout (location = 10) in float aHeight;
-layout (location = 11) in ivec3 aAnimAdd;
-layout (location = 12) in int aSelected;
+layout (location = 1) in vec2 aUv;
+layout (location = 2) in mat4 aModelMatrix;
+layout (location = 6) in ivec4 aAnimInfo;
+layout (location = 7) in int aTextureAtlasIndex;
+layout (location = 8) in vec2 aOffset;
+layout (location = 9) in float aHeight;
+layout (location = 10) in ivec3 aAnimAdd;
+layout (location = 11) in int aSelected;
 
 //-------------------------------------------------
 // Out

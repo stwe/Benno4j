@@ -93,13 +93,15 @@ public class Vbo implements Buffer {
     }
 
     //-------------------------------------------------
-    // Store data
+    // Store data by calling glBufferData
     //-------------------------------------------------
 
     /**
-     * Stores {@link Matrix4f} objects in this {@link Vbo}.
+     * Stores {@link Matrix4f} objects in this {@link Vbo} by calling
+     * <i>glBufferData</i>, which allocates a piece of GPU memory and
+     * adds data into this memory
      *
-     * @param matrices The {@link Matrix4f} objects.
+     * @param matrices A list of {@link Matrix4f} objects.
      * @param usage Specifies the expected usage pattern of the data store
      *              (GL_STATIC_DRAW or GL_DYNAMIC_DRAW).
      */
@@ -123,22 +125,26 @@ public class Vbo implements Buffer {
     }
 
     /**
-     * Stores {@link Matrix4f} objects in this {@link Vbo}.
+     * Stores {@link Matrix4f} objects in this {@link Vbo} by calling
+     * <i>glBufferData</i>, which allocates a piece of GPU memory and
+     * adds data into this memory
      *
-     * @param matrices The {@link Matrix4f} objects.
+     * @param matrices A list of {@link Matrix4f} objects.
      */
     public void storeMatrix4f(ArrayList<Matrix4f> matrices) {
         storeMatrix4f(matrices, GL_STATIC_DRAW);
     }
 
     /**
-     * Stores {@link Float} objects in this {@link Vbo}.
+     * Stores {@link Float} objects in this {@link Vbo} by calling
+     * <i>glBufferData</i>, which allocates a piece of GPU memory and
+     * adds data into this memory
      *
-     * @param data The {@link Float} objects.
+     * @param data A list of {@link Float} objects.
      * @param usage Specifies the expected usage pattern of the data store
      *              (GL_STATIC_DRAW or GL_DYNAMIC_DRAW).
      */
-    public void storeFloatArrayList(ArrayList<Float> data, int usage) {
+    public void storeFloat(ArrayList<Float> data, int usage) {
         if (usage != GL_STATIC_DRAW && usage != GL_DYNAMIC_DRAW) {
             throw new OglRuntimeException("Invalid usage given.");
         }
@@ -156,10 +162,12 @@ public class Vbo implements Buffer {
     }
 
     /**
-     * Stores {@link Integer} in this {@link Vbo}.
+     * Stores {@link Integer} objects in this {@link Vbo} by calling
+     * <i>glBufferData</i>, which allocates a piece of GPU memory and
+     * adds data into this memory
      *
      * @param mapper A function that produces an int-valued result.
-     * @param data A {@link ArrayList} of {@link Integer}.
+     * @param data A list of {@link Integer} objects.
      * @param usage Specifies the expected usage pattern of the data store
      *              (GL_STATIC_DRAW or GL_DYNAMIC_DRAW).
      */
@@ -180,9 +188,11 @@ public class Vbo implements Buffer {
     }
 
     /**
-     * Stores {@link Integer} in this {@link Vbo}.
+     * Stores {@link Integer} objects in this {@link Vbo} by calling
+     * <i>glBufferData</i>, which allocates a piece of GPU memory and
+     * adds data into this memory
      *
-     * @param data A {@link ArrayList} of {@link Integer}.
+     * @param data A list of {@link Integer} objects.
      * @param usage Specifies the expected usage pattern of the data store
      *              (GL_STATIC_DRAW or GL_DYNAMIC_DRAW).
      */
@@ -191,13 +201,19 @@ public class Vbo implements Buffer {
     }
 
     /**
-     * Stores {@link Integer} in this {@link Vbo}.
+     * Stores {@link Integer} objects in this {@link Vbo} by calling
+     * <i>glBufferData</i>, which allocates a piece of GPU memory and
+     * adds data into this memory
      *
-     * @param data A {@link ArrayList} of {@link Integer}.
+     * @param data A list of {@link Integer} objects.
      */
     public void storeInteger(ArrayList<Integer> data) {
         storeInteger(data, GL_STATIC_DRAW);
     }
+
+    //-------------------------------------------------
+    // Store data by calling glBufferSubData
+    //-------------------------------------------------
 
     /**
      * Fill specific regions of the buffer by calling <i>glBufferSubData</i>.
@@ -205,7 +221,7 @@ public class Vbo implements Buffer {
      * @param offset An offset that specifies from where we want to fill the buffer.
      * @param ib The new data.
      */
-    public void storeData(long offset, IntBuffer ib) {
+    public void storeSubData(long offset, IntBuffer ib) {
         bind();
         glBufferSubData(GL_ARRAY_BUFFER, offset, ib);
         unbind();
@@ -217,7 +233,7 @@ public class Vbo implements Buffer {
      * @param offset An offset that specifies from where we want to fill the buffer.
      * @param data The new data.
      */
-    public void storeData(long offset, float[] data) {
+    public void storeSubData(long offset, float[] data) {
         bind();
         glBufferSubData(GL_ARRAY_BUFFER, offset, data);
         unbind();
@@ -228,8 +244,8 @@ public class Vbo implements Buffer {
      *
      * @param data The new data.
      */
-    public void storeData(float[] data) {
-        storeData(0, data);
+    public void storeSubData(float[] data) {
+        storeSubData(0, data);
     }
 
     //-------------------------------------------------

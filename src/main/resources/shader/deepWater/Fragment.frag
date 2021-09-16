@@ -2,7 +2,6 @@
 
 out vec4 fragColor;
 
-in vec3 vColor;
 in vec2 vUv;
 flat in int vTextureIndex;
 flat in int vSelected;

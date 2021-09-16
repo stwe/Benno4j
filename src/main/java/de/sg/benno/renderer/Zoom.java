@@ -39,32 +39,32 @@ public enum Zoom implements CameraZoom {
     /**
      * The tile width half.
      */
-    private int tileWidthHalf;
+    private final int tileWidthHalf;
 
     /**
      * The tile height half.
      */
-    private int tileHeightHalf;
+    private final int tileHeightHalf;
 
     /**
      * The tile elevation.
      */
-    private int elevation;
+    private final int elevation;
 
     /**
      * The tile width.
      */
-    private int tileWidth;
+    private final int tileWidth;
 
     /**
      * The tile height.
      */
-    private int tileHeight;
+    private final int tileHeight;
 
     /**
      * The configured speed factor.
      */
-    private int speedFactor;
+    private final int speedFactor;
 
     /**
      * The camera speed.

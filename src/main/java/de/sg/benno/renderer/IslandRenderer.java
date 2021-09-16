@@ -304,10 +304,10 @@ public class IslandRenderer {
         vbo.storeMatrix4f(matrices, instances);
 
         // set buffer layout
-        vbo.addFloatAttribute(3, 4, 16, 0, true);
-        vbo.addFloatAttribute(4, 4, 16, 4, true);
-        vbo.addFloatAttribute(5, 4, 16, 8, true);
-        vbo.addFloatAttribute(6, 4, 16, 12, true);
+        vbo.addFloatAttribute(2, 4, 16, 0, true);
+        vbo.addFloatAttribute(3, 4, 16, 4, true);
+        vbo.addFloatAttribute(4, 4, 16, 8, true);
+        vbo.addFloatAttribute(5, 4, 16, 12, true);
 
         // unbind vao
         vao.unbind();
@@ -331,7 +331,7 @@ public class IslandRenderer {
         vbo.storeInteger(animationInfo, GL_STATIC_DRAW);
 
         // set buffer layout
-        vbo.addIntAttribute(7, 4, 4, 0, true);
+        vbo.addIntAttribute(6, 4, 4, 0, true);
 
         // unbind vao
         vao.unbind();
@@ -355,7 +355,7 @@ public class IslandRenderer {
         vbo.storeInteger(textureAtlasIndex.get(zoom), GL_STATIC_DRAW);
 
         // set buffer layout
-        vbo.addIntAttribute(8, 1, 1, 0, true);
+        vbo.addIntAttribute(7, 1, 1, 0, true);
 
         // unbind vao
         vao.unbind();
@@ -376,10 +376,10 @@ public class IslandRenderer {
         var vbo = vao.addVbo();
 
         // store offsets (static draw)
-        vbo.storeFloatArrayList(offsets.get(zoom), GL_STATIC_DRAW);
+        vbo.storeFloat(offsets.get(zoom), GL_STATIC_DRAW);
 
         // set buffer layout
-        vbo.addFloatAttribute(9, 2, 2, 0, true);
+        vbo.addFloatAttribute(8, 2, 2, 0, true);
 
         // unbind vao
         vao.unbind();
@@ -400,10 +400,10 @@ public class IslandRenderer {
         var vbo = vao.addVbo();
 
         // store buffer (static draw)
-        vbo.storeFloatArrayList(yBuffer.get(zoom), GL_STATIC_DRAW);
+        vbo.storeFloat(yBuffer.get(zoom), GL_STATIC_DRAW);
 
         // set buffer layout
-        vbo.addFloatAttribute(10, 1, 1, 0, true);
+        vbo.addFloatAttribute(9, 1, 1, 0, true);
 
         // unbind vao
         vao.unbind();
@@ -427,7 +427,7 @@ public class IslandRenderer {
         vbo.storeInteger(animationAddInfo, GL_STATIC_DRAW);
 
         // set buffer layout
-        vbo.addIntAttribute(11, 3, 3, 0, true);
+        vbo.addIntAttribute(10, 3, 3, 0, true);
 
         // unbind vao
         vao.unbind();
@@ -457,7 +457,7 @@ public class IslandRenderer {
         vbo.storeInteger(selectedValues, GL_DYNAMIC_DRAW);
 
         // set buffer layout
-        vbo.addIntAttribute(12, 1, 1, 0, true);
+        vbo.addIntAttribute(11, 1, 1, 0, true);
 
         // store vbo
         selectedVbos.put(zoom, vbo);
@@ -568,7 +568,7 @@ public class IslandRenderer {
             ib.put(TILE_IS_SELECTED);
             ib.flip();
 
-            selectedVbos.get(zoom).storeData((long)index * Integer.BYTES, ib);
+            selectedVbos.get(zoom).storeSubData((long)index * Integer.BYTES, ib);
         }
     }
 

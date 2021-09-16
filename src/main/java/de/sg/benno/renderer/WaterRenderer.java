@@ -273,10 +273,10 @@ public class WaterRenderer {
         vbo.storeMatrix4f(modelMatrices);
 
         // set buffer layout
-        vbo.addFloatAttribute(3, 4, 16, 0, true);
-        vbo.addFloatAttribute(4, 4, 16, 4, true);
-        vbo.addFloatAttribute(5, 4, 16, 8, true);
-        vbo.addFloatAttribute(6, 4, 16, 12, true);
+        vbo.addFloatAttribute(2, 4, 16, 0, true);
+        vbo.addFloatAttribute(3, 4, 16, 4, true);
+        vbo.addFloatAttribute(4, 4, 16, 8, true);
+        vbo.addFloatAttribute(5, 4, 16, 12, true);
 
         // unbind vao
         vao.unbind();
@@ -296,7 +296,7 @@ public class WaterRenderer {
         textureVbo.storeInteger(waterGfxStartIndex, GL_DYNAMIC_DRAW);
 
         // set buffer layout
-        textureVbo.addIntAttribute(7, 1, 1, 0, true);
+        textureVbo.addIntAttribute(6, 1, 1, 0, true);
 
         // unbind vao
         vao.unbind();
@@ -323,7 +323,7 @@ public class WaterRenderer {
         selectedVbo.storeInteger(selectedValues, GL_DYNAMIC_DRAW);
 
         // set buffer layout
-        selectedVbo.addIntAttribute(8, 1, 1, 0, true);
+        selectedVbo.addIntAttribute(7, 1, 1, 0, true);
 
         // unbind vao
         vao.unbind();
@@ -344,7 +344,7 @@ public class WaterRenderer {
             ib.put(WATER_TILE_IS_SELECTED);
             ib.flip();
 
-            selectedVbo.storeData((long)index * Integer.BYTES, ib);
+            selectedVbo.storeSubData((long)index * Integer.BYTES, ib);
         }
     }
 
