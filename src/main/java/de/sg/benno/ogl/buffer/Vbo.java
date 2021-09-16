@@ -12,19 +12,26 @@ import de.sg.benno.ogl.OglRuntimeException;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 
+import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.function.ToIntFunction;
 
 import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
+import static org.lwjgl.opengl.GL30.glVertexAttribIPointer;
 import static org.lwjgl.opengl.GL33.glVertexAttribDivisor;
 
 /**
  * Represents a Vertex Buffer Object.
  */
 public class Vbo implements Buffer {
+
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
 
     /**
      * Stores the handle of the Vbo.
@@ -124,17 +131,119 @@ public class Vbo implements Buffer {
         storeMatrix4f(matrices, GL_STATIC_DRAW);
     }
 
+    /**
+     * Stores {@link Float} objects in this {@link Vbo}.
+     *
+     * @param data The {@link Float} objects.
+     * @param usage Specifies the expected usage pattern of the data store
+     *              (GL_STATIC_DRAW or GL_DYNAMIC_DRAW).
+     */
+    public void storeFloatArrayList(ArrayList<Float> data, int usage) {
+        if (usage != GL_STATIC_DRAW && usage != GL_DYNAMIC_DRAW) {
+            throw new OglRuntimeException("Invalid usage given.");
+        }
+
+        bind();
+
+        var values = new float[data.size()];
+        for (var i = 0; i < values.length; i++) {
+            values[i] = data.get(i);
+        }
+
+        glBufferData(GL_ARRAY_BUFFER, values, usage);
+
+        unbind();
+    }
+
+    /**
+     * Stores {@link Integer} in this {@link Vbo}.
+     *
+     * @param mapper A function that produces an int-valued result.
+     * @param data A {@link ArrayList} of {@link Integer}.
+     * @param usage Specifies the expected usage pattern of the data store
+     *              (GL_STATIC_DRAW or GL_DYNAMIC_DRAW).
+     */
+    public void storeInteger(ToIntFunction<Integer> mapper, ArrayList<Integer> data, int usage) {
+        if (usage != GL_STATIC_DRAW && usage != GL_DYNAMIC_DRAW) {
+            throw new OglRuntimeException("Invalid usage given.");
+        }
+
+        bind();
+
+        var ib = BufferUtils.createIntBuffer(data.size());
+        ib.put(data.stream().mapToInt(mapper).toArray());
+        ib.flip();
+
+        glBufferData(GL_ARRAY_BUFFER, ib, usage);
+
+        unbind();
+    }
+
+    /**
+     * Stores {@link Integer} in this {@link Vbo}.
+     *
+     * @param data A {@link ArrayList} of {@link Integer}.
+     * @param usage Specifies the expected usage pattern of the data store
+     *              (GL_STATIC_DRAW or GL_DYNAMIC_DRAW).
+     */
+    public void storeInteger(ArrayList<Integer> data, int usage) {
+        storeInteger(i -> i, data, usage);
+    }
+
+    /**
+     * Stores {@link Integer} in this {@link Vbo}.
+     *
+     * @param data A {@link ArrayList} of {@link Integer}.
+     */
+    public void storeInteger(ArrayList<Integer> data) {
+        storeInteger(data, GL_STATIC_DRAW);
+    }
+
+    /**
+     * Fill specific regions of the buffer by calling <i>glBufferSubData</i>.
+     *
+     * @param offset An offset that specifies from where we want to fill the buffer.
+     * @param ib The new data.
+     */
+    public void storeData(long offset, IntBuffer ib) {
+        bind();
+        glBufferSubData(GL_ARRAY_BUFFER, offset, ib);
+        unbind();
+    }
+
+    /**
+     * Fill specific regions of the buffer by calling <i>glBufferSubData</i>.
+     *
+     * @param offset An offset that specifies from where we want to fill the buffer.
+     * @param data The new data.
+     */
+    public void storeData(long offset, float[] data) {
+        bind();
+        glBufferSubData(GL_ARRAY_BUFFER, offset, data);
+        unbind();
+    }
+
+    /**
+     * Fill specific regions of the buffer by calling <i>glBufferSubData</i>.
+     *
+     * @param data The new data.
+     */
+    public void storeData(float[] data) {
+        storeData(0, data);
+    }
+
     //-------------------------------------------------
     // Attributes
     //-------------------------------------------------
 
     /**
+     * Specified how OpenGL should interpret the vertex data.
      *
-     * @param index
-     * @param nrOfFloatComponents
-     * @param nrOfAllFloats
-     * @param startPoint
-     * @param instancedRendering
+     * @param index The location of the vertex attribute.
+     * @param nrOfFloatComponents The size of the vertex attribute.
+     * @param nrOfAllFloats The space between consecutive vertex attributes.
+     * @param startPoint The offset of where the position data begins in the buffer.
+     * @param instancedRendering Call <i>glVertexAttribDivisor</i> if true.
      */
     public void addFloatAttribute(
             int index,
@@ -163,11 +272,12 @@ public class Vbo implements Buffer {
     }
 
     /**
+     * Specified how OpenGL should interpret the vertex data.
      *
-     * @param index
-     * @param nrOfFloatComponents
-     * @param nrOfAllFloats
-     * @param startPoint
+     * @param index The location of the vertex attribute.
+     * @param nrOfFloatComponents The size of the vertex attribute.
+     * @param nrOfAllFloats The space between consecutive vertex attributes.
+     * @param startPoint The offset of where the position data begins in the buffer.
      */
     public void addFloatAttribute(
             int index,
@@ -176,5 +286,50 @@ public class Vbo implements Buffer {
             int startPoint
     ) {
         addFloatAttribute(index, nrOfFloatComponents, nrOfAllFloats, startPoint, false);
+    }
+
+    /**
+     * Specified how OpenGL should interpret the vertex data.
+     *
+     * @param index The location of the vertex attribute.
+     * @param nrOfIntComponents The size of the vertex attribute.
+     * @param nrOfAllInts The space between consecutive vertex attributes.
+     * @param startPoint The offset of where the position data begins in the buffer.
+     * @param instancedRendering Call <i>glVertexAttribDivisor</i> if true.
+     */
+    public void addIntAttribute(
+            int index,
+            int nrOfIntComponents,
+            int nrOfAllInts,
+            int startPoint,
+            boolean instancedRendering
+    ) {
+        bind();
+
+        glEnableVertexAttribArray(index);
+        glVertexAttribIPointer(index, nrOfIntComponents, GL_INT, nrOfAllInts * Integer.BYTES, (long) startPoint * Integer.BYTES);
+
+        if (instancedRendering) {
+            glVertexAttribDivisor(index, 1);
+        }
+
+        unbind();
+    }
+
+    /**
+     * Specified how OpenGL should interpret the vertex data.
+     *
+     * @param index The location of the vertex attribute.
+     * @param nrOfIntComponents The size of the vertex attribute.
+     * @param nrOfAllInts The space between consecutive vertex attributes.
+     * @param startPoint The offset of where the position data begins in the buffer.
+     */
+    public void addIntAttribute(
+            int index,
+            int nrOfIntComponents,
+            int nrOfAllInts,
+            int startPoint
+    ) {
+        addIntAttribute(index, nrOfIntComponents, nrOfAllInts, startPoint, false);
     }
 }

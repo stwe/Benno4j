@@ -42,11 +42,6 @@ public class WaterRenderer {
     //-------------------------------------------------
 
     /**
-     * Color (blue) if no texture is used.
-     */
-    private static final Vector3f WATER_COLOR = new Vector3f(0.0f, 0.0f, 1.0f);
-
-    /**
      * Number of vertices to be rendered per instance.
      */
     private static final int DRAW_COUNT = 6;
@@ -298,7 +293,7 @@ public class WaterRenderer {
         textureVbo = vao.addVbo();
 
         // store index (dynamic draw)
-        textureVbo.storeIntegerInstances(waterGfxStartIndex, instances, GL_DYNAMIC_DRAW);
+        textureVbo.storeInteger(waterGfxStartIndex, GL_DYNAMIC_DRAW);
 
         // set buffer layout
         textureVbo.addIntAttribute(7, 1, 1, 0, true);
@@ -325,7 +320,7 @@ public class WaterRenderer {
         selectedVbo = vao.addVbo();
 
         // store index (dynamic draw)
-        selectedVbo.storeIntegerInstances(selectedValues, instances, GL_DYNAMIC_DRAW);
+        selectedVbo.storeInteger(selectedValues, GL_DYNAMIC_DRAW);
 
         // set buffer layout
         selectedVbo.addIntAttribute(8, 1, 1, 0, true);
@@ -364,9 +359,9 @@ public class WaterRenderer {
         This avoids the cost of reallocating the data store.
         */
 
-        textureVbo.storeIntegerInstances(
+        textureVbo.storeInteger(
                 i -> (i + frame) % building.animAnz,
-                waterGfxStartIndex, instances, GL_DYNAMIC_DRAW);
+                waterGfxStartIndex, GL_DYNAMIC_DRAW);
     }
 
     //-------------------------------------------------

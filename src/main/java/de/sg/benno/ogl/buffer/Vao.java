@@ -25,6 +25,10 @@ import static org.lwjgl.opengl.GL31.glDrawArraysInstanced;
  */
 public class Vao implements Buffer {
 
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
+
     /**
      * Stores the handle of the Vao.
      */

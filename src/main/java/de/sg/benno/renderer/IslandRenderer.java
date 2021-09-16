@@ -14,6 +14,10 @@ import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.input.Camera;
 import de.sg.benno.ogl.Config;
 import de.sg.benno.ogl.OpenGL;
+import de.sg.benno.ogl.buffer.Vao;
+import de.sg.benno.ogl.buffer.Vbo;
+import de.sg.benno.ogl.resource.ShaderProgram;
+import de.sg.benno.ogl.resource.Texture;
 import de.sg.benno.state.Context;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
@@ -79,9 +83,9 @@ public class IslandRenderer {
     private final Context context;
 
     /**
-     * The {@link Shader} using in this renderer.
+     * The {@link ShaderProgram} using in this renderer.
      */
-    private final Shader shader;
+    private final ShaderProgram shader;
 
     /**
      * The model matrices for each {@link Zoom}.
@@ -149,7 +153,7 @@ public class IslandRenderer {
     public IslandRenderer(HashMap<Zoom, ArrayList<TileGraphic>> tileGraphics, Context context) throws Exception {
         this.tileGraphics = tileGraphics;
         this.context = context;
-        this.shader = context.engine.getResourceManager().loadResource(Shader.class, SHADER_NAME);
+        this.shader = context.engine.getResourceManager().getShaderProgramResource(SHADER_NAME);
 
         // for each zoom...
         for (var zoom: Zoom.values()) {
@@ -277,9 +281,8 @@ public class IslandRenderer {
      * @param zoom {@link Zoom}.
      */
     private void addMeshVbo(Zoom zoom) {
-        var quadGeometry = context.engine.getResourceManager().loadGeometry(Geometry.GeometryId.QUAD_2D);
         var vao = vaos.get(zoom);
-        vao.addVbo(Vertex2D.toFloatArray(quadGeometry.vertices), quadGeometry.defaultBufferLayout);
+        vao.add2DQuadVbo();
     }
 
     /**
@@ -298,7 +301,7 @@ public class IslandRenderer {
         var vbo = vao.addVbo();
 
         // store model matrices (static draw)
-        vbo.storeMatrix4fInstances(matrices, instances);
+        vbo.storeMatrix4f(matrices, instances);
 
         // set buffer layout
         vbo.addFloatAttribute(3, 4, 16, 0, true);
@@ -325,7 +328,7 @@ public class IslandRenderer {
         var vbo = vao.addVbo();
 
         // store animation info (static draw) - 4 ints per instance
-        vbo.storeIntegerInstances(animationInfo, instances * 4, GL_STATIC_DRAW);
+        vbo.storeInteger(animationInfo, GL_STATIC_DRAW);
 
         // set buffer layout
         vbo.addIntAttribute(7, 4, 4, 0, true);
@@ -349,7 +352,7 @@ public class IslandRenderer {
         var vbo = vao.addVbo();
 
         // store index (static draw)
-        vbo.storeIntegerInstances(textureAtlasIndex.get(zoom), instances, GL_STATIC_DRAW);
+        vbo.storeInteger(textureAtlasIndex.get(zoom), GL_STATIC_DRAW);
 
         // set buffer layout
         vbo.addIntAttribute(8, 1, 1, 0, true);
@@ -421,7 +424,7 @@ public class IslandRenderer {
         var vbo = vao.addVbo();
 
         // store animation add info (static draw) - 3 ints per instance
-        vbo.storeIntegerInstances(animationAddInfo, instances * 3, GL_STATIC_DRAW);
+        vbo.storeInteger(animationAddInfo, GL_STATIC_DRAW);
 
         // set buffer layout
         vbo.addIntAttribute(11, 3, 3, 0, true);
@@ -432,7 +435,7 @@ public class IslandRenderer {
 
     /**
      * Every tile has a flag indicating whether it has been selected.
-     * Add this data to a new {@link de.sg.ogl.buffer.Vbo} for each {@link Zoom}.
+     * Add this data to a new {@link Vbo} for each {@link Zoom}.
      * 1 = {@link #TILE_IS_UNSELECTED}; 2 = {@link #TILE_IS_SELECTED} (results in a darker color)
      *
      *  @param zoom {@link Zoom}.
@@ -451,7 +454,7 @@ public class IslandRenderer {
         var vbo = vao.addVbo();
 
         // store index (dynamic draw)
-        vbo.storeIntegerInstances(selectedValues, instances, GL_DYNAMIC_DRAW);
+        vbo.storeInteger(selectedValues, GL_DYNAMIC_DRAW);
 
         // set buffer layout
         vbo.addIntAttribute(12, 1, 1, 0, true);
@@ -505,17 +508,17 @@ public class IslandRenderer {
         var rows = 0.0f;
         switch (zoom) {
             case GFX:
-                textureId = TileAtlas.getGfxTextureArrayId();
+                textureId = TileAtlas.getGfxTextureArray().getId();
                 maxYHeight = MAX_GFX_HEIGHT;
                 rows = (float)NR_OF_GFX_ROWS;
                 break;
             case MGFX:
-                textureId = TileAtlas.getMgfxTextureArrayId();
+                textureId = TileAtlas.getMgfxTextureArray().getId();
                 maxYHeight = MAX_MGFX_HEIGHT;
                 rows = (float)NR_OF_MGFX_ROWS;
                 break;
             case SGFX:
-                textureId = TileAtlas.getSgfxTextureArrayId();
+                textureId = TileAtlas.getSgfxTextureArray().getId();
                 maxYHeight = MAX_SGFX_HEIGHT;
                 rows = (float)NR_OF_SGFX_ROWS;
                 break;
@@ -539,7 +542,7 @@ public class IslandRenderer {
         vao.drawInstanced(GL_TRIANGLES, instances);
         vao.unbind();
 
-        Shader.unbind();
+        ShaderProgram.unbind();
         Texture.unbind();
 
         if (!wireframe) {

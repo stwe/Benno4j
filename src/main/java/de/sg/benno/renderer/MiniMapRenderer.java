@@ -9,6 +9,8 @@
 package de.sg.benno.renderer;
 
 import de.sg.benno.ogl.OpenGL;
+import de.sg.benno.ogl.buffer.Vao;
+import de.sg.benno.ogl.resource.ShaderProgram;
 import de.sg.benno.ogl.resource.Texture;
 import de.sg.benno.state.Context;
 import org.joml.Matrix4f;
@@ -40,19 +42,14 @@ public class MiniMapRenderer {
     //-------------------------------------------------
 
     /**
-     * The {@link Geometry} object.
-     */
-    private final Geometry quadGeometry;
-
-    /**
      * The {@link Vao} object.
      */
     private final Vao vao;
 
     /**
-     * The {@link Shader} using in this renderer.
+     * The {@link ShaderProgram} using in this renderer.
      */
-    private final Shader shader;
+    private final ShaderProgram shaderProgram;
 
     //-------------------------------------------------
     // Ctors.
@@ -69,8 +66,7 @@ public class MiniMapRenderer {
 
         Objects.requireNonNull(context, "context must not be null");
 
-        this.quadGeometry = context.engine.getResourceManager().loadGeometry(Geometry.GeometryId.QUAD_2D);
-        this.shader = context.engine.getResourceManager().loadResource(Shader.class, SHADER_NAME);
+        this.shaderProgram = context.engine.getResourceManager().getShaderProgramResource(SHADER_NAME);
         this.vao = new Vao();
 
         this.initVao();
@@ -84,7 +80,7 @@ public class MiniMapRenderer {
      * Initializes a {@link Vao} to render a single quad.
      */
     private void initVao() {
-        vao.addVbo(quadGeometry.vertices, quadGeometry.drawCount, quadGeometry.defaultBufferLayout);
+        vao.add2DQuadVbo();
     }
 
     //-------------------------------------------------
@@ -110,7 +106,7 @@ public class MiniMapRenderer {
     ) {
         OpenGL.enableAlphaBlending();
 
-        shader.bind();
+        shaderProgram.bind();
 
         Texture.bindForReading(bottomLayer.getId(), GL_TEXTURE0);
         Texture.bindForReading(shipsLayer.getId(), GL_TEXTURE1);
@@ -122,16 +118,16 @@ public class MiniMapRenderer {
                 .translate(new Vector3f(position, 0.0f))
                 .scale(new Vector3f(size, 1.0f));
 
-        shader.setUniform("model", modelMatrix);
-        shader.setUniform("bottomLayer", 0);
-        shader.setUniform("shipsLayer", 1);
-        shader.setUniform("cameraLayer", 2);
+        shaderProgram.setUniform("model", modelMatrix);
+        shaderProgram.setUniform("bottomLayer", 0);
+        shaderProgram.setUniform("shipsLayer", 1);
+        shaderProgram.setUniform("cameraLayer", 2);
 
         vao.bind();
         vao.drawPrimitives(GL_TRIANGLES);
         vao.unbind();
 
-        Shader.unbind();
+        ShaderProgram.unbind();
         Texture.unbind();
 
         OpenGL.disableBlending();
@@ -147,6 +143,6 @@ public class MiniMapRenderer {
     public void cleanUp() {
         LOGGER.debug("Clean up MiniMapRenderer.");
 
-        this.vao.cleanUp();
+        vao.cleanUp();
     }
 }

@@ -230,7 +230,7 @@ public class Water {
         var waterBshTexture = bshFile.getBshTextures().get(water.gfx);
 
         // calc adjust height
-        var adjustHeight = TileUtil.adjustHeight(zoom.defaultTileHeightHalf, TileGraphic.TileHeight.SEA_LEVEL.value, zoom.elevation);
+        var adjustHeight = TileUtil.adjustHeight(zoom.getTileHeightHalf(), TileGraphic.TileHeight.SEA_LEVEL.value, zoom.getElevation());
 
         // saves for each instance whether there is a water tile there
         // this is the same for every zoom and therefore only needs to be done once
@@ -258,7 +258,7 @@ public class Water {
                     waterTile.worldPosition.x = x;
                     waterTile.worldPosition.y = y;
 
-                    var screenPosition = TileUtil.worldToScreen(x, y, zoom.defaultTileWidthHalf, zoom.defaultTileHeightHalf);
+                    var screenPosition = TileUtil.worldToScreen(x, y, zoom.getTileWidthHalf(), zoom.getTileHeightHalf());
                     screenPosition.y += adjustHeight;
                     screenPosition.x -= waterBshTexture.getWidth();
                     screenPosition.y -= waterBshTexture.getHeight();
