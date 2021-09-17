@@ -6,8 +6,10 @@
  * License: GPLv2
  */
 
-package de.sg.benno;
+package de.sg.benno.content;
 
+import de.sg.benno.Node;
+import de.sg.benno.TileUtil;
 import de.sg.benno.chunk.Ship4;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;

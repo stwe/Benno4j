@@ -6,8 +6,10 @@
  * License: GPLv2
  */
 
-package de.sg.benno;
+package de.sg.benno.content;
 
+import de.sg.benno.BennoConfig;
+import de.sg.benno.TileUtil;
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.Tile;
 import de.sg.benno.chunk.TileGraphic;

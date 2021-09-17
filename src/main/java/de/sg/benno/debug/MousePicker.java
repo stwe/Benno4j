@@ -8,8 +8,8 @@
 
 package de.sg.benno.debug;
 
-import de.sg.benno.Shipping;
-import de.sg.benno.Water;
+import de.sg.benno.content.Shipping;
+import de.sg.benno.content.Water;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.file.ImageFile;
 import de.sg.benno.input.Camera;
