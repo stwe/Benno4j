@@ -8,6 +8,7 @@
 
 package de.sg.benno.ogl.resource;
 
+import de.sg.benno.ogl.Config;
 import de.sg.benno.ogl.OglRuntimeException;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
@@ -38,11 +39,11 @@ public class ShaderProgram implements Resource {
     // Constants
     //-------------------------------------------------
 
-    private static final String VERTEX_SHADER_FILE_NAME = "/Vertex.vert";
-    private static final String TESSELLATION_CONTROL_SHADER_FILE_NAME = "/TessControl.tesc";
-    private static final String TESSELLATION_EVALUATION_SHADER_FILE_NAME = "/TessEval.tese";
-    private static final String GEOMETRY_SHADER_FILE_NAME = "/Geometry.geom";
-    private static final String FRAGMENT_SHADER_FILE_NAME = "/Fragment.frag";
+    private static final String VERTEX_SHADER_FILE_NAME = Config.VERTEX_SHADER_FILE_NAME;
+    private static final String TESSELLATION_CONTROL_SHADER_FILE_NAME = Config.TESSELLATION_CONTROL_SHADER_FILE_NAME;
+    private static final String TESSELLATION_EVALUATION_SHADER_FILE_NAME = Config.TESSELLATION_EVALUATION_SHADER_FILE_NAME;
+    private static final String GEOMETRY_SHADER_FILE_NAME = Config.GEOMETRY_SHADER_FILE_NAME;
+    private static final String FRAGMENT_SHADER_FILE_NAME = Config.FRAGMENT_SHADER_FILE_NAME;
 
     //-------------------------------------------------
     // Types
@@ -154,7 +155,7 @@ public class ShaderProgram implements Resource {
         // creates an empty program
         createId();
 
-        var shaderPath = "/shader/" + path;
+        var shaderPath = Config.SHADER_PROGRAMS_PATH + path;
 
         // add VERTEX_SHADER
         if (options.contains(Options.VERTEX_SHADER)) {

@@ -10,7 +10,6 @@ package de.sg.benno.input;
 
 import de.sg.benno.ogl.OglEngine;
 import de.sg.benno.ogl.camera.OrthographicCamera;
-import de.sg.benno.ogl.state.StateContext;
 import de.sg.benno.renderer.Zoom;
 
 /**

@@ -10,6 +10,9 @@ package de.sg.benno.ogl.camera;
 
 import org.joml.Vector2i;
 
+/**
+ * Represents a CameraZoom.
+ */
 public interface CameraZoom {
     int getTileWidthHalf();
     int getTileHeightHalf();

@@ -8,6 +8,7 @@
 
 package de.sg.benno.ogl.renderer;
 
+import de.sg.benno.ogl.Config;
 import de.sg.benno.ogl.OglEngine;
 import de.sg.benno.ogl.OpenGL;
 import de.sg.benno.ogl.buffer.Vao;
@@ -34,7 +35,7 @@ public class SpriteRenderer {
     /**
      * The name of the used shader.
      */
-    private static final String SHADER_NAME = "sprite";
+    private static final String SHADER_NAME = Config.SPRITE_RENDERER_SHADER_FOLDER;
 
     //-------------------------------------------------
     // Member

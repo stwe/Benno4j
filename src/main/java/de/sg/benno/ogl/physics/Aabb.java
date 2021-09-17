@@ -33,7 +33,7 @@ public class Aabb {
     /**
      * Highlights an {@link Aabb}.
      */
-    private static final String AABB_FILE = "/debug/aabb.png";
+    private static final String AABB_FILE = Config.AABB_DEBUG_TEXTURE_PATH;
 
     //-------------------------------------------------
     // Member

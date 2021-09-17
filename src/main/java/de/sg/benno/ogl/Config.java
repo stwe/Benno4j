@@ -27,4 +27,15 @@ public class Config {
     public static float FAR;
 
     public static double FPS;
+
+    public static String AABB_DEBUG_TEXTURE_PATH;
+
+    public static String SHADER_PROGRAMS_PATH;
+    public static String SPRITE_RENDERER_SHADER_FOLDER;
+
+    public static String VERTEX_SHADER_FILE_NAME;
+    public static String TESSELLATION_CONTROL_SHADER_FILE_NAME;
+    public static String TESSELLATION_EVALUATION_SHADER_FILE_NAME;
+    public static String GEOMETRY_SHADER_FILE_NAME;
+    public static String FRAGMENT_SHADER_FILE_NAME;
 }

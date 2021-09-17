@@ -61,9 +61,9 @@ public class MouseInput {
      * Constructs a new {@link MouseInput} object.
      */
     public MouseInput() {
-        previousPos = new Vector2d(-1.0, -1.0);
-        currentPos = new Vector2d(0.0, 0.0);
-        displVec = new Vector2f();
+        this.previousPos = new Vector2d(-1.0, -1.0);
+        this.currentPos = new Vector2d(0.0, 0.0);
+        this.displVec = new Vector2f();
     }
 
     //-------------------------------------------------
