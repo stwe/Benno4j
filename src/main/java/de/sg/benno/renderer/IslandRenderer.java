@@ -301,7 +301,7 @@ public class IslandRenderer {
         var vbo = vao.addVbo();
 
         // store model matrices (static draw)
-        vbo.storeMatrix4f(matrices, instances);
+        vbo.storeMatrix4f(matrices);
 
         // set buffer layout
         vbo.addFloatAttribute(2, 4, 16, 0, true);
