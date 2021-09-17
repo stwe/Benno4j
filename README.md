@@ -23,7 +23,7 @@ The file `benno.properties` must be edited. Enter the correct path to the savega
 
 ## License
 
-Benno4j is licensed under the Apache 2.0 license, see [LICENSE](https://github.com/stwe/Benno4j/blob/master/LICENSE) for more information.
+*Benno4j* is licensed under the Apache 2.0 license, see [LICENSE](https://github.com/stwe/Benno4j/blob/master/LICENSE) for more information.
 
 ## Third Party Licenses
 

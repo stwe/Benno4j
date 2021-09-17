@@ -23,7 +23,7 @@ import org.joml.Vector2i;
 import java.util.HashMap;
 import java.util.Objects;
 
-import static de.sg.benno.Util.shortToInt;
+import static de.sg.benno.util.Util.shortToInt;
 import static de.sg.benno.chunk.Ship4.ShipType.*;
 import static de.sg.benno.ogl.Log.LOGGER;
 

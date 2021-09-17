@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
 
-import static de.sg.benno.Util.*;
+import static de.sg.benno.util.Util.*;
 import static de.sg.benno.chunk.Tile.BYTES_PER_TILE;
 import static de.sg.benno.ogl.Log.LOGGER;
 

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package de.sg.benno;
+package de.sg.benno.util;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -32,7 +32,7 @@ public class Util {
     //-------------------------------------------------
 
     /**
-     * The max width and height of a 1D or 2D texture that the GPU supports.
+     * Gets the max width and height of a 1D or 2D texture that the GPU supports.
      *
      * @return The max width and height of a texture.
      */

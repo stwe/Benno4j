@@ -19,7 +19,7 @@
 package de.sg.benno.chunk;
 
 import de.sg.benno.BennoRuntimeException;
-import de.sg.benno.TileUtil;
+import de.sg.benno.util.TileUtil;
 import de.sg.benno.data.Building;
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.file.ScpFile;
@@ -31,8 +31,8 @@ import org.joml.Vector2f;
 import java.io.IOException;
 import java.util.*;
 
-import static de.sg.benno.TileUtil.ANGLE_TO_THE_HORIZONTAL;
-import static de.sg.benno.Util.*;
+import static de.sg.benno.util.TileUtil.ANGLE_TO_THE_HORIZONTAL;
+import static de.sg.benno.util.Util.*;
 import static de.sg.benno.ogl.Log.LOGGER;
 
 /**

@@ -20,7 +20,7 @@ package de.sg.benno.data;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.sg.benno.Util;
+import de.sg.benno.util.Util;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

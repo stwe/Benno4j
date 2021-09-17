@@ -16,8 +16,9 @@
  * limitations under the License.
  */
 
-package de.sg.benno;
+package de.sg.benno.ai;
 
+import de.sg.benno.util.TileUtil;
 import de.sg.benno.chunk.Ship4;
 import org.joml.Vector2i;
 

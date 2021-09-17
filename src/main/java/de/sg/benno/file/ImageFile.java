@@ -18,7 +18,7 @@
 
 package de.sg.benno.file;
 
-import de.sg.benno.Util;
+import de.sg.benno.util.Util;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

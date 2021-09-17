@@ -19,7 +19,7 @@
 package de.sg.benno.file;
 
 import de.sg.benno.BennoRuntimeException;
-import de.sg.benno.Util;
+import de.sg.benno.util.Util;
 import de.sg.benno.chunk.Chunk;
 import de.sg.benno.ogl.resource.Texture;
 import de.sg.benno.renderer.Zoom;

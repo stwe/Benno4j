@@ -32,7 +32,6 @@ import java.util.Objects;
 
 import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_3;
 
 /**
  * Represents a Sandbox.

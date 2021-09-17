@@ -18,7 +18,7 @@
 
 package de.sg.benno.input;
 
-import de.sg.benno.*;
+import de.sg.benno.ai.Astar;
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.content.Shipping;

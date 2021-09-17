@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import de.sg.benno.Node;
+import de.sg.benno.ai.Node;
 import org.joml.Vector2i;
 
 import static org.junit.jupiter.api.Assertions.*;

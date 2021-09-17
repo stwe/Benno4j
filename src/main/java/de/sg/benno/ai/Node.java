@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package de.sg.benno;
+package de.sg.benno.ai;
 
 import org.joml.Vector2i;
 
