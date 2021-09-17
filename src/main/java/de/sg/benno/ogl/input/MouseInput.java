@@ -189,11 +189,11 @@ public class MouseInput {
             boolean rotateY = deltay != 0;
 
             if (rotateX) {
-                displVec.y = (float) deltax;
+                displVec.x = (float) deltax;
             }
 
             if (rotateY) {
-                displVec.x = (float) deltay;
+                displVec.y = (float) deltay;
             }
         }
 
