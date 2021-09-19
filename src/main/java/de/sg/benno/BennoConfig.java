@@ -47,6 +47,10 @@ public class BennoConfig {
     public static boolean SHOW_GRID;
 
     public static boolean CREATE_ATLAS_IMAGES;
+    public static String ATLAS_OUT_PATH;
+    public static String ATLAS_SGFX_PATH;
+    public static String ATLAS_MGFX_PATH;
+    public static String ATLAS_GFX_PATH;
 
     public static String GAME_STATE_NAME;
 

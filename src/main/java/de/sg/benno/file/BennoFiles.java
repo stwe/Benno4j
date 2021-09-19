@@ -213,7 +213,7 @@ public class BennoFiles {
     /**
      * A {@link DataFiles} object.
      */
-    private final DataFiles dataFiles;
+    private DataFiles dataFiles;
 
     //-------------------------------------------------
     // Ctors.
@@ -236,14 +236,7 @@ public class BennoFiles {
 
         initPaths();
         preloadFiles();
-
-        dataFiles = new DataFiles();
-
-        if (BennoConfig.CREATE_ATLAS_IMAGES) {
-            createSgfxAtlas();
-            createMgfxAtlas();
-            createGfxAtlas();
-        }
+        createTileAtlasIfRequired();
     }
 
     //-------------------------------------------------
@@ -336,7 +329,7 @@ public class BennoFiles {
     }
 
     /**
-     * Convenience function to get stadtfld.bsh {@link BshFile} by {@link de.sg.benno.renderer.Zoom}.
+     * Convenience function to get <i>stadtfld.bsh</i> {@link BshFile} by {@link de.sg.benno.renderer.Zoom}.
      *
      * @param zoom {@link de.sg.benno.renderer.Zoom}
      *
@@ -348,7 +341,7 @@ public class BennoFiles {
     }
 
     /**
-     * Convenience function to get ship.bsh {@link BshFile} by {@link de.sg.benno.renderer.Zoom}.
+     * Convenience function to get <i>ship.bsh</i> {@link BshFile} by {@link de.sg.benno.renderer.Zoom}.
      *
      * @param zoom {@link de.sg.benno.renderer.Zoom}
      *
@@ -434,8 +427,8 @@ public class BennoFiles {
         //loadBshFile(InterfaceBshFileName.BAUHAUS);
         //loadBshFile(InterfaceBshFileName.EDITOR); // 950
 
-        LOGGER.debug("Preload main menu graphics.");
-        loadBshFile(getFilePath(FileName.START_BSH));
+        //LOGGER.debug("Preload main menu graphics.");
+        //loadBshFile(getFilePath(FileName.START_BSH));
 
         //loadBshFile(InterfaceBshFileName.TOOLS); // 670
 
@@ -448,6 +441,9 @@ public class BennoFiles {
         loadBshFile(getZoomableBshFilePath(Zoom.GFX, ZoomableBshFileName.SHIP_BSH), Zoom.GFX, BennoConfig.CREATE_SHIP_GFX_PNG);
         loadBshFile(getZoomableBshFilePath(Zoom.MGFX, ZoomableBshFileName.SHIP_BSH), Zoom.MGFX, BennoConfig.CREATE_SHIP_MGFX_PNG);
         loadBshFile(getZoomableBshFilePath(Zoom.SGFX, ZoomableBshFileName.SHIP_BSH), Zoom.SGFX, BennoConfig.CREATE_SHIP_SGFX_PNG);
+
+        LOGGER.debug("Preload data files.");
+        dataFiles = new DataFiles();
 
         LOGGER.debug("Successfully preload files.");
     }
@@ -494,6 +490,42 @@ public class BennoFiles {
      */
     private void loadBshFile(Path path) throws IOException {
         loadBshFile(path, false);
+    }
+
+    /**
+     * Creates the tile atlas images.
+     *
+     * @throws IOException If an I/O error is thrown.
+     */
+    private void createTileAtlasIfRequired() throws IOException {
+        if (!BennoConfig.CREATE_ATLAS_IMAGES) {
+            // check atlas images in SGFX
+            for (var i = 0; i < TileAtlas.NR_OF_SGFX_ATLAS_IMAGES; i++) {
+                Util.getFileFromResourceAsStream(BennoConfig.ATLAS_SGFX_PATH + i + ".png");
+            }
+
+            // check atlas images in MGFX
+            for (var i = 0; i < TileAtlas.NR_OF_MGFX_ATLAS_IMAGES; i++) {
+                Util.getFileFromResourceAsStream(BennoConfig.ATLAS_MGFX_PATH + i + ".png");
+            }
+
+            // check atlas images in GFX
+            for (var i = 0; i < TileAtlas.NR_OF_GFX_ATLAS_IMAGES; i++) {
+                Util.getFileFromResourceAsStream(BennoConfig.ATLAS_GFX_PATH + i + ".png");
+            }
+        }
+
+        if (BennoConfig.CREATE_ATLAS_IMAGES) {
+            LOGGER.warn("Start tile atlas creation ...");
+
+            createSgfxAtlas();
+            createMgfxAtlas();
+            createGfxAtlas();
+
+            LOGGER.warn("Tile atlas images successfully created.");
+
+            throw new BennoRuntimeException("Deactivate the creation of the tile atlas files, rebuild and restart the program.");
+        }
     }
 
     //-------------------------------------------------
@@ -547,30 +579,7 @@ public class BennoFiles {
             atlasImages.add(atlas);
         }
 
-        if (!atlasImages.isEmpty()) {
-            c = 0;
-
-            var path = "out/" + TileAtlas.ATLAS_SGFX_PATH;
-            Files.createDirectories(Paths.get(path));
-
-            for (var atlas : atlasImages) {
-                String filename = path + c + ".png";
-
-                var file = new File(filename);
-                if (!file.exists()) {
-                    var result = file.createNewFile();
-                    if (!result) {
-                        throw new BennoRuntimeException("Unexpected error.");
-                    }
-                }
-
-                ImageIO.write(atlas, "PNG", file);
-
-                atlas.getGraphics().dispose();
-
-                c++;
-            }
-        }
+        writeAtlasImages(BennoConfig.ATLAS_OUT_PATH + BennoConfig.ATLAS_SGFX_PATH, atlasImages);
     }
 
     /**
@@ -620,30 +629,7 @@ public class BennoFiles {
             atlasImages.add(atlas);
         }
 
-        if (!atlasImages.isEmpty()) {
-            c = 0;
-
-            var path = "out/" + TileAtlas.ATLAS_MGFX_PATH;
-            Files.createDirectories(Paths.get(path));
-
-            for (var atlas : atlasImages) {
-                String filename = path + c + ".png";
-
-                var file = new File(filename);
-                if (!file.exists()) {
-                    var result = file.createNewFile();
-                    if (!result) {
-                        throw new BennoRuntimeException("Unexpected error.");
-                    }
-                }
-
-                ImageIO.write(atlas, "PNG", file);
-
-                atlas.getGraphics().dispose();
-
-                c++;
-            }
-        }
+        writeAtlasImages(BennoConfig.ATLAS_OUT_PATH + BennoConfig.ATLAS_MGFX_PATH, atlasImages);
     }
 
     /**
@@ -693,29 +679,37 @@ public class BennoFiles {
             atlasImages.add(atlas);
         }
 
-        if (!atlasImages.isEmpty()) {
-            c = 0;
+        writeAtlasImages(BennoConfig.ATLAS_OUT_PATH + BennoConfig.ATLAS_GFX_PATH, atlasImages);
+    }
 
-            var path = "out/" + TileAtlas.ATLAS_GFX_PATH;
-            Files.createDirectories(Paths.get(path));
+    /**
+     * Writes {@link BufferedImage} objects to PNG files.
+     *
+     * @param path The output path.
+     * @param bufferedImages The {@link BufferedImage} objects to be written.
+     * @throws IOException If an I/O error is thrown.
+     */
+    private void writeAtlasImages(String path, ArrayList<BufferedImage> bufferedImages) throws IOException {
+        var c = 0;
 
-            for (var atlas : atlasImages) {
-                String filename = path + c + ".png";
+        Files.createDirectories(Paths.get(path));
 
-                var file = new File(filename);
-                if (!file.exists()) {
-                    var result = file.createNewFile();
-                    if (!result) {
-                        throw new BennoRuntimeException("Unexpected error.");
-                    }
+        for (var atlas : bufferedImages) {
+            String filename = path + c + ".png";
+
+            var file = new File(filename);
+            if (!file.exists()) {
+                var result = file.createNewFile();
+                if (!result) {
+                    throw new BennoRuntimeException("Unexpected error.");
                 }
-
-                ImageIO.write(atlas, "PNG", file);
-
-                atlas.getGraphics().dispose();
-
-                c++;
             }
+
+            ImageIO.write(atlas, "PNG", file);
+
+            atlas.getGraphics().dispose();
+
+            c++;
         }
     }
 

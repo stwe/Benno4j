@@ -62,11 +62,6 @@ public class TileAtlas {
      */
     public static final float MAX_GFX_HEIGHT = 286.0f;
 
-    /**
-     * The path to GFX atlas images.
-     */
-    public static final String ATLAS_GFX_PATH = "atlas/GFX/";
-
     //-------------------------------------------------
     // Constants MGFX
     //-------------------------------------------------
@@ -94,11 +89,6 @@ public class TileAtlas {
      */
     public static final float MAX_MGFX_HEIGHT = 143.0f;
 
-    /**
-     * The path to MGFX atlas images.
-     */
-    public static final String ATLAS_MGFX_PATH = "atlas/MGFX/";
-
     //-------------------------------------------------
     // Constants SGFX
     //-------------------------------------------------
@@ -125,11 +115,6 @@ public class TileAtlas {
      * Can also be read with the BennoFiles class.
      */
     public static final float MAX_SGFX_HEIGHT = 71.0f;
-
-    /**
-     * The path to SGFX atlas images.
-     */
-    public static final String ATLAS_SGFX_PATH = "atlas/SGFX/";
 
     //-------------------------------------------------
     // Member
@@ -270,7 +255,7 @@ public class TileAtlas {
      */
     private static void loadGfxAtlasImages() {
         for (var i = 0; i < NR_OF_GFX_ATLAS_IMAGES; i++) {
-            var path = ATLAS_GFX_PATH + i + ".png";
+            var path = BennoConfig.ATLAS_GFX_PATH + i + ".png";
 
             ImageFile image = null;
             try {
@@ -288,7 +273,7 @@ public class TileAtlas {
      */
     private static void loadMGfxAtlasImages() {
         for (var i = 0; i < NR_OF_MGFX_ATLAS_IMAGES; i++) {
-            var path = ATLAS_MGFX_PATH + i + ".png";
+            var path = BennoConfig.ATLAS_MGFX_PATH + i + ".png";
 
             ImageFile image = null;
             try {
@@ -306,7 +291,7 @@ public class TileAtlas {
      */
     private static void loadSGfxAtlasImages() {
         for (var i = 0; i < NR_OF_SGFX_ATLAS_IMAGES; i++) {
-            var path = ATLAS_SGFX_PATH + i + ".png";
+            var path = BennoConfig.ATLAS_SGFX_PATH + i + ".png";
 
             ImageFile image = null;
             try {

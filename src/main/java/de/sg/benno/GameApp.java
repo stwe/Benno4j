@@ -94,7 +94,7 @@ public class GameApp extends OglApplication {
         stateMachine = new StateMachine(stateContext);
 
         addGameState();
-        loadGamFile(stateContext);
+        loadGamFileAndChangeToState(stateContext);
 
         LOGGER.debug("GameApp successfully initialized.");
     }
@@ -158,9 +158,9 @@ public class GameApp extends OglApplication {
     }
 
     /**
-     * Load a GAM file.
+     * Load a GAM file and change to a {@link de.sg.benno.ogl.state.State}.
      */
-    private void loadGamFile(Context context) throws Exception {
+    private void loadGamFileAndChangeToState(Context context) throws Exception {
         if (!bennoFiles.getSavegameFilePaths().isEmpty()) {
             if (!BennoConfig.SAVEGAME.isEmpty()) {
                 // try to load the savegame from resources
