@@ -33,6 +33,8 @@ public class BennoConfig {
 
     public static int DEEP_WATER_BUILDING_ID;
 
+    public static String PNG_OUT_PATH;
+
     public static boolean CREATE_STADTFLD_GFX_PNG;
     public static boolean CREATE_STADTFLD_MGFX_PNG;
     public static boolean CREATE_STADTFLD_SGFX_PNG;

@@ -453,7 +453,7 @@ public class BennoFiles {
      * The loaded {@link BshFile} object is saved in {@link #bshFiles}.
      *
      * @param path The {@link Path} to the BSH file.
-     * @param zoom The {@link Zoom}
+     * @param zoom The {@link Zoom} of the BSH file.
      * @param saveAsPng Is true if the textures should also be saved as Png.
      * @throws IOException If an I/O error is thrown.
      */
@@ -461,7 +461,7 @@ public class BennoFiles {
         bshFiles.put(
                 path,
                 new BshFile(
-                        path,
+                        Objects.requireNonNull(path, "path must not be null"),
                         Objects.requireNonNull(paletteFile, "paletteFile must not be null").getPalette(),
                         zoom,
                         saveAsPng

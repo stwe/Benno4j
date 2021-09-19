@@ -18,6 +18,7 @@
 
 package de.sg.benno.file;
 
+import de.sg.benno.BennoConfig;
 import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.util.Util;
 import de.sg.benno.chunk.Chunk;
@@ -184,11 +185,6 @@ public class BshFile extends BinaryFile {
      */
     private static final int END_OF_ROW = 254;
 
-    /**
-     * The directory in which the Png files are saved.
-     */
-    private static final String OUTPUT_DIR = "out";
-
     //-------------------------------------------------
     // Member
     //-------------------------------------------------
@@ -200,7 +196,7 @@ public class BshFile extends BinaryFile {
     private final int[] palette;
 
     /**
-     * If the variable is true, all images are saved as a Png in {@link #OUTPUT_DIR}.
+     * If the variable is true, all images are saved as a Png.
      */
     private final boolean saveAsPng;
 
@@ -249,8 +245,8 @@ public class BshFile extends BinaryFile {
      *
      * @param path The {@link Path} to the Bsh file.
      * @param palette The color values from the <i>stadtfld.col</i> file.
-     * @param zoom {@link Zoom}
-     * @param saveAsPng If the variable is true, all images are saved as a Png in {@link #OUTPUT_DIR}.
+     * @param zoom The {@link Zoom} of the (zoomable) Bsh file.
+     * @param saveAsPng If the variable is true, all images are saved as a Png.
      * @throws IOException If an I/O error is thrown.
      */
     public BshFile(Path path, int[] palette, Zoom zoom, boolean saveAsPng) throws IOException {
@@ -280,7 +276,7 @@ public class BshFile extends BinaryFile {
      *
      * @param path The {@link Path} to the Bsh file.
      * @param palette The color values from the <i>stadtfld.col</i> file.
-     * @param saveAsPng If the variable is true, all images are saved as a Png in {@link #OUTPUT_DIR}.
+     * @param saveAsPng If the variable is true, all images are saved as a Png.
      * @throws IOException If an I/O error is thrown.
      */
     public BshFile(Path path, int[] palette, boolean saveAsPng) throws IOException {
@@ -329,7 +325,8 @@ public class BshFile extends BinaryFile {
         readOffsets();
         validateOffsets();
         decodeTextures();
-        createGlTextures();
+        // todo
+        //createGlTextures();
         setMaxValues();
 
         LOGGER.debug("BSH data read successfully.");
@@ -531,6 +528,11 @@ public class BshFile extends BinaryFile {
         }
     }
 
+    // todo
+    // createGlTextures ist nicht notwendig; evtl mit einem TextureManager System ersetzen,
+    // der die Textur beim ersten Zugriff erstellt
+    // todo
+
     /**
      * Makes the {@link BshTexture} objects available for OpenGL.
      */
@@ -645,7 +647,7 @@ public class BshFile extends BinaryFile {
     private void saveAsPng(BufferedBshImage bufferedBshImage) throws IOException {
         var bshFilename = getPath().getFileName().toString().toLowerCase();
         var preName = bshFilename.substring(0, bshFilename.lastIndexOf("."));
-        var outDir = OUTPUT_DIR + "/bsh/";
+        var outDir = BennoConfig.PNG_OUT_PATH;
 
         if (zoom != null) {
             outDir += zoom + "/" + preName;

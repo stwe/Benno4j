@@ -35,7 +35,7 @@ public abstract class OglApplication implements Application {
     /**
      * The file path to the app config file.
      */
-    private static final String APPLICATION_CONFIG_FILE = "/config.properties";
+    private static final String APPLICATION_CONFIG_FILE = "/ogl.properties";
 
     //-------------------------------------------------
     // Member
