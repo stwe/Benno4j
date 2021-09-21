@@ -22,12 +22,10 @@ import de.sg.benno.BennoConfig;
 import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.util.Util;
 import de.sg.benno.chunk.Chunk;
-import de.sg.benno.ogl.resource.Texture;
 import de.sg.benno.renderer.Zoom;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,10 +34,6 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import static de.sg.benno.ogl.Log.LOGGER;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.GL_RGBA8;
-import static org.lwjgl.opengl.GL12.GL_BGRA;
-import static org.lwjgl.opengl.GL12.GL_UNSIGNED_INT_8_8_8_8_REV;
 
 /**
  * Represents a BshFile.
@@ -325,8 +319,6 @@ public class BshFile extends BinaryFile {
         readOffsets();
         validateOffsets();
         decodeTextures();
-        // todo
-        //createGlTextures();
         setMaxValues();
 
         LOGGER.debug("BSH data read successfully.");
@@ -343,8 +335,7 @@ public class BshFile extends BinaryFile {
         LOGGER.debug("Clean up {} bsh textures.", bshTextures.size());
 
         for (var bshTexture : bshTextures) {
-            bshTexture.getTexture().cleanUp();
-            bshTexture.getBufferedImage().getGraphics().dispose();
+            bshTexture.cleanUp();
         }
     }
 
@@ -525,42 +516,6 @@ public class BshFile extends BinaryFile {
         bshTextures.add(new BshTexture(bufferedBshImage.image));
         if (saveAsPng) {
             saveAsPng(bufferedBshImage);
-        }
-    }
-
-    // todo
-    // createGlTextures ist nicht notwendig; evtl mit einem TextureManager System ersetzen,
-    // der die Textur beim ersten Zugriff erstellt
-    // todo
-
-    /**
-     * Makes the {@link BshTexture} objects available for OpenGL.
-     */
-    private void createGlTextures() {
-        for (var bshTexture : bshTextures) {
-            var dbb = (DataBufferInt) bshTexture.getBufferedImage().getRaster().getDataBuffer();
-
-            var texture = new Texture();
-            Texture.bind(texture.getId());
-            Texture.useNoFilter();
-
-            bshTexture.setTexture(texture);
-            bshTexture.getTexture().setWidth(bshTexture.getBufferedImage().getWidth());
-            bshTexture.getTexture().setHeight(bshTexture.getBufferedImage().getHeight());
-
-            glTexImage2D(
-                    GL_TEXTURE_2D,
-                    0,
-                    GL_RGBA8,
-                    bshTexture.getBufferedImage().getWidth(),
-                    bshTexture.getBufferedImage().getHeight(),
-                    0,
-                    GL_BGRA,
-                    GL_UNSIGNED_INT_8_8_8_8_REV,
-                    dbb.getData()
-            );
-
-            Texture.unbind();
         }
     }
 

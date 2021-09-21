@@ -22,9 +22,12 @@ import de.sg.benno.ogl.OglRuntimeException;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
+import java.util.Objects;
 
 import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.BufferUtils.createByteBuffer;
@@ -413,6 +416,34 @@ public class Texture implements Resource {
      */
     public static void bindForReading(int id, int textureUnit) {
         bindForReading(id, textureUnit, GL_TEXTURE_2D);
+    }
+
+    /**
+     * Gives a {@link BufferedImage} to OpenGL.
+     *
+     * @param id An texture id.
+     * @param bufferedImage A {@link BufferedImage}
+     */
+    public static void bufferedImageToTexture(int id, BufferedImage bufferedImage) {
+        Objects.requireNonNull(bufferedImage, "bufferedImage must not be null");
+        var dbb = (DataBufferInt) bufferedImage.getRaster().getDataBuffer();
+
+        Texture.bind(id);
+        Texture.useNoFilter();
+
+        glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_RGBA8,
+                bufferedImage.getWidth(),
+                bufferedImage.getHeight(),
+                0,
+                GL_BGRA,
+                GL_UNSIGNED_INT_8_8_8_8_REV,
+                dbb.getData()
+        );
+
+        Texture.unbind();
     }
 
     //-------------------------------------------------

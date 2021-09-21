@@ -52,7 +52,7 @@ public class BshTexture {
      *
      * @param bufferedImage {@link BufferedImage}
      */
-    BshTexture(BufferedImage bufferedImage) {
+    public BshTexture(BufferedImage bufferedImage) {
         this.bufferedImage = Objects.requireNonNull(bufferedImage, "bufferedImage must not be null");
     }
 
@@ -93,6 +93,10 @@ public class BshTexture {
      * @return {@link #texture}
      */
     public Texture getTexture() {
+        if (texture == null) {
+            createTexture();
+        }
+
         return texture;
     }
 
@@ -101,11 +105,43 @@ public class BshTexture {
     //-------------------------------------------------
 
     /**
-     * Set a {@link Texture}.
+     * Set a {@link #texture}.
      *
      * @param texture {@link Texture}
      */
-    void setTexture(Texture texture) {
-        this.texture = texture;
+    public void setTexture(Texture texture) {
+        this.texture = Objects.requireNonNull(texture, "texture must not be null");
+    }
+
+    //-------------------------------------------------
+    // Clean up
+    //-------------------------------------------------
+
+    /**
+     * Clean up.
+     */
+    public void cleanUp() {
+        if (texture != null) {
+            texture.cleanUp();
+        }
+
+        bufferedImage.getGraphics().dispose();
+    }
+
+    //-------------------------------------------------
+    // Helper
+    //-------------------------------------------------
+
+    /**
+     * Creates {@link #texture} from {@link #bufferedImage}.
+     */
+    private void createTexture() {
+        var texture = new Texture();
+        texture.setWidth(bufferedImage.getWidth());
+        texture.setHeight(bufferedImage.getHeight());
+
+        setTexture(texture);
+
+        Texture.bufferedImageToTexture(texture.getId(), bufferedImage);
     }
 }
