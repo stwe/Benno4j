@@ -82,7 +82,7 @@ public class Water {
     /**
      * Water {@link TileGraphic} objects for each {@link Zoom} level.
      */
-    private final HashMap<Zoom, ArrayList<TileGraphic>> waterTiles = new HashMap<>();
+    private final HashMap<Zoom, ArrayList<TileGraphic>> waterTileGraphics = new HashMap<>();
 
     /**
      * Stores the instance number for every position in the world if there is a water tile there.
@@ -97,7 +97,7 @@ public class Water {
     private ArrayList<Integer> waterGfxStartIndex;
 
     /**
-     * The {@link WaterRenderer} objects to render water for each {@link Zoom}.
+     * A {@link WaterRenderer} object for each {@link Zoom}.
      */
     private final HashMap<Zoom, WaterRenderer> waterRenderers = new HashMap<>();
 
@@ -142,7 +142,7 @@ public class Water {
 
         var index = getWaterInstanceIndex(x, y);
         if (index != NO_WATER) {
-            result = waterTiles.get(zoom).get(index);
+            result = waterTileGraphics.get(zoom).get(index);
         }
 
         return Optional.ofNullable(result);
@@ -232,14 +232,14 @@ public class Water {
         // get the BSH file for the given zoom
         var bshFile = this.bennoFiles.getStadtfldBshFile(zoom);
 
-        // to store all water tiles
-        var tiles = new ArrayList<TileGraphic>();
+        // to store all water tile graphics
+        var tileGraphics = new ArrayList<TileGraphic>();
 
         // get building data for the given Id
-        var water = buildings.get(buildingId);
+        var waterBuilding = buildings.get(buildingId);
 
         // get building texture to get the width and height
-        var waterBshTexture = bshFile.getBshTextures().get(water.gfx);
+        var waterBshTexture = bshFile.getBshTextures().get(waterBuilding.gfx);
 
         // calc adjust height
         var adjustHeight = TileUtil.adjustHeight(zoom.getTileHeightHalf(), TileGraphic.TileHeight.SEA_LEVEL.value, zoom.getElevation());
@@ -254,44 +254,44 @@ public class Water {
             addInstanceInfo = true;
         }
 
-        // create water tiles
+        // create water tile graphics
         for (int y = 0; y < WORLD_HEIGHT; y++) {
             for (int x = 0; x < WORLD_WIDTH; x++) {
-                // only consider deep water tiles here
+                // only consider deep water here
                 var isWater = Island5.isIsland5OnPosition(x, y, provider.getIsland5List()).isEmpty();
                 if (isWater) {
-                    var waterTile = new TileGraphic();
+                    var waterTileGraphic = new TileGraphic();
 
                     // create a "fake" Tile to store the building Id
-                    waterTile.parentTile = new Tile(buildingId);
+                    waterTileGraphic.parentTile = new Tile(buildingId);
 
-                    waterTile.gfx = water.gfx;
-                    waterTile.tileHeight = TileGraphic.TileHeight.SEA_LEVEL;
-                    waterTile.worldPosition.x = x;
-                    waterTile.worldPosition.y = y;
+                    waterTileGraphic.gfx = waterBuilding.gfx;
+                    waterTileGraphic.tileHeight = TileGraphic.TileHeight.SEA_LEVEL;
+                    waterTileGraphic.worldPosition.x = x;
+                    waterTileGraphic.worldPosition.y = y;
 
                     var screenPosition = TileUtil.worldToScreen(x, y, zoom.getTileWidthHalf(), zoom.getTileHeightHalf());
                     screenPosition.y += adjustHeight;
                     screenPosition.x -= waterBshTexture.getWidth();
                     screenPosition.y -= waterBshTexture.getHeight();
 
-                    waterTile.screenPosition = new Vector2f(screenPosition);
-                    waterTile.size = new Vector2f(waterBshTexture.getWidth(), waterBshTexture.getHeight());
-                    waterTile.color = new Vector3f();
+                    waterTileGraphic.screenPosition = new Vector2f(screenPosition);
+                    waterTileGraphic.size = new Vector2f(waterBshTexture.getWidth(), waterBshTexture.getHeight());
+                    waterTileGraphic.color = new Vector3f();
 
-                    tiles.add(waterTile);
+                    tileGraphics.add(waterTileGraphic);
 
                     // only needs to be done once
                     if (addInstanceInfo) {
-                        waterInstancesIndex.set(TileUtil.getIndexFrom2D(x, y), tiles.size() - 1);
+                        waterInstancesIndex.set(TileUtil.getIndexFrom2D(x, y), tileGraphics.size() - 1);
                     }
                 }
             }
         }
 
-        waterTiles.put(zoom, tiles);
+        waterTileGraphics.put(zoom, tileGraphics);
 
-        createWaterRenderer(zoom, water);
+        createWaterRenderer(zoom, waterBuilding);
     }
 
     /**
@@ -306,15 +306,15 @@ public class Water {
 
         ArrayList<Matrix4f> modelMatrices = new ArrayList<>();
 
-        for (var tile : waterTiles.get(zoom)) {
-            modelMatrices.add(tile.getModelMatrix());
+        for (var tileGraphic : waterTileGraphics.get(zoom)) {
+            modelMatrices.add(tileGraphic.getModelMatrix());
         }
 
         // create only once
         if (waterGfxStartIndex == null) {
             waterGfxStartIndex = new ArrayList<>();
-            for (var tile : waterTiles.get(zoom)) {
-                waterGfxStartIndex.add((tile.worldPosition.y + tile.worldPosition.x * 3) % building.animAnz);
+            for (var tileGraphic : waterTileGraphics.get(zoom)) {
+                waterGfxStartIndex.add((tileGraphic.worldPosition.y + tileGraphic.worldPosition.x * 3) % building.animAnz);
             }
         }
 

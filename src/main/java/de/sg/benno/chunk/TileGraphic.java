@@ -18,6 +18,7 @@
 
 package de.sg.benno.chunk;
 
+import de.sg.benno.ogl.renderer.RenderUtil;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
@@ -95,12 +96,6 @@ public class TileGraphic {
      * @return {@link Matrix4f}
      */
     public Matrix4f getModelMatrix() {
-        Matrix4f modelMatrix = new Matrix4f();
-        modelMatrix
-                .identity()
-                .translate(new Vector3f(screenPosition, 0.0f))
-                .scale(new Vector3f(size, 1.0f));
-
-        return modelMatrix;
+        return RenderUtil.createModelMatrix(screenPosition, size);
     }
 }

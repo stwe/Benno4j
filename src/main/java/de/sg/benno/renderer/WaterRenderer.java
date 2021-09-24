@@ -29,7 +29,6 @@ import de.sg.benno.ogl.resource.ShaderProgram;
 import de.sg.benno.ogl.resource.Texture;
 import de.sg.benno.state.Context;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
 import java.awt.image.DataBufferInt;
