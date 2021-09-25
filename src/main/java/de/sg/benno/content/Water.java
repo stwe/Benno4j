@@ -223,7 +223,7 @@ public class Water {
      * Create water {@link TileGraphic} objects for a given {@link Zoom}.
      *
      * @param zoom {@link Zoom}
-     * @param buildingId The building Id for each water tile. An Id can refer to several textures for animation.
+     * @param buildingId The building Id for each water tile. An Id can refer to several gfx for animation.
      * @throws Exception If an error is thrown.
      */
     private void createWaterGraphicTiles(Zoom zoom, int buildingId) throws Exception {

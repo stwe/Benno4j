@@ -18,6 +18,7 @@
 
 package de.sg.benno.debug;
 
+import com.badlogic.ashley.core.PooledEngine;
 import de.sg.benno.BennoConfig;
 import de.sg.benno.content.Shipping;
 import de.sg.benno.content.Water;
@@ -76,6 +77,11 @@ public class Sandbox {
      * A {@link MousePicker} object to select tiles.
      */
     private MousePicker mousePicker;
+
+    /**
+     * A {@link PooledEngine} - an efficient ECS with pooling.
+     */
+    private PooledEngine engine;
 
     //-------------------------------------------------
     // Ctors.
@@ -143,6 +149,15 @@ public class Sandbox {
         return mousePicker;
     }
 
+    /**
+     * Get {@link #engine}.
+     *
+     * @return {@link #engine}
+     */
+    public PooledEngine getEngine() {
+        return engine;
+    }
+
     //-------------------------------------------------
     // Init
     //-------------------------------------------------
@@ -161,6 +176,9 @@ public class Sandbox {
 
         // the mouse picker
         mousePicker = new MousePicker(context, water, shipping, TileGraphic.TileHeight.SEA_LEVEL);
+
+        // the ECS
+        engine = new PooledEngine();
     }
 
     //-------------------------------------------------
