@@ -292,7 +292,7 @@ public class Terrain {
 
                 // todo: write method
                 // fallback to bottom layer
-                if (island5TileOptional.isPresent() && island5TileOptional.get().graphicId == 0xFFFF) {
+                if (island5TileOptional.isPresent() && island5TileOptional.get().getGraphicId() == 0xFFFF) {
                     island5TileOptional = island5.getTileFromBottomLayer(x - island5.xPos, y - island5.yPos);
                 }
 

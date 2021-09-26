@@ -61,5 +61,7 @@ public class BennoConfig {
 
     public static int ZOOM_START;
 
+    public static String WATER_RENDERER_SHADER_FOLDER;
+
     public static String SAVEGAME;
 }

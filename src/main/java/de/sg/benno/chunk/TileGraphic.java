@@ -25,7 +25,7 @@ import org.joml.Vector2i;
 import org.joml.Vector3f;
 
 /**
- * A TitleGraphic object contains information for display on the screen.
+ * A TitleGraphic object contains information for display a {@link WorldTile} on the screen.
  */
 public class TileGraphic {
 
@@ -52,12 +52,13 @@ public class TileGraphic {
     //-------------------------------------------------
 
     /**
-     * The parent {@link Tile}.
+     * The parent {@link WorldTile}.
      */
-    public Tile parentTile;
+    public WorldTile parentTile;
 
     /**
-     * The gfx, see haeuser.cod or {@link de.sg.benno.data.Building} for reference.
+     * The gfx, see <i>haeuser.cod</i> or {@link de.sg.benno.data.Building} for reference.
+     * Each building ID refers to one or more graphics. This is the current graphic (gfx).
      */
     public int gfx;
 
@@ -85,6 +86,11 @@ public class TileGraphic {
      * The color of this tile.
      */
     public Vector3f color = new Vector3f();
+
+    /**
+     * Indicates whether the tile is currently selected.
+     */
+    public boolean selected = false;
 
     //-------------------------------------------------
     // Getter

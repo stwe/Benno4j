@@ -34,7 +34,10 @@ import static org.lwjgl.BufferUtils.createByteBuffer;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL13.*;
+import static org.lwjgl.opengl.GL30.GL_TEXTURE_2D_ARRAY;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
+import static org.lwjgl.opengl.GL45.glTextureStorage3D;
+import static org.lwjgl.opengl.GL45.glTextureSubImage3D;
 import static org.lwjgl.stb.STBImage.*;
 
 /**
@@ -112,7 +115,7 @@ public class Texture implements Resource {
 
     /**
      * Constructs a new {@link Texture} object.
-     * Only an Id is created.
+     * Only an ID is created.
      */
     public Texture() {
         createId();
@@ -444,6 +447,48 @@ public class Texture implements Resource {
         );
 
         Texture.unbind();
+    }
+
+    /**
+     * specify texture array storage requirements.
+     *
+     * @param id An texture id.
+     * @param width Specifies the width of the texture.
+     * @param height Specifies the height of the texture.
+     * @param gfxCount The number of textures.
+     */
+    public static void textureArrayStorageRequirements(int id, int width, int height, int gfxCount) {
+        Texture.bind(id, GL_TEXTURE_2D_ARRAY);
+        glTextureStorage3D(id, 1, GL_RGBA8, width, height, gfxCount);
+        Texture.unbind(GL_TEXTURE_2D_ARRAY);
+    }
+
+    /**
+     * Gives a {@link BufferedImage} to OpenGL texture array.
+     *
+     * @param id An texture id.
+     * @param bufferedImage {@link BufferedImage}
+     * @param zOffset The texture array index.
+     */
+    public static void bufferedImageToTextureArray(int id, BufferedImage bufferedImage, int zOffset) {
+        Objects.requireNonNull(bufferedImage, "bufferedImage must not be null");
+        var dbb = (DataBufferInt) bufferedImage.getRaster().getDataBuffer();
+
+        Texture.bind(id, GL_TEXTURE_2D_ARRAY);
+
+        glTextureSubImage3D(
+                id,
+                0,
+                0, 0,
+                zOffset,
+                bufferedImage.getWidth(), bufferedImage.getHeight(),
+                1,
+                GL_BGRA,
+                GL_UNSIGNED_INT_8_8_8_8_REV,
+                dbb.getData()
+        );
+
+        Texture.unbind(GL_TEXTURE_2D_ARRAY);
     }
 
     //-------------------------------------------------

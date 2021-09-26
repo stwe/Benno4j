@@ -222,15 +222,15 @@ public class Island5 {
     }
 
     /**
-     * Returns the {@link Tile} object from the given position of the {@link #bottomLayer}.
+     * Returns the {@link IslandTile} object from the given position of the {@link #bottomLayer}.
      *
      * @param x The x position on an island in world space.
      * @param y The y position on an island in world space.
      *
-     * @return A nullable {@link Tile} Optional.
+     * @return A nullable {@link IslandTile} Optional.
      */
-    public Optional<Tile> getTileFromBottomLayer(int x, int y) {
-        Tile result = null;
+    public Optional<IslandTile> getTileFromBottomLayer(int x, int y) {
+        IslandTile result = null;
 
         if (getBottomLayer().getTile(x, y).isPresent()) {
             result = getBottomLayer().getTile(x, y).get();
@@ -240,15 +240,15 @@ public class Island5 {
     }
 
     /**
-     * Returns the {@link Tile} object from the given position of the {@link #topLayer}.
+     * Returns the {@link IslandTile} object from the given position of the {@link #topLayer}.
      *
      * @param x The x position on an island in world space.
      * @param y The y position on an island in world space.
      *
-     * @return A nullable {@link Tile} Optional.
+     * @return A nullable {@link IslandTile} Optional.
      */
-    public Optional<Tile> getTileFromTopLayer(int x, int y) {
-        Tile result = null;
+    public Optional<IslandTile> getTileFromTopLayer(int x, int y) {
+        IslandTile result = null;
 
         if (getTopLayer().getTile(x, y).isPresent()) {
             result = getTopLayer().getTile(x, y).get();
@@ -564,11 +564,11 @@ public class Island5 {
      * Work out the gfx and {@link TileGraphic.TileHeight} and set the result in
      * the given {@link TileGraphic}.
      *
-     * @param tile A {@link Tile} of this island with the graphicId and some other info.
+     * @param tile A {@link IslandTile} of this island with the graphicId and some other info.
      * @param tileGraphic The {@link TileGraphic} to change.
      */
-    public void setGfxInfo(Tile tile, TileGraphic tileGraphic) {
-        var building = buildings.get(tile.graphicId);
+    public void setGfxInfo(IslandTile tile, TileGraphic tileGraphic) {
+        var building = buildings.get(tile.getGraphicId());
 
         var gfx = building.gfx;
 

@@ -19,11 +19,8 @@
 package de.sg.benno.content;
 
 import de.sg.benno.BennoConfig;
+import de.sg.benno.chunk.*;
 import de.sg.benno.util.TileUtil;
-import de.sg.benno.chunk.Island5;
-import de.sg.benno.chunk.Tile;
-import de.sg.benno.chunk.TileGraphic;
-import de.sg.benno.chunk.WorldData;
 import de.sg.benno.data.Building;
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.input.Camera;
@@ -32,7 +29,6 @@ import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
-import org.joml.Vector2i;
 import org.joml.Vector3f;
 
 import java.util.*;
@@ -86,7 +82,7 @@ public class Water {
 
     /**
      * Stores the instance number for every position in the world if there is a water tile there.
-     * Otherwise there is a value of -1 {@link #NO_WATER}.
+     * Otherwise, there is a value of -1 {@link #NO_WATER}.
      */
     private ArrayList<Integer> waterInstancesIndex;
 
@@ -164,17 +160,27 @@ public class Water {
     }
 
     /**
-     * Updates the selected flag at the given world position in each {@link WaterRenderer}.
+     * Updates the selected flag at the given world position.
      * At the moment the color is getting darker.
      *
-     * @param selected The x and y position of the tile in world space.
+     * @param x The x position in world space.
+     * @param y The y position in world space.
      *
-     * @return True or false, depending on whether the water tile has been changed successfully.
+     * @return True or false, depending on whether the water tile graphic has been changed successfully.
      */
-    public boolean updateSelectedWaterTile(Vector2i selected) {
-        var index = getWaterInstanceIndex(selected.x, selected.y);
-        if (index > NO_WATER) {
+    public boolean updateSelectedWaterTile(int x, int y) {
+        var index = getWaterInstanceIndex(x, y);
+        if (index != NO_WATER) {
+
+            // update for CPU
+            for (var zoom : Zoom.values()) {
+                var tileGraphic = waterTileGraphics.get(zoom).get(index);
+                tileGraphic.selected = true;
+            }
+
+            // update for GPU
             waterRenderers.forEach((k, v) -> v.updateSelectedVbo(index));
+
             return true;
         }
 
@@ -223,22 +229,22 @@ public class Water {
      * Create water {@link TileGraphic} objects for a given {@link Zoom}.
      *
      * @param zoom {@link Zoom}
-     * @param buildingId The building Id for each water tile. An Id can refer to several gfx for animation.
+     * @param buildingId The building ID for each water tile. An ID can refer to several gfx for animation.
      * @throws Exception If an error is thrown.
      */
     private void createWaterGraphicTiles(Zoom zoom, int buildingId) throws Exception {
         LOGGER.debug("Create water tiles for {}.", zoom.toString());
 
         // get the BSH file for the given zoom
-        var bshFile = this.bennoFiles.getStadtfldBshFile(zoom);
+        var bshFile = bennoFiles.getStadtfldBshFile(zoom);
 
         // to store all water tile graphics
         var tileGraphics = new ArrayList<TileGraphic>();
 
-        // get building data for the given Id
+        // get building data for the given ID
         var waterBuilding = buildings.get(buildingId);
 
-        // get building texture to get the width and height
+        // get texture (gfx) of the building ID to get the width and height later
         var waterBshTexture = bshFile.getBshTextures().get(waterBuilding.gfx);
 
         // calc adjust height
@@ -248,6 +254,7 @@ public class Water {
         // this is the same for every zoom and therefore only needs to be done once
         var addInstanceInfo = false;
         if (waterInstancesIndex == null) {
+            // store NO_WATER for each position in the world by default
             var values = new Integer[WORLD_HEIGHT * WORLD_WIDTH];
             Arrays.fill(values, NO_WATER);
             waterInstancesIndex = new ArrayList<>(Arrays.asList(values));
@@ -257,13 +264,12 @@ public class Water {
         // create water tile graphics
         for (int y = 0; y < WORLD_HEIGHT; y++) {
             for (int x = 0; x < WORLD_WIDTH; x++) {
-                // only consider deep water here
+                // create a TileGraphic only if there is no island at the world position
                 var isWater = Island5.isIsland5OnPosition(x, y, provider.getIsland5List()).isEmpty();
                 if (isWater) {
                     var waterTileGraphic = new TileGraphic();
 
-                    // create a "fake" Tile to store the building Id
-                    waterTileGraphic.parentTile = new Tile(buildingId);
+                    waterTileGraphic.parentTile = new WaterTile(buildingId);
 
                     waterTileGraphic.gfx = waterBuilding.gfx;
                     waterTileGraphic.tileHeight = TileGraphic.TileHeight.SEA_LEVEL;
@@ -283,7 +289,21 @@ public class Water {
 
                     // only needs to be done once
                     if (addInstanceInfo) {
+                        // All water tile graphics are stored in tileGraphics.
+                        // If there is a water tile graphic at a position in the world,
+                        // the position from tileGraphics is saved in waterInstancesIndex.
                         waterInstancesIndex.set(TileUtil.getIndexFrom2D(x, y), tileGraphics.size() - 1);
+
+                        /*
+                        TileUtil.getIndexFrom2D(x, y)
+                                               ||
+                                               ||
+                                               \/
+                            waterInstancesIndex[0] -> -1 = no water
+                            waterInstancesIndex[1] -> -1 = no water
+                            waterInstancesIndex[2] -> last element in tileGraphics (tileGraphics.size() - 1) if there is a water tile
+                            waterInstancesIndex[3] -> -1 = no water
+                         */
                     }
                 }
             }
@@ -304,13 +324,14 @@ public class Water {
     private void createWaterRenderer(Zoom zoom, Building building) throws Exception {
         LOGGER.debug("Create water renderer for {}.", zoom.toString());
 
+        // store a model matrix for each water tile graphic
         ArrayList<Matrix4f> modelMatrices = new ArrayList<>();
-
         for (var tileGraphic : waterTileGraphics.get(zoom)) {
             modelMatrices.add(tileGraphic.getModelMatrix());
         }
 
         // create only once
+        // store a value [0 ... building.animAnz - 1] for each water tile graphic as start gfx for animation
         if (waterGfxStartIndex == null) {
             waterGfxStartIndex = new ArrayList<>();
             for (var tileGraphic : waterTileGraphics.get(zoom)) {
@@ -318,6 +339,7 @@ public class Water {
             }
         }
 
+        // create and store renderer
         waterRenderers.put(zoom, new WaterRenderer(
                 modelMatrices,
                 Objects.requireNonNull(waterGfxStartIndex, "waterGfxStartIndex must not be null"),

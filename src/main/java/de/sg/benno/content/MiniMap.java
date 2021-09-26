@@ -20,7 +20,7 @@ package de.sg.benno.content;
 
 import de.sg.benno.util.TileUtil;
 import de.sg.benno.chunk.Island5;
-import de.sg.benno.chunk.Tile;
+import de.sg.benno.chunk.IslandTile;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.input.Camera;
 import de.sg.benno.ogl.physics.Aabb;
@@ -254,15 +254,15 @@ public class MiniMap {
                     var tileFromTopLayer = island5.getTileFromTopLayer(x - island5.xPos, y - island5.yPos);
 
                     // highlight buildings from top layer
-                    if (tileFromTopLayer.isPresent() && tileFromTopLayer.get().graphicId != 0xFFFF) {
+                    if (tileFromTopLayer.isPresent() && tileFromTopLayer.get().getGraphicId() != 0xFFFF) {
                         addPixel(bottomLayerPixels, index, BUILDING_COLOR);
                         index += 4;
                     }
 
-                    if (tileFromTopLayer.isPresent() && tileFromTopLayer.get().graphicId == 0xFFFF && tileFromBottomLayer.isPresent()) {
+                    if (tileFromTopLayer.isPresent() && tileFromTopLayer.get().getGraphicId() == 0xFFFF && tileFromBottomLayer.isPresent()) {
                         var tile = tileFromBottomLayer.get();
                         // the island also has water tiles
-                        if (Tile.isWaterTile(tile)) {
+                        if (IslandTile.isWaterTile(tile)) {
                             addPixel(bottomLayerPixels, index, DEEP_WATER_COLOR);
                         } else {
                             addPixel(bottomLayerPixels, index, ISLAND_COLOR);

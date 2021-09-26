@@ -19,32 +19,14 @@
 package de.sg.benno.chunk;
 
 /**
- * Maps the 8-byte C structure TISOSAVE and represents a Tile.
- *
- * <pre>
- * typedef struct {
- *     uint16_t id;
- *     uint8_t posx;
- *     uint8_t posy;
- *     uint32_t ausricht : 2;
- *     uint32_t animcnt : 4;
- *     uint32_t inselnr : 8;
- *     uint32_t stadtnr : 3;
- *     uint32_t randnr : 5;
- *     uint32_t playernr : 4;
- * } TISOSAVE;
- * </pre>
+ * Represents a Tile.
+ * Common stuff to display all water and island tiles.
  */
-public class Tile {
+public abstract class Tile implements WorldTile {
 
     //-------------------------------------------------
     // Constants
     //-------------------------------------------------
-
-    /**
-     * The size of the original C structure TISOSAVE in bytes.
-     */
-    public static final int BYTES_PER_TILE = 8;
 
     /**
      * This means that the {@link Tile} is not set.
@@ -52,53 +34,14 @@ public class Tile {
     public static final int NO_GRAPHIC = 0xFFFF;
 
     //-------------------------------------------------
-    // TISOSAVE
+    // Member
     //-------------------------------------------------
 
     /**
-     * The tile gaphic Id, see haeuser.cod or {@link de.sg.benno.data.Building} for reference.
+     * The tile graphic ID, see <i>haeuser.cod</i> or {@link de.sg.benno.data.Building} for reference.
+     * Each building ID refers to one or more graphics (gfx).
      */
-    public int graphicId = NO_GRAPHIC;
-
-    /**
-     * The x position on island.
-     */
-    public int xPosOnIsland;
-
-    /**
-     * The y position on island.
-     */
-    public int yPosOnIsland;
-
-    /**
-     * The orientation/rotation of the tile.
-     */
-    public int orientation;
-
-    /**
-     * The animation step for the tile.
-     */
-    public int animationCount;
-
-    /**
-     * The parent Island number.
-     */
-    public int islandNumber;
-
-    /**
-     * The parent City number.
-     */
-    public int cityNumber;
-
-    /**
-     * An unknown random number.
-     */
-    public int randomNumber;
-
-    /**
-     * The player that has occupies this tile.
-     */
-    public int playerNumber;
+    private int graphicId = NO_GRAPHIC;
 
     //-------------------------------------------------
     // Ctors.
@@ -107,10 +50,11 @@ public class Tile {
     /**
      * Constructs a new {@link Tile} object.
      */
-    public Tile() {}
+    public Tile() {
+    }
 
     /**
-     * Constructs a new {@link Tile} object by a {@link #graphicId}.
+     * Constructs a new {@link Tile} object.
      *
      * @param graphicId {@link #graphicId}.
      */
@@ -118,22 +62,26 @@ public class Tile {
         this.graphicId = graphicId;
     }
 
+    //-------------------------------------------------
+    // Implement WorldTile
+    //-------------------------------------------------
+
+    @Override
+    public int getGraphicId() {
+        return graphicId;
+    }
+
+    //-------------------------------------------------
+    // Setter
+    //-------------------------------------------------
+
     /**
-     * Copy constructor (copy each field of the input object into the new instance).
-     * Constructs a new {@link Tile} object by another {@link Tile}.
+     * Set {@link #graphicId}.
      *
-     * @param tile {@link Tile}.
+     * @param graphicId The tile graphic ID.
      */
-    public Tile(Tile tile) {
-        this.graphicId = tile.graphicId;
-        this.xPosOnIsland = tile.xPosOnIsland;
-        this.yPosOnIsland = tile.yPosOnIsland;
-        this.orientation = tile.orientation;
-        this.animationCount = tile.animationCount;
-        this.islandNumber = tile.islandNumber;
-        this.cityNumber = tile.cityNumber;
-        this.randomNumber = tile.randomNumber;
-        this.playerNumber = tile.playerNumber;
+    public void setGraphicId(int graphicId) {
+        this.graphicId = graphicId;
     }
 
     //-------------------------------------------------
@@ -141,11 +89,11 @@ public class Tile {
     //-------------------------------------------------
 
     /**
-     * Checks whether the {@link #graphicId} of a {@link Tile} object is a water graphic.
+     * Checks whether the {@link #graphicId} refers to a water graphic ID.
      *
      * @param tile {@link Tile}
      *
-     * @return true if water graphic was detected
+     * @return true if the {@link #graphicId} refers to a water graphic ID.
      */
     public static boolean isWaterTile(Tile tile) {
         return (tile.graphicId >= 1201 && tile.graphicId <= 1209) ||

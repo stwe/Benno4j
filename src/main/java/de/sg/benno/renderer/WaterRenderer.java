@@ -18,6 +18,7 @@
 
 package de.sg.benno.renderer;
 
+import de.sg.benno.BennoConfig;
 import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.input.Camera;
 import de.sg.benno.data.Building;
@@ -31,15 +32,12 @@ import de.sg.benno.state.Context;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 
-import java.awt.image.DataBufferInt;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL30.GL_TEXTURE_2D_ARRAY;
-import static org.lwjgl.opengl.GL45.glTextureStorage3D;
-import static org.lwjgl.opengl.GL45.glTextureSubImage3D;
 
 /**
  * Represents a WaterRenderer.
@@ -49,16 +47,6 @@ public class WaterRenderer {
     //-------------------------------------------------
     // Constants
     //-------------------------------------------------
-
-    /**
-     * Number of vertices to be rendered per instance.
-     */
-    private static final int DRAW_COUNT = 6;
-
-    /**
-     * Number of texture levels.
-     */
-    private static final int MIP_LEVEL_COUNT = 1;
 
     /**
      * Indicated that a tile is unselected.
@@ -73,16 +61,11 @@ public class WaterRenderer {
     /**
      * The name of the used shader.
      */
-    private static final String SHADER_NAME = "deepWater";
+    private static final String SHADER_NAME = BennoConfig.WATER_RENDERER_SHADER_FOLDER;
 
     //-------------------------------------------------
     // Member
     //-------------------------------------------------
-
-    /**
-     * The {@link ArrayList<Matrix4f>} object with model matrices.
-     */
-    private final ArrayList<Matrix4f> modelMatrices;
 
     /**
      * The {@link ArrayList<Integer>} object with water gfx start index.
@@ -112,7 +95,7 @@ public class WaterRenderer {
     /**
      * The {@link Vao} object.
      */
-    private final Vao vao;
+    private Vao vao;
 
     /**
      * Number of instances to render.
@@ -181,20 +164,19 @@ public class WaterRenderer {
             Context context,
             Zoom zoom
     ) throws Exception {
-        this.modelMatrices = modelMatrices;
         this.waterGfxStartIndex = waterGfxStartIndex;
         this.building = building;
         this.context = context;
         this.zoom = zoom;
+
         this.shaderProgram = context.engine.getResourceManager().getShaderProgramResource(SHADER_NAME);
-        this.vao = new Vao();
-        this.vao.setDrawCount(DRAW_COUNT);
+
         this.instances = modelMatrices.size();
         this.textureWidth = zoom.getTileWidth();
         this.textureHeight = zoom.getTileHeight();
         this.bshFile = context.bennoFiles.getStadtfldBshFile(zoom);
 
-        initVao();
+        initVao(modelMatrices);
 
         last = System.currentTimeMillis();
     }
@@ -251,27 +233,28 @@ public class WaterRenderer {
 
     /**
      * Setup {@link #vao}.
+     *
+     * @param modelMatrices The model matrices to store.
      */
-    private void initVao() {
-        addMeshVbo();
-        addModelMatricesVbo();
+    private void initVao(ArrayList<Matrix4f> modelMatrices) {
+        vao = new Vao();
+        vao.add2DQuadVbo();
+
+        addModelMatricesVbo(modelMatrices);
         addTextureStartIndexVbo();
+
+        // all tiles are unselected by default
         addSelectedVbo();
 
         createTextureArray();
     }
 
     /**
-     * Add a 2DQuad to a new {@link Vbo}.
+     * Add model matrices to a new {@link Vbo}.
+     *
+     * @param modelMatrices The model matrices to store.
      */
-    private void addMeshVbo() {
-        vao.add2DQuadVbo();
-    }
-
-    /**
-     * Add {@link #modelMatrices} to a new {@link Vbo}.
-     */
-    private void addModelMatricesVbo() {
+    private void addModelMatricesVbo(ArrayList<Matrix4f> modelMatrices) {
         // bind vao
         vao.bind();
 
@@ -328,7 +311,7 @@ public class WaterRenderer {
         // create and add new vbo
         selectedVbo = vao.addVbo();
 
-        // store index (dynamic draw)
+        // store default values (dynamic draw)
         selectedVbo.storeInteger(selectedValues, GL_DYNAMIC_DRAW);
 
         // set buffer layout
@@ -381,41 +364,30 @@ public class WaterRenderer {
      * Creates a texture array from {@link #building}.
      */
     private void createTextureArray() {
-        textureArray = new Texture();
-        Texture.bind(textureArray.getId(), GL_TEXTURE_2D_ARRAY);
-
         var gfxCount = building.animAnz * building.animAdd;
         var startGfx = building.gfx;
         var endGfx = startGfx + gfxCount;
 
-        glTextureStorage3D(textureArray.getId(), MIP_LEVEL_COUNT, GL_RGBA8, textureWidth, textureHeight, gfxCount);
+        // new texture
+        textureArray = new Texture();
 
+        // specify texture array storage requirements
+        Texture.textureArrayStorageRequirements(textureArray.getId(), textureWidth, textureHeight, gfxCount);
+
+        // store textures in texture array
         var zOffset = 0;
-
         for (var i = startGfx; i < endGfx; i++) {
+            // check the size
             var currentTexture = bshFile.getBshTextures().get(i);
             if (currentTexture.getWidth() != textureWidth || currentTexture.getHeight() != textureHeight) {
                 throw new BennoRuntimeException("Invalid texture size.");
             }
 
-            var dbb = (DataBufferInt) currentTexture.getBufferedImage().getRaster().getDataBuffer();
-
-            glTextureSubImage3D(
-                    textureArray.getId(),
-                    0,
-                    0, 0,
-                    zOffset,
-                    textureWidth, textureHeight,
-                    1,
-                    GL_BGRA,
-                    GL_UNSIGNED_INT_8_8_8_8_REV,
-                    dbb.getData()
-            );
+            // store texture
+            Texture.bufferedImageToTextureArray(textureArray.getId(), currentTexture.getBufferedImage(), zOffset);
 
             zOffset++;
         }
-
-        glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     }
 
     //-------------------------------------------------

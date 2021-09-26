@@ -302,7 +302,7 @@ public class MousePicker {
 
         // if no island is found, try to update a water tile
         if (!updated) {
-            updated = water.updateSelectedWaterTile(selected);
+            updated = water.updateSelectedWaterTile(selected.x, selected.y);
         }
     }
 

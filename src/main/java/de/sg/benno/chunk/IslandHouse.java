@@ -25,7 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static de.sg.benno.util.Util.*;
-import static de.sg.benno.chunk.Tile.BYTES_PER_TILE;
+import static de.sg.benno.chunk.IslandTile.BYTES_PER_TILE;
 import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
@@ -53,14 +53,14 @@ public class IslandHouse {
     private final int nrOfRawElements;
 
     /**
-     * The raw tiles list. A raw {@link Tile} contains the data as read from the {@link #chunk}.
+     * The raw tiles list. A raw {@link IslandTile} contains the data as read from the {@link #chunk}.
      */
-    private final ArrayList<Tile> rawTiles = new ArrayList<>();
+    private final ArrayList<IslandTile> rawTiles = new ArrayList<>();
 
     /**
      * The layer tiles list.
      */
-    private final ArrayList<Tile> layerTiles = new ArrayList<>();
+    private final ArrayList<IslandTile> layerTiles = new ArrayList<>();
 
     //-------------------------------------------------
     // Ctors.
@@ -138,8 +138,8 @@ public class IslandHouse {
                                                                          // = 8 Bytes
 
             // create a Tile from the data above
-            var tile = new Tile();
-            tile.graphicId = graphicId;
+            var tile = new IslandTile();
+            tile.setGraphicId(graphicId);
             tile.xPosOnIsland = xPosOnIsland;
             tile.yPosOnIsland = yPosOnIsland;
 
@@ -167,15 +167,15 @@ public class IslandHouse {
     //-------------------------------------------------
 
     /**
-     * Returns the {@link Tile} object from the given position.
+     * Returns the {@link IslandTile} object from the given position.
      *
      * @param x The x position on an island in world space.
      * @param y The y position on an island in world space.
      *
-     * @return A nullable {@link Tile} Optional.
+     * @return A nullable {@link IslandTile} Optional.
      */
-    public Optional<Tile> getTile(int x, int y) {
-        Tile result = null;
+    public Optional<IslandTile> getTile(int x, int y) {
+        IslandTile result = null;
 
         if (isValidTilePosition(x, y)) {
             result = layerTiles.get(y * parentIsland.width + x);
@@ -197,7 +197,7 @@ public class IslandHouse {
         // create width * height new Tile objects, initialized with default values
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                layerTiles.add(new Tile());
+                layerTiles.add(new IslandTile());
             }
         }
 
@@ -205,7 +205,7 @@ public class IslandHouse {
             var rawTile = rawTiles.get(i);
 
             if (isValidTilePosition(rawTile.xPosOnIsland, rawTile.yPosOnIsland)) {
-                var building = buildings.get(rawTile.graphicId);
+                var building = buildings.get(rawTile.getGraphicId());
 
                 var w = 0;
                 var h = 0;
@@ -221,7 +221,7 @@ public class IslandHouse {
                     for (int x = 0; x < w && isValidTilePosX(rawTile.xPosOnIsland + x); x++) {
                         var targetIndex = (rawTile.yPosOnIsland + y) * width + rawTile.xPosOnIsland + x;
 
-                        layerTiles.get(targetIndex).graphicId = rawTile.graphicId;
+                        layerTiles.get(targetIndex).setGraphicId(rawTile.getGraphicId());
                         layerTiles.get(targetIndex).xPosOnIsland = x; // todo
                         layerTiles.get(targetIndex).yPosOnIsland = y;
 

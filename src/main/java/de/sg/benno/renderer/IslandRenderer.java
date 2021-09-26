@@ -20,6 +20,7 @@ package de.sg.benno.renderer;
 
 import de.sg.benno.BennoConfig;
 import de.sg.benno.TileAtlas;
+import de.sg.benno.chunk.IslandTile;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.input.Camera;
 import de.sg.benno.ogl.Config;
@@ -218,7 +219,7 @@ public class IslandRenderer {
 
         for (var tile : tileGraphics.get(zoom)) {
             var buildings = context.bennoFiles.getDataFiles().getBuildings();
-            var building = buildings.get(tile.parentTile.graphicId);
+            var building = buildings.get(tile.parentTile.getGraphicId());
 
             // add animation info; is the same for every zoom; is only filled once (4 ints per instance)
             if (animationInfo.size() != instances * 4) {
@@ -232,7 +233,8 @@ public class IslandRenderer {
             if (animationAddInfo.size() != instances * 3) {
                 animationAddInfo.add(building.animAdd);            // animAdd
                 animationAddInfo.add(building.rotate);             // rotate
-                animationAddInfo.add(tile.parentTile.orientation); // orientation
+                var parentTile = (IslandTile) tile.parentTile;
+                animationAddInfo.add(parentTile.orientation);      // orientation
             }
 
             // offset
