@@ -208,7 +208,7 @@ public class Shipping {
             updateCurrentShipDirection(currentTargetDirection.z);
 
             // todo: hardcoded
-            shipTileGraphics.get(Zoom.GFX).get(0).gfx = currentShip.getCurrentGfx();
+            shipTileGraphics.get(Zoom.GFX).get(0).gfxIndex = currentShip.getCurrentGfxIndex();
 
         } else {
             currentTargetDirection = null;
@@ -312,7 +312,7 @@ public class Shipping {
      */
     public void render(Camera camera, Zoom zoom) {
         for (var ship : shipTileGraphics.get(zoom)) {
-            var bshTexture = shipBshFiles.get(zoom).getBshTextures().get(ship.gfx);
+            var bshTexture = shipBshFiles.get(zoom).getBshTextures().get(ship.gfxIndex);
             spriteRenderer.render(camera.getViewMatrix(), bshTexture.getTexture(), ship.getModelMatrix());
         }
     }
@@ -341,7 +341,7 @@ public class Shipping {
 
                 var xWorldPos = ship.xPos + 1; // todo
                 var yWorldPos = ship.yPos - 1;
-                var gfx = ship.getCurrentGfx();
+                var gfx = ship.getCurrentGfxIndex();
 
                 var shipBshFile = context.bennoFiles.getShipBshFile(zoom);
                 shipBshFiles.put(zoom, shipBshFile);
@@ -349,7 +349,7 @@ public class Shipping {
                 var shipBshTexture = shipBshFile.getBshTextures().get(gfx);
 
                 var tileGraphic = new TileGraphic();
-                tileGraphic.gfx = gfx;
+                tileGraphic.gfxIndex = gfx;
                 tileGraphic.tileHeight = TileGraphic.TileHeight.SEA_LEVEL;
                 tileGraphic.worldPosition.x = xWorldPos;
                 tileGraphic.worldPosition.y = yWorldPos;

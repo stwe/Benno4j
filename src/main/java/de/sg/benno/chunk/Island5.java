@@ -603,7 +603,7 @@ public class Island5 {
 
         gfx += building.width * building.height * directions * (tile.animationCount % aniSteps);
 
-        tileGraphic.gfx = gfx;
+        tileGraphic.gfxIndex = gfx;
         tileGraphic.tileHeight = building.posoffs == 0 ? TileGraphic.TileHeight.SEA_LEVEL : TileGraphic.TileHeight.CLIFF;
     }
 

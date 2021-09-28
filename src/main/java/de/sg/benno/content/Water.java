@@ -271,7 +271,7 @@ public class Water {
 
                     waterTileGraphic.parentTile = new WaterTile(buildingId);
 
-                    waterTileGraphic.gfx = waterBuilding.gfx;
+                    waterTileGraphic.gfxIndex = waterBuilding.gfx;
                     waterTileGraphic.tileHeight = TileGraphic.TileHeight.SEA_LEVEL;
                     waterTileGraphic.worldPosition.x = x;
                     waterTileGraphic.worldPosition.y = y;

@@ -223,7 +223,7 @@ public class IslandRenderer {
 
             // add animation info; is the same for every zoom; is only filled once (4 ints per instance)
             if (animationInfo.size() != instances * 4) {
-                animationInfo.add(tile.gfx);          // current gfx
+                animationInfo.add(tile.gfxIndex);     // current gfx index
                 animationInfo.add(building.gfx);      // start gfx
                 animationInfo.add(building.animAnz);  // anim count
                 animationInfo.add(building.animTime); // frame time
@@ -238,13 +238,13 @@ public class IslandRenderer {
             }
 
             // offset
-            var index = tile.gfx % (rows * rows);
+            var index = tile.gfxIndex % (rows * rows);
             var offset = TileAtlas.getTextureOffset(index, rows);
             offsetList.add(offset.x);
             offsetList.add(offset.y);
 
             // texture atlas index
-            textureAtlasIndexList.add(tile.gfx / (rows * rows));
+            textureAtlasIndexList.add(tile.gfxIndex / (rows * rows));
 
             // yBuffer (height of each tile graphic)
             heightBuffer.add(tile.size.y);

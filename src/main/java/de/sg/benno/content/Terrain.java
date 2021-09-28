@@ -309,7 +309,7 @@ public class Terrain {
                     island5.setGfxInfo(island5Tile, tileGraphic);
 
                     // get bsh texture by gfx index
-                    var bshTexture = bshFile.getBshTextures().get(tileGraphic.gfx);
+                    var bshTexture = bshFile.getBshTextures().get(tileGraphic.gfxIndex);
 
                     // set world position
                     tileGraphic.worldPosition.x = x;
@@ -339,7 +339,7 @@ public class Terrain {
                         instancesIndex.set(TileUtil.getIndexFrom2D(x, y), tiles.size() - 1);
 
                         // todo: use graphicId
-                        if (tileGraphic.gfx < 680 || tileGraphic.gfx > 1051) {
+                        if (tileGraphic.gfxIndex < 680 || tileGraphic.gfxIndex > 1051) {
                             passableArea.set(TileUtil.getIndexFrom2D(x, y), (byte)1);
                         }
                     }

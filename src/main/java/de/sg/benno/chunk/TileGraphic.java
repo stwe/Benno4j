@@ -57,10 +57,10 @@ public class TileGraphic {
     public WorldTile parentTile;
 
     /**
-     * The gfx, see <i>haeuser.cod</i> or {@link de.sg.benno.data.Building} for reference.
-     * Each building ID refers to one or more graphics. This is the current graphic (gfx).
+     * The gfx index, see <i>haeuser.cod</i> or {@link de.sg.benno.data.Building} for reference.
+     * Each building ID refers to one or more graphics. This is this current graphic or gfx index.
      */
-    public int gfx;
+    public int gfxIndex;
 
     /**
      * {@link TileHeight}

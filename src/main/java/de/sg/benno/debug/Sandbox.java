@@ -20,14 +20,18 @@ package de.sg.benno.debug;
 
 import com.badlogic.ashley.core.PooledEngine;
 import de.sg.benno.BennoConfig;
-import de.sg.benno.content.Shipping;
+import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.content.Water;
 import de.sg.benno.chunk.Island5;
-import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.chunk.WorldData;
+import de.sg.benno.ecs.components.GfxIndexComponent;
+import de.sg.benno.ecs.components.PositionComponent;
+import de.sg.benno.ecs.systems.SpriteRenderSystem;
 import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
+import de.sg.benno.util.TileUtil;
+import org.joml.Vector2f;
 
 import java.util.Objects;
 
@@ -54,34 +58,24 @@ public class Sandbox {
     private final Context context;
 
     /**
-     * The {@link Camera} object.
-     */
-    private final Camera camera;
-
-    /**
      * The current {@link Zoom}.
      */
     private Zoom currentZoom = Zoom.GFX;
 
     /**
+     * The {@link Camera} object.
+     */
+    private final Camera camera;
+
+    /**
      * The {@link Water} object with the deep water area.
      */
-    private Water water;
-
-    /**
-     * The {@link Shipping} object manages all ships.
-     */
-    private Shipping shipping;
-
-    /**
-     * A {@link MousePicker} object to select tiles.
-     */
-    private MousePicker mousePicker;
+    private final Water water;
 
     /**
      * A {@link PooledEngine} - an efficient ECS with pooling.
      */
-    private PooledEngine engine;
+    private final PooledEngine engine;
 
     //-------------------------------------------------
     // Ctors.
@@ -105,6 +99,8 @@ public class Sandbox {
         }
 
         this.camera = new Camera(BennoConfig.CAMERA_START_X, BennoConfig.CAMERA_START_Y, context.engine, currentZoom);
+        this.water = new Water(provider, context);
+        this.engine = new PooledEngine();
 
         init();
     }
@@ -112,15 +108,6 @@ public class Sandbox {
     //-------------------------------------------------
     // Getter
     //-------------------------------------------------
-
-    /**
-     * Get {@link #camera}.
-     *
-     * @return {@link #camera}
-     */
-    public Camera getCamera() {
-        return camera;
-    }
 
     /**
      * Get {@link #currentZoom}.
@@ -132,30 +119,12 @@ public class Sandbox {
     }
 
     /**
-     * Get {@link #shipping}.
+     * Get {@link #camera}.
      *
-     * @return {@link #shipping}
+     * @return {@link #camera}
      */
-    public Shipping getShipping() {
-        return shipping;
-    }
-
-    /**
-     * Get {@link #mousePicker}.
-     *
-     * @return {@link #mousePicker}
-     */
-    public MousePicker getMousePicker() {
-        return mousePicker;
-    }
-
-    /**
-     * Get {@link #engine}.
-     *
-     * @return {@link #engine}
-     */
-    public PooledEngine getEngine() {
-        return engine;
+    public Camera getCamera() {
+        return camera;
     }
 
     //-------------------------------------------------
@@ -168,17 +137,50 @@ public class Sandbox {
      * @throws Exception If an error is thrown.
      */
     private void init() throws Exception {
-        // create water
-        water = new Water(provider, context);
+        // create entities
+        for (var zoom : Zoom.values()) {
+            for (var ship : provider.getShips4List()) {
+                // new entity
+                var entity = engine.createEntity();
 
-        // create shipping
-        shipping = new Shipping(provider, context);
+                // add gfx index component
+                var gfxIndex = ship.getCurrentGfxIndex();
+                var gfxIndexComponent = engine.createComponent(GfxIndexComponent.class);
+                gfxIndexComponent.gfxIndex = gfxIndex;
+                entity.add(gfxIndexComponent);
 
-        // the mouse picker
-        mousePicker = new MousePicker(context, water, shipping, TileGraphic.TileHeight.SEA_LEVEL);
+                // add position component
+                var xWorldPos = ship.xPos + 1;
+                var yWorldPos = ship.yPos - 1;
 
-        // the ECS
-        engine = new PooledEngine();
+                var positionComponent = engine.createComponent(PositionComponent.class);
+                positionComponent.worldPosition.x = xWorldPos;
+                positionComponent.worldPosition.y = yWorldPos;
+
+                var shipBshFile = context.bennoFiles.getShipBshFile(zoom);
+                var shipBshTexture = shipBshFile.getBshTextures().get(gfxIndex);
+
+                var screenPosition = TileUtil.worldToScreen(xWorldPos, yWorldPos, zoom.getTileWidthHalf(), zoom.getTileHeightHalf());
+                var adjustHeight = TileUtil.adjustHeight(zoom.getTileHeightHalf(), TileGraphic.TileHeight.SEA_LEVEL.value, zoom.getElevation());
+                screenPosition.y += adjustHeight;
+                screenPosition.x -= shipBshTexture.getWidth();
+                screenPosition.y -= shipBshTexture.getHeight();
+                screenPosition.x -= zoom.getTileWidthHalf() * 0.5f;
+                screenPosition.y -= zoom.getTileHeightHalf() * 0.5f;
+                positionComponent.screenPosition.x = screenPosition.x;
+                positionComponent.screenPosition.y = screenPosition.y;
+
+                positionComponent.size = new Vector2f(shipBshTexture.getWidth(), shipBshTexture.getHeight());
+
+                entity.add(positionComponent);
+
+                // add entity
+                engine.addEntity(entity);
+            }
+        }
+
+        engine.addSystem(new SpriteRenderSystem(context, currentZoom, camera));
+        engine.getSystem(SpriteRenderSystem.class).setProcessing(true);
     }
 
     //-------------------------------------------------
@@ -211,8 +213,6 @@ public class Sandbox {
         }
 
         camera.update(context.engine.getWindow(), context.engine.getMouseInput(), currentZoom);
-        shipping.update();
-        mousePicker.update(camera, currentZoom);
     }
 
     /**
@@ -220,8 +220,7 @@ public class Sandbox {
      */
     public void render() {
         water.render(camera, false, currentZoom);
-        shipping.render(camera, currentZoom);
-        mousePicker.render(camera, currentZoom);
+        engine.update(0.0f);
     }
 
     //-------------------------------------------------
@@ -236,7 +235,7 @@ public class Sandbox {
 
         camera.cleanUp();
         water.cleanUp();
-        shipping.cleanUp();
-        mousePicker.cleanUp();
+
+        engine.clearPools();
     }
 }

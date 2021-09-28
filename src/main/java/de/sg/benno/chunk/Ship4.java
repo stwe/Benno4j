@@ -194,7 +194,7 @@ public class Ship4 {
      *
      * @return int
      */
-    public int getCurrentGfx() {
+    public int getCurrentGfxIndex() {
         var index = 0;
         switch (ShipType.valueOfType(type)) {
             case SMALL_TRADING_SHIP:

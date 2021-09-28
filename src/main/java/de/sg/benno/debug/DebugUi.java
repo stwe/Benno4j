@@ -101,10 +101,11 @@ public class DebugUi {
 
         cameraPosition();
         screenSpacePosition();
-        worldSpacePosition();
-        currentShip();
-        targetWorldSpacePosition();
-        targetDirection();
+
+        //worldSpacePosition();
+        //currentShip();
+        //targetWorldSpacePosition();
+        //targetDirection();
 
         ImGui.end();
     }
@@ -141,6 +142,7 @@ public class DebugUi {
      * Shows the current mouse position in world space.
      */
     private void worldSpacePosition() {
+        /*
         var selTile = sandboxState.getSandbox().getMousePicker().getTileUnderMouse(
                 sandboxState.getSandbox().getCamera(),
                 sandboxState.getSandbox().getCurrentZoom()
@@ -154,12 +156,14 @@ public class DebugUi {
 
         ImGui.text("Tile x: " + selTile.x);
         ImGui.text("Tile y: " + selTile.y);
+        */
     }
 
     /**
      * Shows info about the current ship.
      */
     private void currentShip() {
+        /*
         ImGui.separator();
 
         ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
@@ -179,12 +183,14 @@ public class DebugUi {
         } else {
             ImGui.text("Ship: none");
         }
+        */
     }
 
     /**
      * The current target position in world space.
      */
     private void targetWorldSpacePosition() {
+        /*
         ImGui.separator();
 
         ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
@@ -199,16 +205,19 @@ public class DebugUi {
         } else {
             ImGui.text("Target: none");
         }
+        */
     }
 
     /**
      * The current direction and angle to the target.
      */
     private void targetDirection() {
+        /*
         var d = sandboxState.getSandbox().getShipping().getCurrentTargetDirection();
         if (d != null) {
             ImGui.text("dir x: " + d.x + " dir y: " + d.y);
             ImGui.text("angle: " + d.z);
         }
+        */
     }
 }
