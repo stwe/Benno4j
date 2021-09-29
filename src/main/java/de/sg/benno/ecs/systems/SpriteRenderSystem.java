@@ -24,6 +24,7 @@ import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
 import de.sg.benno.ecs.components.GfxIndexComponent;
 import de.sg.benno.ecs.components.PositionComponent;
+import de.sg.benno.ecs.components.ZoomComponent;
 import de.sg.benno.file.BshFile;
 import de.sg.benno.input.Camera;
 import de.sg.benno.ogl.renderer.RenderUtil;
@@ -34,33 +35,28 @@ import de.sg.benno.state.Context;
 import java.io.IOException;
 import java.util.HashMap;
 
+import static de.sg.benno.ogl.Log.LOGGER;
+
 public class SpriteRenderSystem extends IteratingSystem {
 
     private Zoom zoom;
+
     private final Camera camera;
-
     private final SpriteRenderer spriteRenderer;
-
     private final HashMap<Zoom, BshFile> shipBshFiles = new HashMap<>();
 
-    private ComponentMapper<PositionComponent> positionComponentMapper = ComponentMapper.getFor(PositionComponent.class);
-    private ComponentMapper<GfxIndexComponent> gfxIndexComponentMapper = ComponentMapper.getFor(GfxIndexComponent.class);
+    private final ComponentMapper<PositionComponent> positionComponentMapper = ComponentMapper.getFor(PositionComponent.class);
+    private final ComponentMapper<GfxIndexComponent> gfxIndexComponentMapper = ComponentMapper.getFor(GfxIndexComponent.class);
+    private final ComponentMapper<ZoomComponent> zoomComponentMapper = ComponentMapper.getFor(ZoomComponent.class);
 
-    public SpriteRenderSystem(Context context, Zoom zoom, Camera camera) throws IOException {
+    public SpriteRenderSystem(Context context, Camera camera) throws IOException {
         super(Family.all(PositionComponent.class, GfxIndexComponent.class).get());
 
-        this.zoom = zoom;
         this.camera = camera;
-
         this.spriteRenderer = new SpriteRenderer(context.engine);
-
         for (var z : Zoom.values()) {
             this.shipBshFiles.put(z, context.bennoFiles.getShipBshFile(z));
         }
-    }
-
-    public void setZoom(Zoom zoom) {
-        this.zoom = zoom;
     }
 
     @Override

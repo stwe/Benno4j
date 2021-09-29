@@ -26,6 +26,7 @@ import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.ecs.components.GfxIndexComponent;
 import de.sg.benno.ecs.components.PositionComponent;
+import de.sg.benno.ecs.components.ZoomComponent;
 import de.sg.benno.ecs.systems.SpriteRenderSystem;
 import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.Zoom;
@@ -169,18 +170,20 @@ public class Sandbox {
                 screenPosition.y -= zoom.getTileHeightHalf() * 0.5f;
                 positionComponent.screenPosition.x = screenPosition.x;
                 positionComponent.screenPosition.y = screenPosition.y;
-
                 positionComponent.size = new Vector2f(shipBshTexture.getWidth(), shipBshTexture.getHeight());
-
                 entity.add(positionComponent);
+
+                // add zoom component
+                var zoomComponent = engine.createComponent(ZoomComponent.class);
+                zoomComponent.zoom = zoom;
+                entity.add(zoomComponent);
 
                 // add entity
                 engine.addEntity(entity);
             }
         }
 
-        engine.addSystem(new SpriteRenderSystem(context, currentZoom, camera));
-        engine.getSystem(SpriteRenderSystem.class).setProcessing(true);
+        engine.addSystem(new SpriteRenderSystem(context, camera));
     }
 
     //-------------------------------------------------
