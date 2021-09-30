@@ -34,39 +34,121 @@ import de.sg.benno.state.Context;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Objects;
 
 import static de.sg.benno.ogl.Log.LOGGER;
 
+/**
+ * Represents a SpriteRenderSystem.
+ */
 public class SpriteRenderSystem extends IteratingSystem {
 
-    private Zoom zoom;
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
 
+    /**
+     * The {@link Camera} object to get the view matrix.
+     */
     private final Camera camera;
+
+    /**
+     * A {@link SpriteRenderer} object.
+     */
     private final SpriteRenderer spriteRenderer;
+
+    /**
+     * Only entities with this zoom are rendered.
+     */
+    private Zoom currentZoom = Zoom.GFX;
+
+    /**
+     * For convenience.
+     */
     private final HashMap<Zoom, BshFile> shipBshFiles = new HashMap<>();
 
+    /**
+     * Retrieving {@link PositionComponent}.
+     */
     private final ComponentMapper<PositionComponent> positionComponentMapper = ComponentMapper.getFor(PositionComponent.class);
+
+    /**
+     * Retrieving {@link GfxIndexComponent}.
+     */
     private final ComponentMapper<GfxIndexComponent> gfxIndexComponentMapper = ComponentMapper.getFor(GfxIndexComponent.class);
+
+    /**
+     * Retrieving {@link ZoomComponent}.
+     */
     private final ComponentMapper<ZoomComponent> zoomComponentMapper = ComponentMapper.getFor(ZoomComponent.class);
 
-    public SpriteRenderSystem(Context context, Camera camera) throws IOException {
-        super(Family.all(PositionComponent.class, GfxIndexComponent.class).get());
+    //-------------------------------------------------
+    // Ctors.
+    //-------------------------------------------------
 
-        this.camera = camera;
+    /**
+     * Constructs a new {@link SpriteRenderSystem} object.
+     *
+     * @param context The {@link Context} object.
+     * @param camera The {@link Camera} object.
+     * @throws IOException If an I/O error is thrown.
+     */
+    public SpriteRenderSystem(Context context, Camera camera) throws IOException {
+        super(Family.all(PositionComponent.class, GfxIndexComponent.class, ZoomComponent.class).get());
+
+        LOGGER.debug("Creates SpriteRenderSystem object.");
+
+        Objects.requireNonNull(context, "context must not be null");
+
+        this.camera = Objects.requireNonNull(camera, "camera must not be null");
         this.spriteRenderer = new SpriteRenderer(context.engine);
-        for (var z : Zoom.values()) {
-            this.shipBshFiles.put(z, context.bennoFiles.getShipBshFile(z));
+
+        for (var zoom : Zoom.values()) {
+            this.shipBshFiles.put(zoom, context.bennoFiles.getShipBshFile(zoom));
         }
     }
 
+    //-------------------------------------------------
+    // Setter
+    //-------------------------------------------------
+
+    /**
+     * Set {@link #currentZoom}.
+     *
+     * @param currentZoom A {@link Zoom}.
+     */
+    public void setCurrentZoom(Zoom currentZoom) {
+        this.currentZoom = currentZoom;
+    }
+
+    //-------------------------------------------------
+    // Implement IteratingSystem
+    //-------------------------------------------------
+
     @Override
     protected void processEntity(Entity entity, float dt) {
-        var gfxIndex = gfxIndexComponentMapper.get(entity).gfxIndex;
-        var screenPosition = positionComponentMapper.get(entity).screenPosition;
-        var size = positionComponentMapper.get(entity).size;
-        var modelMatrix = RenderUtil.createModelMatrix(screenPosition, size);
+        if (zoomComponentMapper.get(entity).zoom == currentZoom) {
+            var gfxIndex = gfxIndexComponentMapper.get(entity).gfxIndex;
 
-        var bshTexture = shipBshFiles.get(zoom).getBshTextures().get(gfxIndex);
-        spriteRenderer.render(camera.getViewMatrix(), bshTexture.getTexture(), modelMatrix);
+            var screenPosition = positionComponentMapper.get(entity).screenPosition;
+            var size = positionComponentMapper.get(entity).size;
+            var modelMatrix = RenderUtil.createModelMatrix(screenPosition, size);
+
+            var bshTexture = shipBshFiles.get(currentZoom).getBshTextures().get(gfxIndex);
+            spriteRenderer.render(camera.getViewMatrix(), bshTexture.getTexture(), modelMatrix);
+        }
+    }
+
+    //-------------------------------------------------
+    // Clean up
+    //-------------------------------------------------
+
+    /**
+     * Clean up.
+     */
+    public void cleanUp() {
+        LOGGER.debug("Start clean up for the SpriteRenderSystem.");
+
+        spriteRenderer.cleanUp();
     }
 }

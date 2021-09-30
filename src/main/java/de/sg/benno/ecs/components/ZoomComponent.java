@@ -19,12 +19,26 @@
 package de.sg.benno.ecs.components;
 
 import com.badlogic.ashley.core.Component;
-import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.Pool.Poolable;
 import de.sg.benno.renderer.Zoom;
 
-public class ZoomComponent implements Component, Pool.Poolable {
+/**
+ * Represents a ZoomComponent.
+ */
+public class ZoomComponent implements Component, Poolable {
 
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
+
+    /**
+     * A {@link Zoom} can be added to an entity.
+     */
     public Zoom zoom = Zoom.GFX;
+
+    //-------------------------------------------------
+    // Implement Poolable
+    //-------------------------------------------------
 
     @Override
     public void reset() {

@@ -19,11 +19,18 @@
 package de.sg.benno.ecs.components;
 
 import com.badlogic.ashley.core.Component;
-import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.Pool.Poolable;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
-public class PositionComponent implements Component, Pool.Poolable {
+/**
+ * Represents a PositionComponent.
+ */
+public class PositionComponent implements Component, Poolable {
+
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
 
     /**
      * The position in world space.
@@ -39,6 +46,10 @@ public class PositionComponent implements Component, Pool.Poolable {
      * The tile size.
      */
     public Vector2f size = new Vector2f();
+
+    //-------------------------------------------------
+    // Implement Poolable
+    //-------------------------------------------------
 
     @Override
     public void reset() {

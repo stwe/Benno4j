@@ -19,17 +19,35 @@
 package de.sg.benno.ecs.components;
 
 import com.badlogic.ashley.core.Component;
-import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.Pool.Poolable;
 
-public class GfxIndexComponent implements Component, Pool.Poolable {
+/**
+ * Represents a GfxIndexComponent.
+ */
+public class GfxIndexComponent implements Component, Poolable {
 
+    //-------------------------------------------------
+    // Constants
+    //-------------------------------------------------
+
+    /**
+     * There is no gfx by default.
+     */
     public static final int NO_GFX = -1;
+
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
 
     /**
      * The gfx index, see <i>haeuser.cod</i> or {@link de.sg.benno.data.Building} for reference.
      * Each building ID refers to one or more graphics. This is this current graphic or gfx index.
      */
     public int gfxIndex = NO_GFX;
+
+    //-------------------------------------------------
+    // Implement Poolable
+    //-------------------------------------------------
 
     @Override
     public void reset() {

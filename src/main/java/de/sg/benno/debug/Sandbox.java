@@ -34,6 +34,7 @@ import de.sg.benno.state.Context;
 import de.sg.benno.util.TileUtil;
 import org.joml.Vector2f;
 
+import java.io.IOException;
 import java.util.Objects;
 
 import static de.sg.benno.ogl.Log.LOGGER;
@@ -138,7 +139,57 @@ public class Sandbox {
      * @throws Exception If an error is thrown.
      */
     private void init() throws Exception {
-        // create entities
+        createEntities();
+
+        engine.addSystem(new SpriteRenderSystem(context, camera));
+    }
+
+    //-------------------------------------------------
+    // Logic
+    //-------------------------------------------------
+
+    /**
+     * Nothing
+     */
+    public void input() {}
+
+    /**
+     * Update sandbox.
+     */
+    public void update() {
+        if (context.engine.getWindow().isKeyPressed(GLFW_KEY_1)) {
+            changeZoomTo(Zoom.SGFX);
+        }
+
+        if (context.engine.getWindow().isKeyPressed(GLFW_KEY_2)) {
+            changeZoomTo(Zoom.MGFX);
+        }
+
+        if (context.engine.getWindow().isKeyPressed(GLFW_KEY_3)) {
+            changeZoomTo(Zoom.GFX);
+        }
+
+        camera.update(context.engine.getWindow(), context.engine.getMouseInput(), currentZoom);
+    }
+
+    /**
+     * Renders the sandbox.
+     */
+    public void render() {
+        water.render(camera, false, currentZoom);
+        engine.update(0.0f);
+    }
+
+    //-------------------------------------------------
+    // Helper
+    //-------------------------------------------------
+
+    /**
+     * Creates entities to display.
+     *
+     * @throws IOException If an I/O error is thrown.
+     */
+    private void createEntities() throws IOException {
         for (var zoom : Zoom.values()) {
             for (var ship : provider.getShips4List()) {
                 // new entity
@@ -182,48 +233,17 @@ public class Sandbox {
                 engine.addEntity(entity);
             }
         }
-
-        engine.addSystem(new SpriteRenderSystem(context, camera));
-    }
-
-    //-------------------------------------------------
-    // Logic
-    //-------------------------------------------------
-
-    /**
-     * Nothing
-     */
-    public void input() {}
-
-    /**
-     * Update sandbox.
-     */
-    public void update() {
-        // change zoom
-        if (context.engine.getWindow().isKeyPressed(GLFW_KEY_1)) {
-            currentZoom = Zoom.SGFX;
-            camera.resetPosition(currentZoom);
-        }
-
-        if (context.engine.getWindow().isKeyPressed(GLFW_KEY_2)) {
-            currentZoom = Zoom.MGFX;
-            camera.resetPosition(currentZoom);
-        }
-
-        if (context.engine.getWindow().isKeyPressed(GLFW_KEY_3)) {
-            currentZoom = Zoom.GFX;
-            camera.resetPosition(currentZoom);
-        }
-
-        camera.update(context.engine.getWindow(), context.engine.getMouseInput(), currentZoom);
     }
 
     /**
-     * Renders the sandbox.
+     * Reinitialize stuff when the has zoom changed.
+     *
+     * @param zoom The new {@link Zoom}.
      */
-    public void render() {
-        water.render(camera, false, currentZoom);
-        engine.update(0.0f);
+    private void changeZoomTo(Zoom zoom) {
+        currentZoom = zoom;
+        camera.resetPosition(currentZoom);
+        engine.getSystem(SpriteRenderSystem.class).setCurrentZoom(currentZoom);
     }
 
     //-------------------------------------------------
@@ -239,6 +259,7 @@ public class Sandbox {
         camera.cleanUp();
         water.cleanUp();
 
+        engine.getSystem(SpriteRenderSystem.class).cleanUp();
         engine.clearPools();
     }
 }
