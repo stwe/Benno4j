@@ -96,11 +96,6 @@ public class MousePicker {
     private final Water water;
 
     /**
-     * The {@link Shipping} object.
-     */
-    private final Shipping shipping;
-
-    /**
      * The current {@link TileGraphic} under mouse;
      */
     private TileGraphic currentTileGraphic;
@@ -119,19 +114,17 @@ public class MousePicker {
      *
      * @param context {@link Context}
      * @param water {@link Water}
-     * @param shipping {@link Shipping}
      * @param searchMode Initializes the search mode.
      *                   Either the picker can determine water tiles or the higher drawing island tiles.
      * @throws Exception If an error is thrown.
      */
-    public MousePicker(Context context, Water water, Shipping shipping, TileGraphic.TileHeight searchMode) throws Exception {
+    public MousePicker(Context context, Water water, TileGraphic.TileHeight searchMode) throws Exception {
         LOGGER.debug("Creates MousePicker object.");
 
         this.context = Objects.requireNonNull(context, "context must not be null");
         this.spriteRenderer = new SpriteRenderer(context.engine);
 
         this.water = Objects.requireNonNull(water, "water must not be null");
-        this.shipping = Objects.requireNonNull(shipping, "shipping must not be null");
 
         this.searchMode = searchMode;
 
@@ -191,6 +184,7 @@ public class MousePicker {
                 var selected = getTileUnderMouse(camera, zoom);
 
                 // todo: brute force searching - use a HashMap later
+                /*
                 for (var ship : shipping.getProvider().getShips4List()) {
                     if (ship.xPos == selected.x && ship.yPos == selected.y) {
                         shipping.setCurrentShip(ship);
@@ -200,6 +194,7 @@ public class MousePicker {
                         shipping.setPath(null);
                     }
                 }
+                */
             }
 
             // set target with right mouse button
@@ -207,10 +202,10 @@ public class MousePicker {
                 // get world position of the tile under mouse
                 var selected = getTileUnderMouse(camera, zoom);
 
+                /*
                 if (shipping.getCurrentShip() != null) {
                     shipping.setTarget(selected);
 
-                    /*
                     var path = Astar.findPathToTarget(
                             shipping.getCurrentShip(),
                             selected,
@@ -218,11 +213,11 @@ public class MousePicker {
                     );
 
                     shipping.setPath(path);
-                    */
                 } else {
                     shipping.setTarget(null);
                     shipping.setPath(null);
                 }
+                */
             }
         }
     }
