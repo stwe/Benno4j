@@ -80,6 +80,7 @@ public class SpriteRenderSystem extends EntitySystem {
      * @param signatureComponentTypes A list of {@link Component} objects to create a Signature.
      * @throws IOException If an I/O error is thrown.
      */
+    @SafeVarargs
     public SpriteRenderSystem(Context context, Camera camera, Ecs ecs, int priority, Class<? extends Component>... signatureComponentTypes) throws IOException {
         super(ecs, priority, signatureComponentTypes);
 
