@@ -31,11 +31,30 @@ class EntityTest {
     private Entity e1;
     private Entity e2;
 
-    class Position implements Component {}
-    class Transform implements Component {}
-    class Health implements Component {}
-    class Velocity implements Component {}
-    class Attack implements Component {}
+    static class Position implements Component {
+        public Position() {
+        }
+    }
+
+    static class Transform implements Component {
+        public Transform() {
+        }
+    }
+
+    static class Health implements Component {
+        public Health() {
+        }
+    }
+
+    static class Velocity implements Component {
+        public Velocity() {
+        }
+    }
+
+    static class Attack implements Component {
+        public Attack() {
+        }
+    }
 
     @BeforeEach
     void setUp() {

@@ -34,4 +34,3 @@ The file `benno.properties` must be edited. Enter the correct path to the savega
 - [JOML](https://github.com/JOML-CI/JOML) which is licensed under the MIT license
 - [imgui-java](https://github.com/SpaiR/imgui-java) which is licensed under the Apache 2.0 license
 - [FasterXML jackson-core](https://github.com/FasterXML/jackson-core) which is licensed under the Apache 2.0 license
-- [Ashley](https://github.com/libgdx/ashley) is licensed under the Apache 2.0 license

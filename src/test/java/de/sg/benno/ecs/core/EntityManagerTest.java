@@ -34,11 +34,30 @@ class EntityManagerTest {
     private Entity e1;
     private Entity e2;
 
-    static class Position implements Component {}
-    static class Transform implements Component {}
-    static class Health implements Component {}
-    static class Velocity implements Component {}
-    static class Attack implements Component {}
+    static class Position implements Component {
+        public Position() {
+        }
+    }
+
+    static class Transform implements Component {
+        public Transform() {
+        }
+    }
+
+    static class Health implements Component {
+        public Health() {
+        }
+    }
+
+    static class Velocity implements Component {
+        public Velocity() {
+        }
+    }
+
+    static class Attack implements Component {
+        public Attack() {
+        }
+    }
 
     @BeforeEach
     void setUp() throws Exception {
