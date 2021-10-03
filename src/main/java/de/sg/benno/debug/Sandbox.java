@@ -241,7 +241,7 @@ public class Sandbox {
     //-------------------------------------------------
 
     /**
-     * Reinitialize stuff when the has zoom changed.
+     * Reinitialize stuff when the zoom has changed.
      *
      * @param zoom The new {@link Zoom}.
      */
@@ -249,9 +249,9 @@ public class Sandbox {
         currentZoom = zoom;
         camera.resetPosition(currentZoom);
 
-        // todo
-        var s = (SpriteRenderSystem) ecs.getSystems().get(0);
-        s.setCurrentZoom(currentZoom);
+        // todo: SpriteRenderSystem über den Zoomwechsel informieren -> Event
+        var spriteRenderSystemOptional = ecs.getSystem(SpriteRenderSystem.class);
+        spriteRenderSystemOptional.ifPresent(spriteRenderSystem -> spriteRenderSystem.setCurrentZoom(currentZoom));
     }
 
     //-------------------------------------------------
@@ -266,9 +266,6 @@ public class Sandbox {
 
         camera.cleanUp();
         water.cleanUp();
-
-        // todo
-        var s = (SpriteRenderSystem) ecs.getSystems().get(0);
-        s.cleanUp();
+        ecs.cleanUp();
     }
 }

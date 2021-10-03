@@ -20,6 +20,8 @@ package de.sg.benno.ecs.core;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.HashMap;
+import java.util.Optional;
 
 /**
  * Represents the Entity Component System.
@@ -43,7 +45,7 @@ public class Ecs {
     /**
      * A list of all {@link System} objects used in this {@link Ecs}.
      */
-    private final ArrayList<System> systems = new ArrayList<>();
+    private final HashMap<Class<? extends System>, System> systems = new HashMap<>();
 
     //-------------------------------------------------
     // Ctors.
@@ -81,15 +83,6 @@ public class Ecs {
         return entityManager;
     }
 
-    /**
-     * Get {@link #systems}.
-     *
-     * @return {@link #systems}
-     */
-    public ArrayList<System> getSystems() {
-        return systems;
-    }
-
     //-------------------------------------------------
     // Logic
     //-------------------------------------------------
@@ -102,45 +95,37 @@ public class Ecs {
      * @throws Exception If an error is thrown.
      */
     public void init(Object... params) throws Exception {
-        for (var system : systems) {
+        for (var system : systems.values()) {
             system.init(params);
         }
     }
 
     /**
-     * Handle input for all the {@link System} objects.
+     * Handle input for all the {@link #systems}.
      */
     public void input() {
-        for (var system : systems) {
-            system.input();
-        }
+        systems.forEach((k, v) -> v.input());
     }
 
     /**
-     * Updates all the {@link System} objects.
+     * Updates all the {@link #systems}.
      */
     public void update() {
-        for (var system : systems) {
-            system.update();
-        }
+        systems.forEach((k, v) -> v.update());
     }
 
     /**
-     * Renders all the {@link System} objects.
+     * Renders all the {@link #systems}.
      */
     public void render() {
-        for (var system : systems) {
-            system.render();
-        }
+        systems.forEach((k, v) -> v.render());
     }
 
     /**
-     * Clean up systems.
+     * Clean up {@link #systems}.
      */
     public void cleanUp() {
-        for (var system : systems) {
-            system.cleanUp();
-        }
+        systems.forEach((k, v) -> v.cleanUp());
     }
 
     //-------------------------------------------------
@@ -148,12 +133,27 @@ public class Ecs {
     //-------------------------------------------------
 
     /**
-     * Adds a {@link EntitySystem} to this {@link Ecs}.
+     * Adds an {@link EntitySystem} to {@link #systems}.
      *
-     * @param entitySystem {@link EntitySystem}
+     * @param entitySystem The {@link EntitySystem} to add.
      */
     public void addSystem(EntitySystem entitySystem) {
-        systems.add(entitySystem);
+        systems.put(entitySystem.getClass(), entitySystem);
+    }
+
+    /**
+     * Returns the {@link System} object of the specified class.
+     *
+     * @param systemClass The specified class.
+     *
+     * @return The {@link System} object of the specified class or an empty {@link Optional}.
+     */
+    public <T extends System> Optional<T> getSystem(Class<T> systemClass) {
+        if (systems.containsKey(systemClass)) {
+            return Optional.of(systemClass.cast(systems.get(systemClass)));
+        }
+
+        return Optional.empty();
     }
 
     //-------------------------------------------------

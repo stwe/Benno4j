@@ -87,15 +87,23 @@ class EcsTest {
     }
 
     @Test
-    void getSystems() {
-        assertEquals(0, ecs.getSystems().size());
+    void addSystem() {
+        var moveSystemAdd = new MoveSystem(ecs, 0, Transform.class, Health.class);
+        ecs.addSystem(moveSystemAdd);
 
-        var moveSystem = new MoveSystem(ecs, 0, Transform.class, Health.class);
-        ecs.addSystem(moveSystem);
-        assertEquals(1, ecs.getSystems().size());
+        var signatureBitset = moveSystemAdd.getSignature().getSignatureBitSet();
 
-        // todo get system
-        assertTrue(MoveSystem.class.isAssignableFrom(ecs.getSystems().get(0).getClass()));
+        assertTrue(signatureBitset.get(1));
+        assertTrue(signatureBitset.get(2));
+    }
+
+    @Test
+    void getSystem() {
+        var moveSystemAdd = new MoveSystem(ecs, 0, Transform.class, Health.class);
+        ecs.addSystem(moveSystemAdd);
+
+        var moveSystemGet = ecs.getSystem(MoveSystem.class);
+        assertTrue(moveSystemGet.isPresent());
     }
 
     @Test
@@ -117,17 +125,6 @@ class EcsTest {
 
     @Test
     void cleanUp() {
-    }
-
-    @Test
-    void addSystem() {
-        var moveSystem = new MoveSystem(ecs, 0, Transform.class, Health.class);
-        ecs.addSystem(moveSystem);
-        assertEquals(1, ecs.getSystems().size());
-        var signatureBitset = moveSystem.getSignature().getSignatureBitSet();
-
-        assertTrue(signatureBitset.get(1));
-        assertTrue(signatureBitset.get(2));
     }
 
     @Test
