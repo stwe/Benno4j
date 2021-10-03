@@ -18,15 +18,14 @@
 
 package de.sg.benno.ecs.components;
 
-import com.badlogic.ashley.core.Component;
-import com.badlogic.gdx.utils.Pool.Poolable;
+import de.sg.benno.ecs.core.Component;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
 /**
  * Represents a PositionComponent.
  */
-public class PositionComponent implements Component, Poolable {
+public class PositionComponent implements Component {
 
     //-------------------------------------------------
     // Member
@@ -46,15 +45,4 @@ public class PositionComponent implements Component, Poolable {
      * The tile size.
      */
     public Vector2f size = new Vector2f();
-
-    //-------------------------------------------------
-    // Implement Poolable
-    //-------------------------------------------------
-
-    @Override
-    public void reset() {
-        worldPosition = new Vector2i();
-        screenPosition = new Vector2f();
-        size = new Vector2f();
-    }
 }

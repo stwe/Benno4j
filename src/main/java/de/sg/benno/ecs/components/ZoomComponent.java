@@ -18,14 +18,13 @@
 
 package de.sg.benno.ecs.components;
 
-import com.badlogic.ashley.core.Component;
-import com.badlogic.gdx.utils.Pool.Poolable;
+import de.sg.benno.ecs.core.Component;
 import de.sg.benno.renderer.Zoom;
 
 /**
  * Represents a ZoomComponent.
  */
-public class ZoomComponent implements Component, Poolable {
+public class ZoomComponent implements Component {
 
     //-------------------------------------------------
     // Member
@@ -35,13 +34,4 @@ public class ZoomComponent implements Component, Poolable {
      * A {@link Zoom} can be added to an entity.
      */
     public Zoom zoom = Zoom.GFX;
-
-    //-------------------------------------------------
-    // Implement Poolable
-    //-------------------------------------------------
-
-    @Override
-    public void reset() {
-        zoom = Zoom.GFX;
-    }
 }

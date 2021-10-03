@@ -18,13 +18,12 @@
 
 package de.sg.benno.ecs.systems;
 
-import com.badlogic.ashley.core.ComponentMapper;
-import com.badlogic.ashley.core.Entity;
-import com.badlogic.ashley.core.Family;
-import com.badlogic.ashley.systems.IteratingSystem;
 import de.sg.benno.ecs.components.GfxIndexComponent;
 import de.sg.benno.ecs.components.PositionComponent;
 import de.sg.benno.ecs.components.ZoomComponent;
+import de.sg.benno.ecs.core.Component;
+import de.sg.benno.ecs.core.Ecs;
+import de.sg.benno.ecs.core.EntitySystem;
 import de.sg.benno.file.BshFile;
 import de.sg.benno.input.Camera;
 import de.sg.benno.ogl.renderer.RenderUtil;
@@ -41,7 +40,7 @@ import static de.sg.benno.ogl.Log.LOGGER;
 /**
  * Represents a SpriteRenderSystem.
  */
-public class SpriteRenderSystem extends IteratingSystem {
+public class SpriteRenderSystem extends EntitySystem {
 
     //-------------------------------------------------
     // Member
@@ -67,34 +66,22 @@ public class SpriteRenderSystem extends IteratingSystem {
      */
     private final HashMap<Zoom, BshFile> shipBshFiles = new HashMap<>();
 
-    /**
-     * Retrieving {@link PositionComponent}.
-     */
-    private final ComponentMapper<PositionComponent> positionComponentMapper = ComponentMapper.getFor(PositionComponent.class);
-
-    /**
-     * Retrieving {@link GfxIndexComponent}.
-     */
-    private final ComponentMapper<GfxIndexComponent> gfxIndexComponentMapper = ComponentMapper.getFor(GfxIndexComponent.class);
-
-    /**
-     * Retrieving {@link ZoomComponent}.
-     */
-    private final ComponentMapper<ZoomComponent> zoomComponentMapper = ComponentMapper.getFor(ZoomComponent.class);
-
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
     /**
-     * Constructs a new {@link SpriteRenderSystem} object.
+     * Constructs a new {@link System}.
      *
      * @param context The {@link Context} object.
      * @param camera The {@link Camera} object.
+     * @param ecs The parent {@link Ecs}.
+     * @param priority the priority of a {@link System}.
+     * @param signatureComponentTypes A list of {@link Component} objects to create a Signature.
      * @throws IOException If an I/O error is thrown.
      */
-    public SpriteRenderSystem(Context context, Camera camera) throws IOException {
-        super(Family.all(PositionComponent.class, GfxIndexComponent.class, ZoomComponent.class).get());
+    public SpriteRenderSystem(Context context, Camera camera, Ecs ecs, int priority, Class<? extends Component>... signatureComponentTypes) throws IOException {
+        super(ecs, priority, signatureComponentTypes);
 
         LOGGER.debug("Creates SpriteRenderSystem object.");
 
@@ -122,20 +109,42 @@ public class SpriteRenderSystem extends IteratingSystem {
     }
 
     //-------------------------------------------------
-    // Implement IteratingSystem
+    // Implement System
     //-------------------------------------------------
 
     @Override
-    protected void processEntity(Entity entity, float dt) {
-        if (zoomComponentMapper.get(entity).zoom == currentZoom) {
-            var gfxIndex = gfxIndexComponentMapper.get(entity).gfxIndex;
+    public void init(Object... params) throws Exception {
 
-            var screenPosition = positionComponentMapper.get(entity).screenPosition;
-            var size = positionComponentMapper.get(entity).size;
-            var modelMatrix = RenderUtil.createModelMatrix(screenPosition, size);
+    }
 
-            var bshTexture = shipBshFiles.get(currentZoom).getBshTextures().get(gfxIndex);
-            spriteRenderer.render(camera.getViewMatrix(), bshTexture.getTexture(), modelMatrix);
+    @Override
+    public void input() {
+
+    }
+
+    @Override
+    public void update() {
+
+    }
+
+    @Override
+    public void render() {
+        for (var entity : getEcs().getEntityManager().getEntitiesBySignature(getSignature())) {
+            var zoomOptional = entity.getComponent(ZoomComponent.class);
+            if (zoomOptional.isPresent()) {
+                if (currentZoom == zoomOptional.get().zoom) {
+                    var gfxIndexOptional = entity.getComponent(GfxIndexComponent.class);
+                    var gfxIndex = gfxIndexOptional.get().gfxIndex;
+
+                    var positionOptional = entity.getComponent(PositionComponent.class);
+                    var screenPosition = positionOptional.get().screenPosition;
+                    var size = positionOptional.get().size;
+                    var modelMatrix = RenderUtil.createModelMatrix(screenPosition, size);
+
+                    var bshTexture = shipBshFiles.get(currentZoom).getBshTextures().get(gfxIndex);
+                    spriteRenderer.render(camera.getViewMatrix(), bshTexture.getTexture(), modelMatrix);
+                }
+            }
         }
     }
 

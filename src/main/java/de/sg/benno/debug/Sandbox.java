@@ -18,7 +18,6 @@
 
 package de.sg.benno.debug;
 
-import com.badlogic.ashley.core.PooledEngine;
 import de.sg.benno.BennoConfig;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.content.Water;
@@ -27,6 +26,8 @@ import de.sg.benno.chunk.WorldData;
 import de.sg.benno.ecs.components.GfxIndexComponent;
 import de.sg.benno.ecs.components.PositionComponent;
 import de.sg.benno.ecs.components.ZoomComponent;
+import de.sg.benno.ecs.core.Component;
+import de.sg.benno.ecs.core.Ecs;
 import de.sg.benno.ecs.systems.SpriteRenderSystem;
 import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.Zoom;
@@ -34,7 +35,7 @@ import de.sg.benno.state.Context;
 import de.sg.benno.util.TileUtil;
 import org.joml.Vector2f;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Objects;
 
 import static de.sg.benno.ogl.Log.LOGGER;
@@ -75,9 +76,9 @@ public class Sandbox {
     private final Water water;
 
     /**
-     * A {@link PooledEngine} - an efficient ECS with pooling.
+     * A {@link Ecs} - an Entity Component System.
      */
-    private final PooledEngine engine;
+    private Ecs ecs;
 
     //-------------------------------------------------
     // Ctors.
@@ -102,9 +103,8 @@ public class Sandbox {
 
         this.camera = new Camera(BennoConfig.CAMERA_START_X, BennoConfig.CAMERA_START_Y, context.engine, currentZoom);
         this.water = new Water(provider, context);
-        this.engine = new PooledEngine();
 
-        init();
+        initEcs();
     }
 
     //-------------------------------------------------
@@ -134,14 +134,70 @@ public class Sandbox {
     //-------------------------------------------------
 
     /**
-     * Initialize sandbox content.
+     * Initialize {@link Ecs}.
      *
      * @throws Exception If an error is thrown.
      */
-    private void init() throws Exception {
-        createEntities();
+    private void initEcs() throws Exception {
+        ArrayList<Class<? extends Component>> componentTypes = new ArrayList<>();
+        componentTypes.add(GfxIndexComponent.class);
+        componentTypes.add(PositionComponent.class);
+        componentTypes.add(ZoomComponent.class);
 
-        engine.addSystem(new SpriteRenderSystem(context, camera));
+        ecs = new Ecs(componentTypes);
+
+        ecs.addSystem(new SpriteRenderSystem(
+                context, camera,
+                ecs, 0, GfxIndexComponent.class, PositionComponent.class, ZoomComponent.class)
+        );
+
+        createEntities();
+    }
+
+    /**
+     * Creates entities to display.
+     *
+     * @throws Exception If an error is thrown.
+     */
+    private void createEntities() throws Exception {
+        var em = ecs.getEntityManager();
+
+        for (var zoom : Zoom.values()) {
+            for (var ship : provider.getShips4List()) {
+                // new entity
+                var entity = em.createEntity();
+
+                // add gfx index component
+                var gfxIndexComponent = entity.addComponent(GfxIndexComponent.class);
+                gfxIndexComponent.get().gfxIndex = ship.getCurrentGfxIndex();
+
+                // add position component
+                var xWorldPos = ship.xPos + 1;
+                var yWorldPos = ship.yPos - 1;
+
+                var positionComponent = entity.addComponent(PositionComponent.class);
+                positionComponent.get().worldPosition.x = xWorldPos;
+                positionComponent.get().worldPosition.y = yWorldPos;
+
+                var shipBshFile = context.bennoFiles.getShipBshFile(zoom);
+                var shipBshTexture = shipBshFile.getBshTextures().get(ship.getCurrentGfxIndex());
+
+                var screenPosition = TileUtil.worldToScreen(xWorldPos, yWorldPos, zoom.getTileWidthHalf(), zoom.getTileHeightHalf());
+                var adjustHeight = TileUtil.adjustHeight(zoom.getTileHeightHalf(), TileGraphic.TileHeight.SEA_LEVEL.value, zoom.getElevation());
+                screenPosition.y += adjustHeight;
+                screenPosition.x -= shipBshTexture.getWidth();
+                screenPosition.y -= shipBshTexture.getHeight();
+                screenPosition.x -= zoom.getTileWidthHalf() * 0.5f;
+                screenPosition.y -= zoom.getTileHeightHalf() * 0.5f;
+                positionComponent.get().screenPosition.x = screenPosition.x;
+                positionComponent.get().screenPosition.y = screenPosition.y;
+                positionComponent.get().size = new Vector2f(shipBshTexture.getWidth(), shipBshTexture.getHeight());
+
+                // add zoom component
+                var zoomComponent = entity.addComponent(ZoomComponent.class);
+                zoomComponent.get().zoom = zoom;
+            }
+        }
     }
 
     //-------------------------------------------------
@@ -177,63 +233,12 @@ public class Sandbox {
      */
     public void render() {
         water.render(camera, false, currentZoom);
-        engine.update(0.0f);
+        ecs.render();
     }
 
     //-------------------------------------------------
     // Helper
     //-------------------------------------------------
-
-    /**
-     * Creates entities to display.
-     *
-     * @throws IOException If an I/O error is thrown.
-     */
-    private void createEntities() throws IOException {
-        for (var zoom : Zoom.values()) {
-            for (var ship : provider.getShips4List()) {
-                // new entity
-                var entity = engine.createEntity();
-
-                // add gfx index component
-                var gfxIndex = ship.getCurrentGfxIndex();
-                var gfxIndexComponent = engine.createComponent(GfxIndexComponent.class);
-                gfxIndexComponent.gfxIndex = gfxIndex;
-                entity.add(gfxIndexComponent);
-
-                // add position component
-                var xWorldPos = ship.xPos + 1;
-                var yWorldPos = ship.yPos - 1;
-
-                var positionComponent = engine.createComponent(PositionComponent.class);
-                positionComponent.worldPosition.x = xWorldPos;
-                positionComponent.worldPosition.y = yWorldPos;
-
-                var shipBshFile = context.bennoFiles.getShipBshFile(zoom);
-                var shipBshTexture = shipBshFile.getBshTextures().get(gfxIndex);
-
-                var screenPosition = TileUtil.worldToScreen(xWorldPos, yWorldPos, zoom.getTileWidthHalf(), zoom.getTileHeightHalf());
-                var adjustHeight = TileUtil.adjustHeight(zoom.getTileHeightHalf(), TileGraphic.TileHeight.SEA_LEVEL.value, zoom.getElevation());
-                screenPosition.y += adjustHeight;
-                screenPosition.x -= shipBshTexture.getWidth();
-                screenPosition.y -= shipBshTexture.getHeight();
-                screenPosition.x -= zoom.getTileWidthHalf() * 0.5f;
-                screenPosition.y -= zoom.getTileHeightHalf() * 0.5f;
-                positionComponent.screenPosition.x = screenPosition.x;
-                positionComponent.screenPosition.y = screenPosition.y;
-                positionComponent.size = new Vector2f(shipBshTexture.getWidth(), shipBshTexture.getHeight());
-                entity.add(positionComponent);
-
-                // add zoom component
-                var zoomComponent = engine.createComponent(ZoomComponent.class);
-                zoomComponent.zoom = zoom;
-                entity.add(zoomComponent);
-
-                // add entity
-                engine.addEntity(entity);
-            }
-        }
-    }
 
     /**
      * Reinitialize stuff when the has zoom changed.
@@ -243,7 +248,10 @@ public class Sandbox {
     private void changeZoomTo(Zoom zoom) {
         currentZoom = zoom;
         camera.resetPosition(currentZoom);
-        engine.getSystem(SpriteRenderSystem.class).setCurrentZoom(currentZoom);
+
+        // todo
+        var s = (SpriteRenderSystem) ecs.getSystems().get(0);
+        s.setCurrentZoom(currentZoom);
     }
 
     //-------------------------------------------------
@@ -259,7 +267,8 @@ public class Sandbox {
         camera.cleanUp();
         water.cleanUp();
 
-        engine.getSystem(SpriteRenderSystem.class).cleanUp();
-        engine.clearPools();
+        // todo
+        var s = (SpriteRenderSystem) ecs.getSystems().get(0);
+        s.cleanUp();
     }
 }

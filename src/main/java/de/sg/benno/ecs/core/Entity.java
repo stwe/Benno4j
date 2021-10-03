@@ -23,6 +23,8 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Optional;
 
+import static de.sg.benno.ogl.Log.LOGGER;
+
 /**
  * Represents an Entity, which is a simple container of {@link Component} objects.
  */
@@ -93,18 +95,29 @@ public class Entity {
 
     /**
      * Returns the {@link Component} object of the specified class if this {@link Entity} has one added,
-     * empty Optional if it doesn't.
+     * empty {@link Optional} if it doesn't.
      *
      * @param componentClass The specified class.
-     * @return The {@link Component} object of the specified class.
+     *
+     * @return The {@link Component} object of the specified class or an empty {@link Optional}.
      */
     public <T extends Component> Optional<T> getComponent(Class<T> componentClass) {
-        var component = componentsCache.get(componentClass);
-        if (component != null) {
-            return Optional.of(componentClass.cast(component));
+        if (hasComponent(componentClass)) {
+            return Optional.of(componentClass.cast(componentsCache.get(componentClass)));
         }
 
         return Optional.empty();
+    }
+
+    /**
+     * Tells if this {@link Entity} has a {@link Component} of the specified class.
+     *
+     * @param componentClass The specified class.
+     *
+     * @return <i>true</i> if this {@link Entity} has this component added to it.
+     */
+    public boolean hasComponent(Class<? extends Component> componentClass) {
+        return componentsCache.containsKey(componentClass);
     }
 
     //-------------------------------------------------
@@ -112,30 +125,47 @@ public class Entity {
     //-------------------------------------------------
 
     /**
-     * Adds the given {@link Component} object to this {@link Entity}.
+     * Adds the {@link Component} object of the specified class to this {@link Entity}.
      *
-     * @param component The {@link Component} object to add.
+     * @param componentClass The specified class.
+     *
+     * @return The {@link Component} object of the specified class or an empty {@link Optional}.
+     * @throws Exception If an error is thrown.
      */
-    public void addComponent(Component component) {
+    public <T extends Component> Optional<T> addComponent(Class<T> componentClass) throws Exception {
+        // each component can only be added once
+        if (hasComponent(componentClass)) {
+            LOGGER.warn("Component {} already exist.", componentClass.getSimpleName());
+
+            return Optional.empty();
+        }
+
+        // new instance
+        var component = newInstance(componentClass);
+
         // add to list
         components.add(component);
 
         // add to cache
-        componentsCache.put(component.getClass(), component);
+        componentsCache.put(componentClass, component);
 
         // update signature bits
-        signature.set(entityManager.getEcs().getComponentIndex(component.getClass()));
+        signature.set(entityManager.getEcs().getComponentIndex(componentClass));
+
+        // return newly created component
+        return Optional.of(component);
     }
 
     /**
-     * Adds and returns the given {@link Component} object to this {@link Entity}.
+     * Create and initialize a new instance of the specified class.
      *
-     * @param component The {@link Component} object to add.
-     * @return The added {@link Component} object.
+     * @param componentClass The specified class.
+     *
+     * @return A new {@link Component} object created by calling the constructor.
+     * @throws Exception If an error is thrown.
      */
-    public Component addAndReturn(Component component) {
-        addComponent(component);
-        return component;
+    private static <T extends Component> T newInstance(Class<T> componentClass) throws Exception {
+        return componentClass.getConstructor().newInstance();
     }
 
     //-------------------------------------------------
@@ -143,32 +173,25 @@ public class Entity {
     //-------------------------------------------------
 
     /**
-     * Remove the given {@link Component} object from this {@link Entity}.
+     * Removes the {@link Component} of the specified class from this {@link Entity}.
      *
-     * @param component The {@link Component} object to remove.
+     * @param componentClass The specified class.
      */
-    public void removeComponent(Component component) {
-        // update signature bits
-        signature.clear(entityManager.getEcs().getComponentIndex(component.getClass()));
+    public void removeComponent(Class<? extends Component> componentClass) {
+        // use getComponent() instead hasComponent(), because we need the component object for remove
+        var componentOptional = getComponent(componentClass);
+        if (componentOptional.isPresent()) {
+            // update signature bits
+            signature.clear(entityManager.getEcs().getComponentIndex(componentClass));
 
-        // remove from list
-        components.remove(component);
+            // remove from list
+            components.remove(componentOptional.get());
 
-        // remove from cache
-        componentsCache.remove(component.getClass());
-    }
-
-    //-------------------------------------------------
-    // Has component
-    //-------------------------------------------------
-
-    /**
-     * Tells if this {@link Entity} has a {@link Component} of the specified type.
-     *
-     * @param componentClass The class of the component.
-     * @return <i>true</i> if this {@link Entity} has this component added to it.
-     */
-    public boolean hasComponent(Class<? extends Component> componentClass) {
-        return componentsCache.containsKey(componentClass);
+            // remove from cache
+            componentsCache.remove(componentClass);
+        } else {
+            LOGGER.warn("The component {} no longer exists and may have already been removed.",
+                    componentClass.getSimpleName());
+        }
     }
 }

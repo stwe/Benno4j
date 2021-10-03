@@ -18,13 +18,12 @@
 
 package de.sg.benno.ecs.components;
 
-import com.badlogic.ashley.core.Component;
-import com.badlogic.gdx.utils.Pool.Poolable;
+import de.sg.benno.ecs.core.Component;
 
 /**
  * Represents a GfxIndexComponent.
  */
-public class GfxIndexComponent implements Component, Poolable {
+public class GfxIndexComponent implements Component {
 
     //-------------------------------------------------
     // Constants
@@ -44,13 +43,4 @@ public class GfxIndexComponent implements Component, Poolable {
      * Each building ID refers to one or more graphics. This is this current graphic or gfx index.
      */
     public int gfxIndex = NO_GFX;
-
-    //-------------------------------------------------
-    // Implement Poolable
-    //-------------------------------------------------
-
-    @Override
-    public void reset() {
-        gfxIndex = NO_GFX;
-    }
 }

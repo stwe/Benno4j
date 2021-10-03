@@ -88,7 +88,7 @@ public class EntityManager {
         var entity = new Entity(this);
         entities.add(entity);
 
-        // todo update systems
+        // todo update systems - entities array
 
         return entity;
     }
@@ -116,7 +116,7 @@ public class EntityManager {
      *
      * @return A list with the {@link Entity} objects.
      */
-    public ArrayList<Entity> getEntities(Signature signature) {
+    public ArrayList<Entity> getEntitiesBySignature(Signature signature) {
         var result = new ArrayList<Entity>();
 
         for (var entity : entities) {

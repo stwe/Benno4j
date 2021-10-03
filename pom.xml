@@ -31,12 +31,6 @@
             <id>jcenter</id>
             <url>https://jcenter.bintray.com/</url>
         </repository>
-
-        <repository>
-            <id>sonatype</id>
-            <name>Sonatype</name>
-            <url>https://oss.sonatype.org/content/repositories/releases</url>
-        </repository>
     </repositories>
 
     <properties>
@@ -168,12 +162,6 @@
             <groupId>org.joml</groupId>
             <artifactId>joml</artifactId>
             <version>1.10.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.badlogicgames.ashley</groupId>
-            <artifactId>ashley</artifactId>
-            <version>1.7.3</version>
         </dependency>
     </dependencies>
 
