@@ -146,12 +146,12 @@ public class Sandbox {
 
         ecs = new Ecs(componentTypes);
 
+        createEntities();
+
         ecs.addSystem(new SpriteRenderSystem(
                 context, camera,
                 ecs, 0, GfxIndexComponent.class, PositionComponent.class, ZoomComponent.class)
         );
-
-        createEntities();
     }
 
     /**

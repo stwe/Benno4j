@@ -18,6 +18,8 @@
 
 package de.sg.benno.ecs.core;
 
+import java.util.ArrayList;
+
 /**
  * Abstract class for processing sets of {@link Entity} objects.
  */
@@ -33,14 +35,19 @@ public abstract class EntitySystem implements System {
     private final Ecs ecs;
 
     /**
+     * Used to set the priority of a {@link System}. Lower means it'll get executed first.
+     */
+    private final int priority;
+
+    /**
      * The {@link Signature} for this {@link System}.
      */
     private final Signature signature;
 
     /**
-     * Used to set the priority of a {@link System}. Lower means it'll get executed first.
+     * A list of {@link Entity} objects processed by this {@link System}.
      */
-    private final int priority;
+    private final ArrayList<Entity> entities;
 
     //-------------------------------------------------
     // Ctors.
@@ -53,11 +60,13 @@ public abstract class EntitySystem implements System {
      * @param priority the priority of a {@link System}.
      * @param signatureComponentTypes A list of {@link Component} objects to create the {@link Signature}.
      */
+    @SafeVarargs
     public EntitySystem(Ecs ecs, int priority, Class<? extends Component>... signatureComponentTypes) {
-        this.priority = priority;
         this.ecs = ecs;
+        this.priority = priority;
         this.signature = new Signature(signatureComponentTypes);
         this.signature.initSignatureBitSet(ecs.getAllComponentTypes());
+        entities = this.ecs.getEntityManager().getEntitiesBySignature(this.signature);
     }
 
     //-------------------------------------------------
@@ -74,6 +83,15 @@ public abstract class EntitySystem implements System {
     }
 
     /**
+     * Get {@link #priority}.
+     *
+     * @return {@link #priority}
+     */
+    public int getPriority() {
+        return priority;
+    }
+
+    /**
      * Get {@link #signature}.
      *
      * @return {@link #signature}
@@ -83,11 +101,11 @@ public abstract class EntitySystem implements System {
     }
 
     /**
-     * Get {@link #priority}.
+     * Get {@link #entities}.
      *
-     * @return {@link #priority}
+     * @return {@link #entities}
      */
-    public int getPriority() {
-        return priority;
+    public ArrayList<Entity> getEntities() {
+        return entities;
     }
 }

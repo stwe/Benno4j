@@ -130,7 +130,7 @@ public class SpriteRenderSystem extends EntitySystem {
 
     @Override
     public void render() {
-        for (var entity : getEcs().getEntityManager().getEntitiesBySignature(getSignature())) {
+        for (var entity : getEntities()) {
             var zoomOptional = entity.getComponent(ZoomComponent.class);
             if (zoomOptional.isPresent()) {
                 if (currentZoom == zoomOptional.get().zoom) {

@@ -133,9 +133,9 @@ public class Ecs {
     //-------------------------------------------------
 
     /**
-     * Adds an {@link EntitySystem} to {@link #systems}.
+     * Adds an {@link EntitySystem} object to {@link #systems}.
      *
-     * @param entitySystem The {@link EntitySystem} to add.
+     * @param entitySystem The {@link EntitySystem} object to add.
      */
     public void addSystem(EntitySystem entitySystem) {
         systems.put(entitySystem.getClass(), entitySystem);
