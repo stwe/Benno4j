@@ -19,7 +19,6 @@
 package de.sg.benno.ecs.core;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 
 /**
  * Represents an EntityManager.
@@ -88,7 +87,7 @@ public class EntityManager {
         var entity = new Entity(this);
         entities.add(entity);
 
-        // todo update systems - entities array
+        // todo update Systems bei Aufruf von addComponent
 
         return entity;
     }
@@ -100,6 +99,7 @@ public class EntityManager {
      */
     public void removeEntity(Entity entity) {
 
+        // todo update Systems bei Aufruf von removeComponent
         // todo clean up components, update systems
 
         entities.remove(entity);
@@ -108,6 +108,8 @@ public class EntityManager {
     //-------------------------------------------------
     // Iterate
     //-------------------------------------------------
+
+    // todo: System method
 
     /**
      * Get {@link Entity} objects matches a given {@link Signature}.
@@ -120,28 +122,11 @@ public class EntityManager {
         var result = new ArrayList<Entity>();
 
         for (var entity : entities) {
-            if (matchesSignature(entity, signature)) {
+            if (Entity.matchesSignature(entity, signature)) {
                 result.add(entity);
             }
         }
 
         return result;
-    }
-
-    /**
-     * Compares two signatures.
-     *
-     * @param entity The {@link Entity} to get the components' signature.
-     * @param signature The {@link Signature} to get the bit set used in a {@link System} as signature.
-     *
-     * @return <i>true</i> if match
-     */
-    private boolean matchesSignature(Entity entity, Signature signature) {
-        var entityComponentBitset = new BitSet();
-        entityComponentBitset = (BitSet) entity.getSignatureBitSet().clone();
-
-        entityComponentBitset.and(signature.getSignatureBitSet());
-
-        return entityComponentBitset.equals(signature.getSignatureBitSet());
     }
 }

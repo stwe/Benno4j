@@ -18,10 +18,18 @@
 
 package de.sg.benno.ecs.core;
 
+import java.util.ArrayList;
+
 /**
  * Interface for all systems in the ECS.
  */
 public interface System {
+
+    Signature getSignature();
+
+    ArrayList<Entity> getEntities();
+    void addEntity(Entity entity);
+    void removeEntity(Entity entity);
 
     void init(Object... params) throws Exception;
     void input();

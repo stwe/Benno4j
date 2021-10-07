@@ -83,6 +83,15 @@ public class Ecs {
         return entityManager;
     }
 
+    /**
+     * Get {@link #systems}.
+     *
+     * @return {@link #systems}
+     */
+    public HashMap<Class<? extends System>, System> getSystems() {
+        return systems;
+    }
+
     //-------------------------------------------------
     // Logic
     //-------------------------------------------------

@@ -54,6 +54,11 @@ public class Entity {
      */
     private final BitSet signature = new BitSet();
 
+    /**
+     * A name for debug output.
+     */
+    public String debugName;
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -149,8 +154,22 @@ public class Entity {
         // add to cache
         componentsCache.put(componentClass, component);
 
-        // update signature bits
+        // update entity component signature bits
         signature.set(entityManager.getEcs().getComponentIndex(componentClass));
+
+        // todo Signatur hat sich geändert: Entity zu Systemen hinzufügen
+        entityManager.getEcs().getSystems().forEach(
+                (k, v) -> {
+                    if (matchesSignature(this, v.getSignature())) {
+                        if (!v.getEntities().contains(this)) {
+                            v.addEntity(this);
+                            LOGGER.debug("Entity {} added to System {}.", this.debugName, k.getSimpleName());
+                        } else {
+                            LOGGER.debug("Entity {} is already in System {}.", this.debugName, k.getSimpleName());
+                        }
+                    }
+                }
+        );
 
         // return newly created component
         return Optional.of(component);
@@ -181,7 +200,19 @@ public class Entity {
         // use getComponent() instead hasComponent(), because we need the component object for remove
         var componentOptional = getComponent(componentClass);
         if (componentOptional.isPresent()) {
-            // update signature bits
+            // todo Signatur hat sich geändert: Entity aus Systemen löschen
+            entityManager.getEcs().getSystems().forEach(
+                    (k, v) -> {
+                        if (matchesSignature(this, v.getSignature())) {
+                            if (v.getEntities().contains(this)) {
+                                v.removeEntity(this);
+                                LOGGER.debug("Entity {} removed from System {}.", this.debugName, k.getSimpleName());
+                            }
+                        }
+                    }
+            );
+
+            // update entity component signature bits
             signature.clear(entityManager.getEcs().getComponentIndex(componentClass));
 
             // remove from list
@@ -189,9 +220,44 @@ public class Entity {
 
             // remove from cache
             componentsCache.remove(componentClass);
+
+            // todo Signatur hat sich geändert: Entity zu Systemen hinzufügen
+            entityManager.getEcs().getSystems().forEach(
+                    (k, v) -> {
+                        if (matchesSignature(this, v.getSignature())) {
+                            if (!v.getEntities().contains(this)) {
+                                v.addEntity(this);
+                                LOGGER.debug("Entity {} added to System {}.", this.debugName, k.getSimpleName());
+                            } else {
+                                LOGGER.debug("Entity {} is already in System {}.", this.debugName, k.getSimpleName());
+                            }
+                        }
+                    }
+            );
         } else {
             LOGGER.warn("The component {} no longer exists and may have already been removed.",
                     componentClass.getSimpleName());
         }
+    }
+
+    //-------------------------------------------------
+    // Signatures
+    //-------------------------------------------------
+
+    /**
+     * Compares two signatures.
+     *
+     * @param entity The {@link Entity} to get the components' signature.
+     * @param signature The {@link Signature} to get the bit set used in a {@link System} as signature.
+     *
+     * @return <i>true</i> if match
+     */
+    public static boolean matchesSignature(Entity entity, Signature signature) {
+        var entityComponentBitset = new BitSet();
+        entityComponentBitset = (BitSet) entity.getSignatureBitSet().clone();
+
+        entityComponentBitset.and(signature.getSignatureBitSet());
+
+        return entityComponentBitset.equals(signature.getSignatureBitSet());
     }
 }

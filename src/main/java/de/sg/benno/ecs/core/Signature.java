@@ -50,6 +50,7 @@ public class Signature {
      *
      * @param signatureComponentTypes A list of component types representing this {@link Signature}.
      */
+    @SafeVarargs
     public Signature(Class<? extends Component>... signatureComponentTypes) {
         this.signatureComponentTypes.addAll(Arrays.asList(signatureComponentTypes));
     }

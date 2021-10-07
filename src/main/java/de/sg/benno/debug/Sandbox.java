@@ -146,12 +146,12 @@ public class Sandbox {
 
         ecs = new Ecs(componentTypes);
 
-        createEntities();
-
         ecs.addSystem(new SpriteRenderSystem(
                 context, camera,
                 ecs, 0, GfxIndexComponent.class, PositionComponent.class, ZoomComponent.class)
         );
+
+        createEntities();
     }
 
     /**
@@ -166,6 +166,8 @@ public class Sandbox {
             for (var ship : provider.getShips4List()) {
                 // new entity
                 var entity = em.createEntity();
+
+                entity.debugName = ship.name + "_" + zoom;
 
                 // add gfx index component
                 var gfxIndexComponent = entity.addComponent(GfxIndexComponent.class);

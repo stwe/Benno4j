@@ -91,21 +91,27 @@ public abstract class EntitySystem implements System {
         return priority;
     }
 
-    /**
-     * Get {@link #signature}.
-     *
-     * @return {@link #signature}
-     */
+    //-------------------------------------------------
+    // Implement System
+    //-------------------------------------------------
+
+    @Override
     public Signature getSignature() {
         return signature;
     }
 
-    /**
-     * Get {@link #entities}.
-     *
-     * @return {@link #entities}
-     */
+    @Override
     public ArrayList<Entity> getEntities() {
         return entities;
+    }
+
+    @Override
+    public void addEntity(Entity entity) {
+        entities.add(entity);
+    }
+
+    @Override
+    public void removeEntity(Entity entity) {
+        entities.remove(entity);
     }
 }
