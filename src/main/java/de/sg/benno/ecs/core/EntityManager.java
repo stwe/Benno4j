@@ -70,7 +70,7 @@ public class EntityManager {
      *
      * @return {@link #entities}
      */
-    public ArrayList<Entity> getEntities() {
+    public ArrayList<Entity> getAllEntities() {
         return entities;
     }
 
@@ -86,8 +86,6 @@ public class EntityManager {
     public Entity createEntity() {
         var entity = new Entity(this);
         entities.add(entity);
-
-        // todo update Systems bei Aufruf von addComponent
 
         return entity;
     }
@@ -109,10 +107,8 @@ public class EntityManager {
     // Iterate
     //-------------------------------------------------
 
-    // todo: System method
-
     /**
-     * Get {@link Entity} objects matches a given {@link Signature}.
+     * Get {@link Entity} objects from {@link #entities} matches a given {@link Signature}.
      *
      * @param signature {@link Signature}
      *

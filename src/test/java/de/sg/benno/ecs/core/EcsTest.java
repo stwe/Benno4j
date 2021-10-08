@@ -37,6 +37,7 @@ class EcsTest {
     static class Attack implements Component {}
 
     static class MoveSystem extends EntitySystem {
+        @SafeVarargs
         public MoveSystem(Ecs ecs, int priority, Class<? extends Component>... signatureComponentTypes) {
             super(ecs, priority, signatureComponentTypes);
         }
@@ -49,7 +50,7 @@ class EcsTest {
 
         @Override
         public void update() {
-            for (var entity : getEcs().getEntityManager().getEntitiesBySignature(getSignature())) {
+            for (var entity : getEntities()) {
                 out.println("update MoveSystem");
             }
         }
@@ -84,6 +85,14 @@ class EcsTest {
         var em = ecs.getEntityManager();
         assertNotNull(em);
         assertEquals(EntityManager.class, ecs.getEntityManager().getClass());
+    }
+
+    @Test
+    void getSystems() {
+        var moveSystemAdd = new MoveSystem(ecs, 0, Transform.class, Health.class);
+        ecs.addSystem(moveSystemAdd);
+        var systems = ecs.getSystems();
+        assertEquals(1, systems.size());
     }
 
     @Test
