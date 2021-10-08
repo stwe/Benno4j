@@ -157,19 +157,8 @@ public class Entity {
         // update entity component signature bits
         signature.set(entityManager.getEcs().getComponentIndex(componentClass));
 
-        // todo Signatur hat sich geändert: Entity zu Systemen hinzufügen
-        entityManager.getEcs().getSystems().forEach(
-                (k, v) -> {
-                    if (matchesSignature(this, v.getSignature())) {
-                        if (!v.getEntities().contains(this)) {
-                            v.addEntity(this);
-                            LOGGER.debug("Entity {} added to System {}.", this.debugName, k.getSimpleName());
-                        } else {
-                            LOGGER.debug("Entity {} is already in System {}.", this.debugName, k.getSimpleName());
-                        }
-                    }
-                }
-        );
+        // add to all systems which matches signature
+        addToSystems();
 
         // return newly created component
         return Optional.of(component);
@@ -200,17 +189,8 @@ public class Entity {
         // use getComponent() instead hasComponent(), because we need the component object for remove
         var componentOptional = getComponent(componentClass);
         if (componentOptional.isPresent()) {
-            // todo Signatur hat sich geändert: Entity aus Systemen löschen
-            entityManager.getEcs().getSystems().forEach(
-                    (k, v) -> {
-                        if (matchesSignature(this, v.getSignature())) {
-                            if (v.getEntities().contains(this)) {
-                                v.removeEntity(this);
-                                LOGGER.debug("Entity {} removed from System {}.", this.debugName, k.getSimpleName());
-                            }
-                        }
-                    }
-            );
+            // remove from all systems
+            removeFromSystems();
 
             // update entity component signature bits
             signature.clear(entityManager.getEcs().getComponentIndex(componentClass));
@@ -221,23 +201,48 @@ public class Entity {
             // remove from cache
             componentsCache.remove(componentClass);
 
-            // todo Signatur hat sich geändert: Entity zu Systemen hinzufügen
-            entityManager.getEcs().getSystems().forEach(
-                    (k, v) -> {
-                        if (matchesSignature(this, v.getSignature())) {
-                            if (!v.getEntities().contains(this)) {
-                                v.addEntity(this);
-                                LOGGER.debug("Entity {} added to System {}.", this.debugName, k.getSimpleName());
-                            } else {
-                                LOGGER.debug("Entity {} is already in System {}.", this.debugName, k.getSimpleName());
-                            }
-                        }
-                    }
-            );
+            // add to all systems which matches new signature
+            addToSystems();
         } else {
             LOGGER.warn("The component {} no longer exists and may have already been removed.",
                     componentClass.getSimpleName());
         }
+    }
+
+    //-------------------------------------------------
+    // Add / remove to systems
+    //-------------------------------------------------
+
+    /**
+     * Adds this {@link Entity} object to all {@link System} objects which matches signature.
+     */
+    public void addToSystems() {
+        entityManager.getEcs().getSystems().forEach(
+            (k, v) -> {
+                if (matchesSignature(this, v.getSignature())) {
+                    if (!v.getEntities().contains(this)) {
+                        v.addEntity(this);
+                        LOGGER.debug("Entity {} added to System {}.", this.debugName, k.getSimpleName());
+                    } else {
+                        LOGGER.debug("Entity {} to be add is already in System {}.", this.debugName, k.getSimpleName());
+                    }
+                }
+            }
+        );
+    }
+
+    /**
+     * Removes this {@link Entity} object from all {@link System} objects.
+     */
+    public void removeFromSystems() {
+        entityManager.getEcs().getSystems().forEach(
+            (k, v) -> {
+                if (v.getEntities().contains(this)) {
+                    v.removeEntity(this);
+                    LOGGER.debug("Entity {} removed from System {}.", this.debugName, k.getSimpleName());
+                }
+            }
+        );
     }
 
     //-------------------------------------------------

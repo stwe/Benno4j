@@ -96,10 +96,7 @@ public class EntityManager {
      * @param entity The {@link Entity} to remove.
      */
     public void removeEntity(Entity entity) {
-
-        // todo update Systems bei Aufruf von removeComponent
-        // todo clean up components, update systems
-
+        entity.removeFromSystems();
         entities.remove(entity);
     }
 

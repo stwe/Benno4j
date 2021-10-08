@@ -30,13 +30,6 @@ class EntityManagerTest {
 
     ArrayList<Class<? extends Component>> componentTypes;
 
-    private Ecs ecs;
-    private EntityManager em;
-
-    private Entity e0;
-    private Entity e1;
-    private Entity e2;
-
     static class Position implements Component {
         public Position() {
         }
@@ -96,10 +89,6 @@ class EntityManagerTest {
         componentTypes.add(Health.class);
         componentTypes.add(Velocity.class);
         componentTypes.add(Attack.class);
-
-        // todo
-        //var moveSystemAdd = new MoveSystem(ecs, 0, Transform.class, Health.class);
-        //ecs.addSystem(moveSystemAdd);
     }
 
     @Test
@@ -108,18 +97,18 @@ class EntityManagerTest {
 
     @Test
     void getAllEntities() throws Exception {
-        ecs = new Ecs(componentTypes);
-        em = ecs.getEntityManager();
+        var ecs = new Ecs(componentTypes);
+        var em = ecs.getEntityManager();
 
-        e0 = em.createEntity();
+        var e0 = em.createEntity();
         e0.addComponent(Position.class);
         e0.addComponent(Health.class);
 
-        e1 = em.createEntity();
+        var e1 = em.createEntity();
         e1.addComponent(Transform.class);
         e1.addComponent(Velocity.class);
 
-        e2 = em.createEntity();
+        var e2 = em.createEntity();
         e2.addComponent(Health.class);
         e2.addComponent(Attack.class);
 
@@ -128,18 +117,18 @@ class EntityManagerTest {
 
     @Test
     void getEntitiesBySignature() throws Exception {
-        ecs = new Ecs(componentTypes);
-        em = ecs.getEntityManager();
+        var ecs = new Ecs(componentTypes);
+        var em = ecs.getEntityManager();
 
-        e0 = em.createEntity();
+        var e0 = em.createEntity();
         e0.addComponent(Position.class);
         e0.addComponent(Health.class);
 
-        e1 = em.createEntity();
+        var e1 = em.createEntity();
         e1.addComponent(Transform.class);
         e1.addComponent(Velocity.class);
 
-        e2 = em.createEntity();
+        var e2 = em.createEntity();
         e2.addComponent(Health.class);
         e2.addComponent(Attack.class);
 
@@ -153,24 +142,54 @@ class EntityManagerTest {
 
     @Test
     void createEntity() {
-        // todo systems
+        var ecs = new Ecs(componentTypes);
+        var em = ecs.getEntityManager();
 
         for (var i = 0; i < 1000; i++) {
             em.createEntity();
         }
 
-        assertEquals(3 + 1000, em.getAllEntities().size());
+        assertEquals(1000, em.getAllEntities().size());
     }
 
     @Test
-    void removeEntity() {
-        // todo systems
+    void removeEntity() throws Exception {
+        var ecs = new Ecs(componentTypes);
+        var em = ecs.getEntityManager();
+
+        // create entities
+        var e0 = em.createEntity();
+        e0.debugName = "e0";
+        e0.addComponent(Position.class);
+        e0.addComponent(Health.class);
+
+        var e1 = em.createEntity();
+        e1.debugName = "e1";
+        e1.addComponent(Transform.class);
+        e1.addComponent(Velocity.class);
+
+        var e2 = em.createEntity();
+        e2.debugName = "e2";
+        e2.addComponent(Health.class);
+        e2.addComponent(Attack.class);
 
         assertEquals(3, em.getAllEntities().size());
 
+        // create and add a system
+        var moveSystem = new MoveSystem(ecs, 0, Attack.class, Health.class);
+        ecs.addSystem(moveSystem);
+
+        // e2 in system?
+        assertEquals(1, moveSystem.getEntities().size());
+
+        // remove
         em.removeEntity(e1);
+        assertEquals(2, em.getAllEntities().size());
+        assertEquals(1, moveSystem.getEntities().size());
+
         em.removeEntity(e2);
         assertEquals(1, em.getAllEntities().size());
+        assertEquals(0, moveSystem.getEntities().size());
 
         em.removeEntity(e0);
         assertEquals(0, em.getAllEntities().size());
