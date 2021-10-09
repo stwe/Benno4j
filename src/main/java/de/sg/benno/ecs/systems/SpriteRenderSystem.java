@@ -114,11 +114,6 @@ public class SpriteRenderSystem extends EntitySystem {
     //-------------------------------------------------
 
     @Override
-    public void init(Object... params) throws Exception {
-
-    }
-
-    @Override
     public void input() {
 
     }

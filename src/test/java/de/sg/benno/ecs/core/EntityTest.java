@@ -21,8 +21,6 @@ package de.sg.benno.ecs.core;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class EntityTest {
@@ -58,14 +56,14 @@ class EntityTest {
 
     @BeforeEach
     void setUp() {
-        ArrayList<Class<? extends Component>> componentTypes = new ArrayList<>();
-        componentTypes.add(Position.class);
-        componentTypes.add(Transform.class);
-        componentTypes.add(Health.class);
-        componentTypes.add(Velocity.class);
-        componentTypes.add(Attack.class);
+        var ecs = new Ecs(
+                Position.class,
+                Transform.class,
+                Health.class,
+                Velocity.class,
+                Attack.class
+        );
 
-        var ecs = new Ecs(componentTypes);
         var em = ecs.getEntityManager();
 
         e0 = em.createEntity();
@@ -148,10 +146,6 @@ class EntityTest {
 
         e2.addComponent(Attack.class);
         assertEquals(2, e2.getComponents().size());
-    }
-
-    @Test
-    void addAndReturnComponent() {
     }
 
     @Test

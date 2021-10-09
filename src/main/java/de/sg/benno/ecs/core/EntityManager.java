@@ -19,6 +19,9 @@
 package de.sg.benno.ecs.core;
 
 import java.util.ArrayList;
+import java.util.Objects;
+
+import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * Represents an EntityManager.
@@ -49,7 +52,9 @@ public class EntityManager {
      * @param ecs The parent {@link Ecs} object.
      */
     public EntityManager(Ecs ecs) {
-        this.ecs = ecs;
+        LOGGER.debug("Creates EntityManager object.");
+
+        this.ecs = Objects.requireNonNull(ecs, "ecs must not be null");
     }
 
     //-------------------------------------------------

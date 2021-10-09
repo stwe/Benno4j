@@ -18,10 +18,7 @@
 
 package de.sg.benno.ecs.core;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.*;
 
 import static de.sg.benno.ogl.Log.LOGGER;
 
@@ -40,14 +37,9 @@ public class Entity {
     private final EntityManager entityManager;
 
     /**
-     * The list of {@link Component} objects.
-     */
-    private final ArrayList<Component> components = new ArrayList<>();
-
-    /**
      * Provides fast access to {@link Component} objects based on its type.
      */
-    private final HashMap<Class<? extends Component>, Component> componentsCache = new HashMap<>();
+    private final HashMap<Class<? extends Component>, Component> components = new HashMap<>();
 
     /**
      * The {@link BitSet} signature for added {@link Component} objects.
@@ -69,7 +61,7 @@ public class Entity {
      * @param entityManager The parent {@link EntityManager}.
      */
     public Entity(EntityManager entityManager) {
-        this.entityManager = entityManager;
+        this.entityManager = Objects.requireNonNull(entityManager, "entityManager must not be null");
     }
 
     //-------------------------------------------------
@@ -82,7 +74,7 @@ public class Entity {
      * @return {@link #components}
      */
     public ArrayList<Component> getComponents() {
-        return components;
+        return new ArrayList<>(components.values());
     }
 
     /**
@@ -108,7 +100,7 @@ public class Entity {
      */
     public <T extends Component> Optional<T> getComponent(Class<T> componentClass) {
         if (hasComponent(componentClass)) {
-            return Optional.of(componentClass.cast(componentsCache.get(componentClass)));
+            return Optional.of(componentClass.cast(components.get(componentClass)));
         }
 
         return Optional.empty();
@@ -122,7 +114,7 @@ public class Entity {
      * @return <i>true</i> if this {@link Entity} has this component added to it.
      */
     public boolean hasComponent(Class<? extends Component> componentClass) {
-        return componentsCache.containsKey(componentClass);
+        return components.containsKey(componentClass);
     }
 
     //-------------------------------------------------
@@ -149,10 +141,7 @@ public class Entity {
         var component = newInstance(componentClass);
 
         // add to list
-        components.add(component);
-
-        // add to cache
-        componentsCache.put(componentClass, component);
+        components.put(componentClass, component);
 
         // update entity component signature bits
         signature.set(entityManager.getEcs().getComponentIndex(componentClass));
@@ -196,10 +185,7 @@ public class Entity {
             signature.clear(entityManager.getEcs().getComponentIndex(componentClass));
 
             // remove from list
-            components.remove(componentOptional.get());
-
-            // remove from cache
-            componentsCache.remove(componentClass);
+            components.remove(componentClass);
 
             // add to all systems which matches new signature
             addToSystems();
@@ -217,7 +203,7 @@ public class Entity {
      * Adds this {@link Entity} object to all {@link System} objects which matches signature.
      */
     public void addToSystems() {
-        entityManager.getEcs().getSystems().forEach(
+        entityManager.getEcs().getSystemManager().getSystems().forEach(
             (k, v) -> {
                 if (matchesSignature(this, v.getSignature())) {
                     if (!v.getEntities().contains(this)) {
@@ -235,7 +221,7 @@ public class Entity {
      * Removes this {@link Entity} object from all {@link System} objects.
      */
     public void removeFromSystems() {
-        entityManager.getEcs().getSystems().forEach(
+        entityManager.getEcs().getSystemManager().getSystems().forEach(
             (k, v) -> {
                 if (v.getEntities().contains(this)) {
                     v.removeEntity(this);

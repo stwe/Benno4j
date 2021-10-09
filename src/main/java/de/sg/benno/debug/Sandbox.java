@@ -26,7 +26,6 @@ import de.sg.benno.chunk.WorldData;
 import de.sg.benno.ecs.components.GfxIndexComponent;
 import de.sg.benno.ecs.components.PositionComponent;
 import de.sg.benno.ecs.components.ZoomComponent;
-import de.sg.benno.ecs.core.Component;
 import de.sg.benno.ecs.core.Ecs;
 import de.sg.benno.ecs.systems.SpriteRenderSystem;
 import de.sg.benno.input.Camera;
@@ -35,7 +34,6 @@ import de.sg.benno.state.Context;
 import de.sg.benno.util.TileUtil;
 import org.joml.Vector2f;
 
-import java.util.ArrayList;
 import java.util.Objects;
 
 import static de.sg.benno.ogl.Log.LOGGER;
@@ -139,14 +137,9 @@ public class Sandbox {
      * @throws Exception If an error is thrown.
      */
     private void initEcs() throws Exception {
-        ArrayList<Class<? extends Component>> componentTypes = new ArrayList<>();
-        componentTypes.add(GfxIndexComponent.class);
-        componentTypes.add(PositionComponent.class);
-        componentTypes.add(ZoomComponent.class);
+        ecs = new Ecs(GfxIndexComponent.class, PositionComponent.class, ZoomComponent.class);
 
-        ecs = new Ecs(componentTypes);
-
-        ecs.addSystem(new SpriteRenderSystem(
+        ecs.getSystemManager().addSystem(new SpriteRenderSystem(
                 context, camera,
                 ecs, 0, GfxIndexComponent.class, PositionComponent.class, ZoomComponent.class)
         );
@@ -252,7 +245,7 @@ public class Sandbox {
         camera.resetPosition(currentZoom);
 
         // todo: SpriteRenderSystem über den Zoomwechsel informieren -> Event
-        var spriteRenderSystemOptional = ecs.getSystem(SpriteRenderSystem.class);
+        var spriteRenderSystemOptional = ecs.getSystemManager().getSystem(SpriteRenderSystem.class);
         spriteRenderSystemOptional.ifPresent(spriteRenderSystem -> spriteRenderSystem.setCurrentZoom(currentZoom));
     }
 

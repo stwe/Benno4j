@@ -21,9 +21,6 @@ package de.sg.benno.ecs.core;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-
-import static java.lang.System.out;
 import static org.junit.jupiter.api.Assertions.*;
 
 class EcsTest {
@@ -36,42 +33,15 @@ class EcsTest {
     static class Velocity implements Component {}
     static class Attack implements Component {}
 
-    static class MoveSystem extends EntitySystem {
-        @SafeVarargs
-        public MoveSystem(Ecs ecs, int priority, Class<? extends Component>... signatureComponentTypes) {
-            super(ecs, priority, signatureComponentTypes);
-        }
-
-        @Override
-        public void init(Object... params) throws Exception {}
-
-        @Override
-        public void input() {}
-
-        @Override
-        public void update() {
-            for (var entity : getEntities()) {
-                out.println("update MoveSystem");
-            }
-        }
-
-        @Override
-        public void render() {}
-
-        @Override
-        public void cleanUp() {}
-    }
-
     @BeforeEach
     void setUp() {
-        ArrayList<Class<? extends Component>> componentTypes = new ArrayList<>();
-        componentTypes.add(Position.class);
-        componentTypes.add(Transform.class);
-        componentTypes.add(Health.class);
-        componentTypes.add(Velocity.class);
-        componentTypes.add(Attack.class);
-
-        ecs = new Ecs(componentTypes);
+        ecs = new Ecs(
+                Position.class,
+                Transform.class,
+                Health.class,
+                Velocity.class,
+                Attack.class
+        );
     }
 
     @Test
@@ -84,35 +54,14 @@ class EcsTest {
     void getEntityManager() {
         var em = ecs.getEntityManager();
         assertNotNull(em);
-        assertEquals(EntityManager.class, ecs.getEntityManager().getClass());
+        assertEquals(EntityManager.class, em.getClass());
     }
 
     @Test
-    void getSystems() {
-        var moveSystemAdd = new MoveSystem(ecs, 0, Transform.class, Health.class);
-        ecs.addSystem(moveSystemAdd);
-        var systems = ecs.getSystems();
-        assertEquals(1, systems.size());
-    }
-
-    @Test
-    void addSystem() {
-        var moveSystemAdd = new MoveSystem(ecs, 0, Transform.class, Health.class);
-        ecs.addSystem(moveSystemAdd);
-
-        var signatureBitset = moveSystemAdd.getSignature().getSignatureBitSet();
-
-        assertTrue(signatureBitset.get(1));
-        assertTrue(signatureBitset.get(2));
-    }
-
-    @Test
-    void getSystem() {
-        var moveSystemAdd = new MoveSystem(ecs, 0, Transform.class, Health.class);
-        ecs.addSystem(moveSystemAdd);
-
-        var moveSystemGet = ecs.getSystem(MoveSystem.class);
-        assertTrue(moveSystemGet.isPresent());
+    void getSystemManager() {
+        var sm = ecs.getSystemManager();
+        assertNotNull(sm);
+        assertEquals(SystemManager.class, sm.getClass());
     }
 
     @Test

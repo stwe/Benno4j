@@ -31,7 +31,6 @@ public interface System {
     void addEntity(Entity entity);
     void removeEntity(Entity entity);
 
-    void init(Object... params) throws Exception;
     void input();
     void update();
     void render();

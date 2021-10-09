@@ -19,6 +19,7 @@
 package de.sg.benno.ecs.core;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * Abstract class for processing sets of {@link Entity} objects.
@@ -62,7 +63,7 @@ public abstract class EntitySystem implements System {
      */
     @SafeVarargs
     public EntitySystem(Ecs ecs, int priority, Class<? extends Component>... signatureComponentTypes) {
-        this.ecs = ecs;
+        this.ecs = Objects.requireNonNull(ecs, "ecs must not be null");
         this.priority = priority;
         this.signature = new Signature(signatureComponentTypes);
         this.signature.initSignatureBitSet(ecs.getAllComponentTypes());

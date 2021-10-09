@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 
+import static de.sg.benno.ogl.Log.LOGGER;
+
 /**
  * Represents a Signature.
  */
@@ -52,6 +54,8 @@ public class Signature {
      */
     @SafeVarargs
     public Signature(Class<? extends Component>... signatureComponentTypes) {
+        LOGGER.debug("Initializing Signature.");
+
         this.signatureComponentTypes.addAll(Arrays.asList(signatureComponentTypes));
     }
 

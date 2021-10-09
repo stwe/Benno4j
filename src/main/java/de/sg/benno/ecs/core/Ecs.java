@@ -19,9 +19,10 @@
 package de.sg.benno.ecs.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Optional;
+
+import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * Represents the Entity Component System.
@@ -43,9 +44,9 @@ public class Ecs {
     private final EntityManager entityManager;
 
     /**
-     * A list of all {@link System} objects used in this {@link Ecs}.
+     * The {@link SystemManager} object.
      */
-    private final HashMap<Class<? extends System>, System> systems = new HashMap<>();
+    private final SystemManager systemManager;
 
     //-------------------------------------------------
     // Ctors.
@@ -57,8 +58,28 @@ public class Ecs {
      * @param allComponentTypes A list of all {@link Component} types used in this {@link Ecs}.
      */
     public Ecs(ArrayList<Class<? extends Component>> allComponentTypes) {
+        LOGGER.debug("Creates Ecs object.");
+
         this.allComponentTypes = allComponentTypes;
+
         this.entityManager = new EntityManager(this);
+        this.systemManager = new SystemManager();
+    }
+
+    /**
+     * Constructs a new {@link Ecs} object.
+     *
+     * @param allComponentTypes A list of all {@link Component} types used in this {@link Ecs}.
+     */
+    @SafeVarargs
+    public Ecs(Class<? extends Component>... allComponentTypes) {
+        LOGGER.debug("Creates Ecs object.");
+
+        this.allComponentTypes = new ArrayList<>();
+        this.allComponentTypes.addAll(Arrays.asList(allComponentTypes));
+
+        this.entityManager = new EntityManager(this);
+        this.systemManager = new SystemManager();
     }
 
     //-------------------------------------------------
@@ -84,12 +105,12 @@ public class Ecs {
     }
 
     /**
-     * Get {@link #systems}.
+     * Get {@link #systemManager}.
      *
-     * @return {@link #systems}
+     * @return {@link #systemManager}
      */
-    public HashMap<Class<? extends System>, System> getSystems() {
-        return systems;
+    public SystemManager getSystemManager() {
+        return systemManager;
     }
 
     //-------------------------------------------------
@@ -97,72 +118,33 @@ public class Ecs {
     //-------------------------------------------------
 
     /**
-     * Initializes all the {@link System} objects.
-     *
-     * @param params A list of params.
-     *
-     * @throws Exception If an error is thrown.
-     */
-    public void init(Object... params) throws Exception {
-        for (var system : systems.values()) {
-            system.init(params);
-        }
-    }
-
-    /**
-     * Handle input for all the {@link #systems}.
+     * Handle input for all the systems.
      */
     public void input() {
-        systems.forEach((k, v) -> v.input());
+        systemManager.input();
     }
 
     /**
-     * Updates all the {@link #systems}.
+     * Updates the systems.
      */
     public void update() {
-        systems.forEach((k, v) -> v.update());
+        systemManager.update();
     }
 
     /**
-     * Renders all the {@link #systems}.
+     * Renders the systems.
      */
     public void render() {
-        systems.forEach((k, v) -> v.render());
+        systemManager.render();
     }
 
     /**
-     * Clean up {@link #systems}.
+     * Clean up systems.
      */
     public void cleanUp() {
-        systems.forEach((k, v) -> v.cleanUp());
-    }
+        LOGGER.debug("Clean up Ecs.");
 
-    //-------------------------------------------------
-    // Systems
-    //-------------------------------------------------
-
-    /**
-     * Adds an {@link System} object to {@link #systems}.
-     *
-     * @param system The {@link System} object to add.
-     */
-    public void addSystem(System system) {
-        systems.put(system.getClass(), system);
-    }
-
-    /**
-     * Returns the {@link System} object of the specified class.
-     *
-     * @param systemClass The specified class.
-     *
-     * @return The {@link System} object of the specified class or an empty {@link Optional}.
-     */
-    public <T extends System> Optional<T> getSystem(Class<T> systemClass) {
-        if (systems.containsKey(systemClass)) {
-            return Optional.of(systemClass.cast(systems.get(systemClass)));
-        }
-
-        return Optional.empty();
+        systemManager.cleanUp();
     }
 
     //-------------------------------------------------

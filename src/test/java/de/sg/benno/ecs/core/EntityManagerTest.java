@@ -62,9 +62,6 @@ class EntityManagerTest {
         }
 
         @Override
-        public void init(Object... params) throws Exception {}
-
-        @Override
         public void input() {}
 
         @Override
@@ -177,9 +174,9 @@ class EntityManagerTest {
 
         // create and add a system
         var moveSystem = new MoveSystem(ecs, 0, Attack.class, Health.class);
-        ecs.addSystem(moveSystem);
+        ecs.getSystemManager().addSystem(moveSystem);
 
-        // e2 in system?
+        // check if entity e2 is in moveSystem
         assertEquals(1, moveSystem.getEntities().size());
 
         // remove
