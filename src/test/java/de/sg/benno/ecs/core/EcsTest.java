@@ -27,11 +27,11 @@ class EcsTest {
 
     private Ecs ecs;
 
-    static class Position implements Component {}
-    static class Transform implements Component {}
-    static class Health implements Component {}
-    static class Velocity implements Component {}
-    static class Attack implements Component {}
+    private static class Position implements Component {}
+    private static class Transform implements Component {}
+    private static class Health implements Component {}
+    private static class Velocity implements Component {}
+    private static class Attack implements Component {}
 
     @BeforeEach
     void setUp() {

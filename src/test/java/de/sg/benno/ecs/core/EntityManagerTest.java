@@ -28,34 +28,34 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class EntityManagerTest {
 
-    ArrayList<Class<? extends Component>> componentTypes;
+    private ArrayList<Class<? extends Component>> componentTypes;
 
-    static class Position implements Component {
+    private static class Position implements Component {
         public Position() {
         }
     }
 
-    static class Transform implements Component {
+    private static class Transform implements Component {
         public Transform() {
         }
     }
 
-    static class Health implements Component {
+    private static class Health implements Component {
         public Health() {
         }
     }
 
-    static class Velocity implements Component {
+    private static class Velocity implements Component {
         public Velocity() {
         }
     }
 
-    static class Attack implements Component {
+    private static class Attack implements Component {
         public Attack() {
         }
     }
 
-    static class MoveSystem extends EntitySystem {
+    private static class MoveSystem extends EntitySystem {
         @SafeVarargs
         public MoveSystem(Ecs ecs, int priority, Class<? extends Component>... signatureComponentTypes) {
             super(ecs, priority, signatureComponentTypes);

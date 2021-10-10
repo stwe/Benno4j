@@ -29,27 +29,27 @@ class EntityTest {
     private Entity e1;
     private Entity e2;
 
-    static class Position implements Component {
+    private static class Position implements Component {
         public Position() {
         }
     }
 
-    static class Transform implements Component {
+    private static class Transform implements Component {
         public Transform() {
         }
     }
 
-    static class Health implements Component {
+    private static class Health implements Component {
         public Health() {
         }
     }
 
-    static class Velocity implements Component {
+    private static class Velocity implements Component {
         public Velocity() {
         }
     }
 
-    static class Attack implements Component {
+    private static class Attack implements Component {
         public Attack() {
         }
     }
