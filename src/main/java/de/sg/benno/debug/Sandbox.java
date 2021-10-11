@@ -221,6 +221,17 @@ public class Sandbox {
         }
 
         camera.update(context.engine.getWindow(), context.engine.getMouseInput(), currentZoom);
+
+        var mouseInput = context.engine.getMouseInput();
+        if (mouseInput.isInWindow()) {
+            if (mouseInput.isLeftButtonPressed()) {
+                LOGGER.debug("left mouse button");
+
+                // todo select ship
+
+
+            }
+        }
     }
 
     /**
