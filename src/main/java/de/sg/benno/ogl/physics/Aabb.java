@@ -62,16 +62,33 @@ public class Aabb {
     /**
      * Renders the {@link #aabbTexture} to highlight this {@link Aabb}.
      */
-    private final SpriteRenderer spriteRenderer;
+    private SpriteRenderer spriteRenderer;
 
     /**
      * The {@link Texture} to highlight this {@link Aabb}.
      */
-    private final Texture aabbTexture;
+    private Texture aabbTexture;
 
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
+
+    /**
+     * Constructs a new {@link Aabb} object.
+     */
+    public Aabb() {
+    }
+
+    /**
+     * Constructs a new {@link Aabb} object.
+     *
+     * @param position The position in screen space.
+     * @param size The size in screen space.
+     */
+    public Aabb(Vector2f position, Vector2f size) {
+        this.position = position;
+        this.size = size;
+    }
 
     /**
      * Constructs a new {@link Aabb} object.
@@ -96,7 +113,9 @@ public class Aabb {
      * @param camera The {@link OrthographicCamera} object.
      */
     public void render(OrthographicCamera camera) {
-        spriteRenderer.render(camera.getViewMatrix(), aabbTexture, RenderUtil.createModelMatrix(position, size));
+        if (spriteRenderer != null) {
+            spriteRenderer.render(camera.getViewMatrix(), aabbTexture, RenderUtil.createModelMatrix(position, size));
+        }
     }
 
     //-------------------------------------------------
@@ -123,7 +142,7 @@ public class Aabb {
      * Aabb vs aabb.
      *
      * @param a An {@link Aabb}
-     * @param b An other {@link Aabb}
+     * @param b Another {@link Aabb}
      *
      * @return True if collision
      */
@@ -145,6 +164,8 @@ public class Aabb {
     public void cleanUp() {
         LOGGER.debug("Start clean up for the Aabb.");
 
-        spriteRenderer.cleanUp();
+        if (spriteRenderer != null) {
+            spriteRenderer.cleanUp();
+        }
     }
 }

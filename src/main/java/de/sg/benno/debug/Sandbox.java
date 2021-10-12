@@ -27,6 +27,7 @@ import de.sg.benno.ecs.components.GfxIndexComponent;
 import de.sg.benno.ecs.components.PositionComponent;
 import de.sg.benno.ecs.components.ZoomComponent;
 import de.sg.benno.ecs.core.Ecs;
+import de.sg.benno.ecs.systems.SelectShipSystem;
 import de.sg.benno.ecs.systems.SpriteRenderSystem;
 import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.Zoom;
@@ -144,6 +145,11 @@ public class Sandbox {
                 ecs, 0, GfxIndexComponent.class, PositionComponent.class, ZoomComponent.class)
         );
 
+        ecs.getSystemManager().addSystem(new SelectShipSystem(
+                context,
+                ecs, 0, GfxIndexComponent.class, PositionComponent.class, ZoomComponent.class)
+        );
+
         createEntities();
     }
 
@@ -221,17 +227,7 @@ public class Sandbox {
         }
 
         camera.update(context.engine.getWindow(), context.engine.getMouseInput(), currentZoom);
-
-        var mouseInput = context.engine.getMouseInput();
-        if (mouseInput.isInWindow()) {
-            if (mouseInput.isLeftButtonPressed()) {
-                LOGGER.debug("left mouse button");
-
-                // todo select ship
-
-
-            }
-        }
+        ecs.update();
     }
 
     /**
