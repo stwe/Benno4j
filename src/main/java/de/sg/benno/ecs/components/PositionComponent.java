@@ -19,8 +19,11 @@
 package de.sg.benno.ecs.components;
 
 import de.sg.benno.ecs.core.Component;
+import de.sg.benno.renderer.Zoom;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
+
+import java.util.HashMap;
 
 /**
  * Represents a PositionComponent.
@@ -37,12 +40,12 @@ public class PositionComponent implements Component {
     public Vector2i worldPosition = new Vector2i();
 
     /**
-     * The position in screen space.
+     * The positions in screen space.
      */
-    public Vector2f screenPosition = new Vector2f();
+    public HashMap<Zoom, Vector2f> screenPositions = new HashMap<>();
 
     /**
-     * The tile size.
+     * The sizes.
      */
-    public Vector2f size = new Vector2f();
+    public HashMap<Zoom, Vector2f> sizes = new HashMap<>();
 }

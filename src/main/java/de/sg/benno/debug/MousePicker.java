@@ -18,7 +18,6 @@
 
 package de.sg.benno.debug;
 
-import de.sg.benno.content.Shipping;
 import de.sg.benno.content.Water;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.file.ImageFile;
@@ -76,6 +75,16 @@ public class MousePicker {
     private final SpriteRenderer spriteRenderer;
 
     /**
+     * The {@link Water} object.
+     */
+    private final Water water;
+
+    /**
+     * Either the picker can determine water tiles or the higher drawing island tiles.
+     */
+    private final TileGraphic.TileHeight searchMode;
+
+    /**
      * Highlights a cell.
      */
     private Texture rectangleTexture;
@@ -91,19 +100,9 @@ public class MousePicker {
     private final HashMap<Zoom, ImageFile> corners = new HashMap<>();
 
     /**
-     * The {@link Water} object.
-     */
-    private final Water water;
-
-    /**
      * The current {@link TileGraphic} under mouse;
      */
     private TileGraphic currentTileGraphic;
-
-    /**
-     * Either the picker can determine water tiles or the higher drawing island tiles.
-     */
-    private final TileGraphic.TileHeight searchMode;
 
     //-------------------------------------------------
     // Ctors.
@@ -123,9 +122,7 @@ public class MousePicker {
 
         this.context = Objects.requireNonNull(context, "context must not be null");
         this.spriteRenderer = new SpriteRenderer(context.engine);
-
         this.water = Objects.requireNonNull(water, "water must not be null");
-
         this.searchMode = searchMode;
 
         init(context);
@@ -165,62 +162,6 @@ public class MousePicker {
     //-------------------------------------------------
     // Logic
     //-------------------------------------------------
-
-    /**
-     * Handle mouse clicks.
-     *
-     * @param camera The {@link Camera} object.
-     * @param zoom The current {@link Zoom}.
-     */
-    public void update(Camera camera, Zoom zoom) {
-        var mouseInput = context.engine.getMouseInput();
-        if (mouseInput.isInWindow()) {
-
-            // select ship with left mouse button
-            if (mouseInput.isLeftButtonPressed()) {
-                // todo: selected evtl. besser mit Aabb's ausarbeiten
-
-                // get world position of the tile under mouse
-                var selected = getTileUnderMouse(camera, zoom);
-
-                // todo: brute force searching - use a HashMap later
-                /*
-                for (var ship : shipping.getProvider().getShips4List()) {
-                    if (ship.xPos == selected.x && ship.yPos == selected.y) {
-                        shipping.setCurrentShip(ship);
-                    } else {
-                        shipping.setCurrentShip(null);
-                        shipping.setTarget(null);
-                        shipping.setPath(null);
-                    }
-                }
-                */
-            }
-
-            // set target with right mouse button
-            if (mouseInput.isRightButtonPressed()) {
-                // get world position of the tile under mouse
-                var selected = getTileUnderMouse(camera, zoom);
-
-                /*
-                if (shipping.getCurrentShip() != null) {
-                    shipping.setTarget(selected);
-
-                    var path = Astar.findPathToTarget(
-                            shipping.getCurrentShip(),
-                            selected,
-                            terrain.getPassableArea()
-                    );
-
-                    shipping.setPath(path);
-                } else {
-                    shipping.setTarget(null);
-                    shipping.setPath(null);
-                }
-                */
-            }
-        }
-    }
 
     /**
      * Highlight the current tile.

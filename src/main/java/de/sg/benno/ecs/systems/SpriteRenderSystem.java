@@ -20,7 +20,6 @@ package de.sg.benno.ecs.systems;
 
 import de.sg.benno.ecs.components.GfxIndexComponent;
 import de.sg.benno.ecs.components.PositionComponent;
-import de.sg.benno.ecs.components.ZoomComponent;
 import de.sg.benno.ecs.core.Component;
 import de.sg.benno.ecs.core.Ecs;
 import de.sg.benno.ecs.core.EntitySystem;
@@ -57,9 +56,9 @@ public class SpriteRenderSystem extends EntitySystem {
     private final SpriteRenderer spriteRenderer;
 
     /**
-     * Only entities with this zoom are rendered.
+     * The current {@link Zoom}.
      */
-    private Zoom currentZoom = Zoom.GFX;
+    private Zoom currentZoom;
 
     /**
      * For convenience.
@@ -75,13 +74,16 @@ public class SpriteRenderSystem extends EntitySystem {
      *
      * @param context The {@link Context} object.
      * @param camera The {@link Camera} object.
+     * @param currentZoom The current {@link Zoom}.
      * @param ecs The parent {@link Ecs}.
      * @param priority the priority of a {@link System}.
      * @param signatureComponentTypes A list of {@link Component} objects to create a Signature.
      * @throws IOException If an I/O error is thrown.
      */
     @SafeVarargs
-    public SpriteRenderSystem(Context context, Camera camera, Ecs ecs, int priority, Class<? extends Component>... signatureComponentTypes) throws IOException {
+    public SpriteRenderSystem(
+            Context context, Camera camera, Zoom currentZoom,
+            Ecs ecs, int priority, Class<? extends Component>... signatureComponentTypes) throws IOException {
         super(ecs, priority, signatureComponentTypes);
 
         LOGGER.debug("Creates SpriteRenderSystem object.");
@@ -90,6 +92,7 @@ public class SpriteRenderSystem extends EntitySystem {
 
         this.camera = Objects.requireNonNull(camera, "camera must not be null");
         this.spriteRenderer = new SpriteRenderer(context.engine);
+        this.currentZoom = currentZoom;
 
         for (var zoom : Zoom.values()) {
             this.shipBshFiles.put(zoom, context.bennoFiles.getShipBshFile(zoom));
@@ -126,21 +129,16 @@ public class SpriteRenderSystem extends EntitySystem {
     @Override
     public void render() {
         for (var entity : getEntities()) {
-            var zoomOptional = entity.getComponent(ZoomComponent.class);
-            if (zoomOptional.isPresent()) {
-                if (currentZoom == zoomOptional.get().zoom) {
-                    var gfxIndexOptional = entity.getComponent(GfxIndexComponent.class);
-                    var gfxIndex = gfxIndexOptional.get().gfxIndex;
+            var gfxIndexOptional = entity.getComponent(GfxIndexComponent.class);
+            var gfxIndex = gfxIndexOptional.get().gfxIndex;
 
-                    var positionOptional = entity.getComponent(PositionComponent.class);
-                    var screenPosition = positionOptional.get().screenPosition;
-                    var size = positionOptional.get().size;
-                    var modelMatrix = RenderUtil.createModelMatrix(screenPosition, size);
+            var positionOptional = entity.getComponent(PositionComponent.class);
+            var screenPosition = positionOptional.get().screenPositions.get(currentZoom);
+            var size = positionOptional.get().sizes.get(currentZoom);
+            var modelMatrix = RenderUtil.createModelMatrix(screenPosition, size);
 
-                    var bshTexture = shipBshFiles.get(currentZoom).getBshTextures().get(gfxIndex);
-                    spriteRenderer.render(camera.getViewMatrix(), bshTexture.getTexture(), modelMatrix);
-                }
-            }
+            var bshTexture = shipBshFiles.get(currentZoom).getBshTextures().get(gfxIndex);
+            spriteRenderer.render(camera.getViewMatrix(), bshTexture.getTexture(), modelMatrix);
         }
     }
 

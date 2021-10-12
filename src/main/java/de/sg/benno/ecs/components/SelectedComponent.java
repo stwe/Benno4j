@@ -19,19 +19,9 @@
 package de.sg.benno.ecs.components;
 
 import de.sg.benno.ecs.core.Component;
-import de.sg.benno.renderer.Zoom;
 
 /**
- * Represents a ZoomComponent.
+ * Represents a SelectedComponent.
  */
-public class ZoomComponent implements Component {
-
-    //-------------------------------------------------
-    // Member
-    //-------------------------------------------------
-
-    /**
-     * A {@link Zoom} can be added to an entity.
-     */
-    public Zoom zoom = Zoom.GFX;
+public class SelectedComponent implements Component {
 }

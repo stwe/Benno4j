@@ -19,13 +19,14 @@
 package de.sg.benno.debug;
 
 import de.sg.benno.BennoConfig;
+import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.content.Water;
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.WorldData;
 import de.sg.benno.ecs.components.GfxIndexComponent;
 import de.sg.benno.ecs.components.PositionComponent;
-import de.sg.benno.ecs.components.ZoomComponent;
+import de.sg.benno.ecs.components.SelectedComponent;
 import de.sg.benno.ecs.core.Ecs;
 import de.sg.benno.ecs.systems.SelectShipSystem;
 import de.sg.benno.ecs.systems.SpriteRenderSystem;
@@ -77,7 +78,7 @@ public class Sandbox {
     /**
      * A {@link Ecs} - an Entity Component System.
      */
-    private Ecs ecs;
+    private final Ecs ecs;
 
     //-------------------------------------------------
     // Ctors.
@@ -102,6 +103,7 @@ public class Sandbox {
 
         this.camera = new Camera(BennoConfig.CAMERA_START_X, BennoConfig.CAMERA_START_Y, context.engine, currentZoom);
         this.water = new Water(provider, context);
+        this.ecs = new Ecs(GfxIndexComponent.class, PositionComponent.class, SelectedComponent.class);
 
         initEcs();
     }
@@ -138,16 +140,14 @@ public class Sandbox {
      * @throws Exception If an error is thrown.
      */
     private void initEcs() throws Exception {
-        ecs = new Ecs(GfxIndexComponent.class, PositionComponent.class, ZoomComponent.class);
-
         ecs.getSystemManager().addSystem(new SpriteRenderSystem(
-                context, camera,
-                ecs, 0, GfxIndexComponent.class, PositionComponent.class, ZoomComponent.class)
+                context, camera, currentZoom,
+                ecs, 0, GfxIndexComponent.class, PositionComponent.class)
         );
 
         ecs.getSystemManager().addSystem(new SelectShipSystem(
-                context,
-                ecs, 0, GfxIndexComponent.class, PositionComponent.class, ZoomComponent.class)
+                context, water, camera, currentZoom,
+                ecs, 0, GfxIndexComponent.class, PositionComponent.class)
         );
 
         createEntities();
@@ -159,26 +159,35 @@ public class Sandbox {
      * @throws Exception If an error is thrown.
      */
     private void createEntities() throws Exception {
-        var em = ecs.getEntityManager();
+        for (var ship : provider.getShips4List()) {
+            // new entity
+            var entity = ecs.getEntityManager().createEntity();
 
-        for (var zoom : Zoom.values()) {
-            for (var ship : provider.getShips4List()) {
-                // new entity
-                var entity = em.createEntity();
+            // set a debug name
+            entity.debugName = ship.name;
 
-                entity.debugName = ship.name + "_" + zoom;
+            // add gfx index component
+            var gfxIndexComponentOptional = entity.addComponent(GfxIndexComponent.class);
+            if (gfxIndexComponentOptional.isEmpty()) {
+                throw new BennoRuntimeException("GfxIndexComponent missing.");
+            }
+            gfxIndexComponentOptional.get().gfxIndex = ship.getCurrentGfxIndex();
 
-                // add gfx index component
-                var gfxIndexComponent = entity.addComponent(GfxIndexComponent.class);
-                gfxIndexComponent.get().gfxIndex = ship.getCurrentGfxIndex();
+            // add position component
+            var positionComponentOptional = entity.addComponent(PositionComponent.class);
+            if (positionComponentOptional.isEmpty()) {
+                throw new BennoRuntimeException("PositionComponent missing.");
+            }
+            var positionComponent = positionComponentOptional.get();
 
-                // add position component
-                var xWorldPos = ship.xPos + 1;
-                var yWorldPos = ship.yPos - 1;
+            // set world position
+            positionComponent.worldPosition.x = ship.xPos;
+            positionComponent.worldPosition.y = ship.yPos;
 
-                var positionComponent = entity.addComponent(PositionComponent.class);
-                positionComponent.get().worldPosition.x = xWorldPos;
-                positionComponent.get().worldPosition.y = yWorldPos;
+            // set a screen position and a size for each zoom
+            for (var zoom : Zoom.values()) {
+                var xWorldPos = ship.xPos + 1; // correction for rendering
+                var yWorldPos = ship.yPos - 1; // correction for rendering
 
                 var shipBshFile = context.bennoFiles.getShipBshFile(zoom);
                 var shipBshTexture = shipBshFile.getBshTextures().get(ship.getCurrentGfxIndex());
@@ -190,13 +199,9 @@ public class Sandbox {
                 screenPosition.y -= shipBshTexture.getHeight();
                 screenPosition.x -= zoom.getTileWidthHalf() * 0.5f;
                 screenPosition.y -= zoom.getTileHeightHalf() * 0.5f;
-                positionComponent.get().screenPosition.x = screenPosition.x;
-                positionComponent.get().screenPosition.y = screenPosition.y;
-                positionComponent.get().size = new Vector2f(shipBshTexture.getWidth(), shipBshTexture.getHeight());
 
-                // add zoom component
-                var zoomComponent = entity.addComponent(ZoomComponent.class);
-                zoomComponent.get().zoom = zoom;
+                positionComponent.screenPositions.put(zoom, new Vector2f(screenPosition.x, screenPosition.y));
+                positionComponent.sizes.put(zoom, new Vector2f(shipBshTexture.getWidth(), shipBshTexture.getHeight()));
             }
         }
     }
@@ -251,9 +256,11 @@ public class Sandbox {
         currentZoom = zoom;
         camera.resetPosition(currentZoom);
 
-        // todo: SpriteRenderSystem über den Zoomwechsel informieren -> Event
+        // todo: -> Event
         var spriteRenderSystemOptional = ecs.getSystemManager().getSystem(SpriteRenderSystem.class);
         spriteRenderSystemOptional.ifPresent(spriteRenderSystem -> spriteRenderSystem.setCurrentZoom(currentZoom));
+        var selectShipSystemOptional = ecs.getSystemManager().getSystem(SelectShipSystem.class);
+        selectShipSystemOptional.ifPresent(selectShipSystem -> selectShipSystem.setCurrentZoom(currentZoom));
     }
 
     //-------------------------------------------------
