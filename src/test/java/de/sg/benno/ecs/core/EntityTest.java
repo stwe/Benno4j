@@ -56,13 +56,14 @@ class EntityTest {
 
     @BeforeEach
     void setUp() {
-        var ecs = new Ecs(
+        EcsSettings.setAllComponentTypes(
                 Position.class,
                 Transform.class,
                 Health.class,
                 Velocity.class,
                 Attack.class
         );
+        var ecs = new Ecs();
 
         var em = ecs.getEntityManager();
 
@@ -83,28 +84,28 @@ class EntityTest {
         // add
         e0.addComponent(Position.class);
         e0.addComponent(Health.class);
-        var signature = e0.getSignatureBitSet();
+        var signature = e0.getComponentsBitSet();
         assertTrue(signature.get(0));
         assertTrue(signature.get(2));
 
-        signature = e1.getSignatureBitSet();
+        signature = e1.getComponentsBitSet();
         assertTrue(signature.isEmpty());
 
         e2.addComponent(Transform.class);
         e2.addComponent(Attack.class);
-        signature = e2.getSignatureBitSet();
+        signature = e2.getComponentsBitSet();
         assertTrue(signature.get(1));
         assertTrue(signature.get(4));
 
         // remove
         e2.removeComponent(Transform.class);
-        signature = e2.getSignatureBitSet();
+        signature = e2.getComponentsBitSet();
         assertFalse(signature.get(1));
         assertTrue(signature.get(4));
 
         e0.removeComponent(Position.class);
         e0.removeComponent(Health.class);
-        signature = e0.getSignatureBitSet();
+        signature = e0.getComponentsBitSet();
         assertTrue(signature.isEmpty());
     }
 

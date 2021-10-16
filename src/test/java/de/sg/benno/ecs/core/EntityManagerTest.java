@@ -21,14 +21,10 @@ package de.sg.benno.ecs.core;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-
 import static java.lang.System.out;
 import static org.junit.jupiter.api.Assertions.*;
 
 class EntityManagerTest {
-
-    private ArrayList<Class<? extends Component>> componentTypes;
 
     private static class Position implements Component {
         public Position() {
@@ -57,8 +53,8 @@ class EntityManagerTest {
 
     private static class MoveSystem extends EntitySystem {
         @SafeVarargs
-        public MoveSystem(Ecs ecs, int priority, Class<? extends Component>... signatureComponentTypes) {
-            super(ecs, priority, signatureComponentTypes);
+        public MoveSystem(Class<? extends Component>... signatureComponentTypes) {
+            super(signatureComponentTypes);
         }
 
         @Override
@@ -80,12 +76,13 @@ class EntityManagerTest {
 
     @BeforeEach
     void setUp() {
-        componentTypes = new ArrayList<>();
-        componentTypes.add(Position.class);
-        componentTypes.add(Transform.class);
-        componentTypes.add(Health.class);
-        componentTypes.add(Velocity.class);
-        componentTypes.add(Attack.class);
+        EcsSettings.setAllComponentTypes(
+                Position.class,
+                Transform.class,
+                Health.class,
+                Velocity.class,
+                Attack.class
+        );
     }
 
     @Test
@@ -94,7 +91,7 @@ class EntityManagerTest {
 
     @Test
     void getAllEntities() throws Exception {
-        var ecs = new Ecs(componentTypes);
+        var ecs = new Ecs();
         var em = ecs.getEntityManager();
 
         var e0 = em.createEntity();
@@ -114,7 +111,7 @@ class EntityManagerTest {
 
     @Test
     void getEntitiesBySignature() throws Exception {
-        var ecs = new Ecs(componentTypes);
+        var ecs = new Ecs();
         var em = ecs.getEntityManager();
 
         var e0 = em.createEntity();
@@ -130,8 +127,6 @@ class EntityManagerTest {
         e2.addComponent(Attack.class);
 
         var signature = new Signature(Transform.class, Velocity.class);
-        signature.initSignatureBitSet(ecs.getAllComponentTypes());
-
         var entities = em.getEntitiesBySignature(signature);
 
         assertEquals(1, entities.size());
@@ -139,7 +134,7 @@ class EntityManagerTest {
 
     @Test
     void createEntity() {
-        var ecs = new Ecs(componentTypes);
+        var ecs = new Ecs();
         var em = ecs.getEntityManager();
 
         for (var i = 0; i < 1000; i++) {
@@ -151,7 +146,7 @@ class EntityManagerTest {
 
     @Test
     void removeEntity() throws Exception {
-        var ecs = new Ecs(componentTypes);
+        var ecs = new Ecs();
         var em = ecs.getEntityManager();
 
         // create entities
@@ -173,7 +168,7 @@ class EntityManagerTest {
         assertEquals(3, em.getAllEntities().size());
 
         // create and add a system
-        var moveSystem = new MoveSystem(ecs, 0, Attack.class, Health.class);
+        var moveSystem = new MoveSystem(Attack.class, Health.class);
         ecs.getSystemManager().addSystem(moveSystem);
 
         // check if entity e2 is in moveSystem

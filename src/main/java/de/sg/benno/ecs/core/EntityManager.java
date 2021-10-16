@@ -19,7 +19,6 @@
 package de.sg.benno.ecs.core;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 import static de.sg.benno.ogl.Log.LOGGER;
 
@@ -33,11 +32,6 @@ public class EntityManager {
     //-------------------------------------------------
 
     /**
-     * The parent {@link Ecs}.
-     */
-    private final Ecs ecs;
-
-    /**
      * A list with <i>all</i> the {@link Entity} objects.
      */
     private final ArrayList<Entity> entities = new ArrayList<>();
@@ -48,27 +42,14 @@ public class EntityManager {
 
     /**
      * Constructs a new {@link EntityManager} object.
-     *
-     * @param ecs The parent {@link Ecs} object.
      */
-    public EntityManager(Ecs ecs) {
+    public EntityManager() {
         LOGGER.debug("Creates EntityManager object.");
-
-        this.ecs = Objects.requireNonNull(ecs, "ecs must not be null");
     }
 
     //-------------------------------------------------
     // Getter
     //-------------------------------------------------
-
-    /**
-     * Get {@link #ecs}.
-     *
-     * @return {@link #ecs}
-     */
-    public Ecs getEcs() {
-        return ecs;
-    }
 
     /**
      * Get {@link #entities}.
@@ -89,7 +70,7 @@ public class EntityManager {
      * @return The newly created {@link Entity}.
      */
     public Entity createEntity() {
-        var entity = new Entity(this);
+        var entity = new Entity();
         entities.add(entity);
 
         return entity;
@@ -101,7 +82,6 @@ public class EntityManager {
      * @param entity The {@link Entity} to remove.
      */
     public void removeEntity(Entity entity) {
-        entity.removeFromSystems();
         entities.remove(entity);
     }
 

@@ -35,18 +35,20 @@ class EcsTest {
 
     @BeforeEach
     void setUp() {
-        ecs = new Ecs(
+        EcsSettings.setAllComponentTypes(
                 Position.class,
                 Transform.class,
                 Health.class,
                 Velocity.class,
                 Attack.class
         );
+
+        ecs = new Ecs();
     }
 
     @Test
     void getAllComponentTypes() {
-        var componentTypes = ecs.getAllComponentTypes();
+        var componentTypes = EcsSettings.getAllComponentTypes();
         assertEquals(5, componentTypes.size());
     }
 
@@ -87,8 +89,8 @@ class EcsTest {
 
     @Test
     void getComponentIndex() {
-        var index2 = ecs.getComponentIndex(Health.class);
-        var index4 = ecs.getComponentIndex(Attack.class);
+        var index2 = EcsSettings.getComponentIndex(Health.class);
+        var index4 = EcsSettings.getComponentIndex(Attack.class);
         assertEquals(2, index2);
         assertEquals(4, index4);
     }

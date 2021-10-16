@@ -19,7 +19,6 @@
 package de.sg.benno.ecs.core;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  * Abstract class for processing sets of {@link Entity} objects.
@@ -31,16 +30,6 @@ public abstract class EntitySystem implements System {
     //-------------------------------------------------
 
     /**
-     * The parent {@link Ecs}.
-     */
-    private final Ecs ecs;
-
-    /**
-     * Used to set the priority of a {@link System}. Lower means it'll get executed first.
-     */
-    private final int priority;
-
-    /**
      * The {@link Signature} for this {@link System}.
      */
     private final Signature signature;
@@ -48,7 +37,7 @@ public abstract class EntitySystem implements System {
     /**
      * A list of {@link Entity} objects processed by this {@link System}.
      */
-    private final ArrayList<Entity> entities;
+    private final ArrayList<Entity> entities = new ArrayList<>();
 
     //-------------------------------------------------
     // Ctors.
@@ -57,39 +46,11 @@ public abstract class EntitySystem implements System {
     /**
      * Constructs a new {@link System}.
      *
-     * @param ecs The parent {@link Ecs}.
-     * @param priority the priority of a {@link System}.
      * @param signatureComponentTypes A list of {@link Component} objects to create the {@link Signature}.
      */
     @SafeVarargs
-    public EntitySystem(Ecs ecs, int priority, Class<? extends Component>... signatureComponentTypes) {
-        this.ecs = Objects.requireNonNull(ecs, "ecs must not be null");
-        this.priority = priority;
+    public EntitySystem(Class<? extends Component>... signatureComponentTypes) {
         this.signature = new Signature(signatureComponentTypes);
-        this.signature.initSignatureBitSet(ecs.getAllComponentTypes());
-        entities = this.ecs.getEntityManager().getEntitiesBySignature(this.signature);
-    }
-
-    //-------------------------------------------------
-    // Getter
-    //-------------------------------------------------
-
-    /**
-     * Get {@link #ecs}.
-     *
-     * @return {@link #ecs}
-     */
-    public Ecs getEcs() {
-        return ecs;
-    }
-
-    /**
-     * Get {@link #priority}.
-     *
-     * @return {@link #priority}
-     */
-    public int getPriority() {
-        return priority;
     }
 
     //-------------------------------------------------
@@ -104,15 +65,5 @@ public abstract class EntitySystem implements System {
     @Override
     public ArrayList<Entity> getEntities() {
         return entities;
-    }
-
-    @Override
-    public void addEntity(Entity entity) {
-        entities.add(entity);
-    }
-
-    @Override
-    public void removeEntity(Entity entity) {
-        entities.remove(entity);
     }
 }

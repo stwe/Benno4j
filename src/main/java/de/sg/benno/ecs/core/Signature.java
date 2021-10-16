@@ -57,6 +57,8 @@ public class Signature {
         LOGGER.debug("Initializing Signature.");
 
         this.signatureComponentTypes.addAll(Arrays.asList(signatureComponentTypes));
+
+        initSignatureBitSet();
     }
 
     //-------------------------------------------------
@@ -78,12 +80,10 @@ public class Signature {
 
     /**
      * Initializes the {@link #signatureBitSet}.
-     *
-     * @param allComponentTypes A list of all component types.
      */
-    public void initSignatureBitSet(ArrayList<Class<? extends Component>> allComponentTypes) {
+    private void initSignatureBitSet() {
         for (var type : signatureComponentTypes) {
-            signatureBitSet.set(allComponentTypes.indexOf(type));
+            signatureBitSet.set(EcsSettings.getComponentIndex(type));
         }
     }
 }

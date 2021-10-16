@@ -24,7 +24,6 @@ import de.sg.benno.debug.MousePicker;
 import de.sg.benno.ecs.components.PositionComponent;
 import de.sg.benno.ecs.components.SelectedComponent;
 import de.sg.benno.ecs.core.Component;
-import de.sg.benno.ecs.core.Ecs;
 import de.sg.benno.ecs.core.EntitySystem;
 import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.Zoom;
@@ -33,6 +32,10 @@ import de.sg.benno.state.Context;
 import static de.sg.benno.ogl.Log.LOGGER;
 
 public class SelectShipSystem extends EntitySystem {
+
+    //-------------------------------------------------
+    // Member
+    //-------------------------------------------------
 
     private final Context context;
     private final Camera camera;
@@ -46,8 +49,8 @@ public class SelectShipSystem extends EntitySystem {
     @SafeVarargs
     public SelectShipSystem(
             Context context, Water water, Camera camera, Zoom currentZoom,
-            Ecs ecs, int priority, Class<? extends Component>... signatureComponentTypes) throws Exception {
-        super(ecs, priority, signatureComponentTypes);
+            Class<? extends Component>... signatureComponentTypes) throws Exception {
+        super(signatureComponentTypes);
 
         this.context = context;
         this.camera = camera;
@@ -95,16 +98,17 @@ public class SelectShipSystem extends EntitySystem {
                         if (shipPosition.equals(selectedPosition)) {
                             LOGGER.debug("ship selected");
 
-                            // todo
-                            try {
-                                if (entity.hasComponent(SelectedComponent.class)) {
-                                    entity.removeComponent(SelectedComponent.class);
-                                    LOGGER.debug("Ship is unselected");
-                                    return;
-                                }
+                            if (entity.hasComponent(SelectedComponent.class)) {
+                                return;
+                            }
 
+                            try {
+                                // todo: die Funktion entfernt erst die Entity von allen Systemen
+                                // todo: danach wird die Entity zu allen Systemen zugefügt, bei denen
+                                // todo: die Signatur passt
+                                // todo: das muss außerhalb der Schleife gemacht werden
+                                // todo: addComponent mit Event?
                                 entity.addComponent(SelectedComponent.class);
-                                LOGGER.debug("Ship is selected");
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }

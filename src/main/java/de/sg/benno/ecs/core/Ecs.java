@@ -18,8 +18,6 @@
 
 package de.sg.benno.ecs.core;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 
 import static de.sg.benno.ogl.Log.LOGGER;
@@ -32,11 +30,6 @@ public class Ecs {
     //-------------------------------------------------
     // Member
     //-------------------------------------------------
-
-    /**
-     * A list of all {@link Component} types used in this {@link Ecs}.
-     */
-    private final ArrayList<Class<? extends Component>> allComponentTypes;
 
     /**
      * The {@link EntityManager} object.
@@ -54,46 +47,17 @@ public class Ecs {
 
     /**
      * Constructs a new {@link Ecs} object.
-     *
-     * @param allComponentTypes A list of all {@link Component} types used in this {@link Ecs}.
      */
-    public Ecs(ArrayList<Class<? extends Component>> allComponentTypes) {
+    public Ecs() {
         LOGGER.debug("Creates Ecs object.");
 
-        this.allComponentTypes = allComponentTypes;
-
-        this.entityManager = new EntityManager(this);
-        this.systemManager = new SystemManager();
-    }
-
-    /**
-     * Constructs a new {@link Ecs} object.
-     *
-     * @param allComponentTypes A list of all {@link Component} types used in this {@link Ecs}.
-     */
-    @SafeVarargs
-    public Ecs(Class<? extends Component>... allComponentTypes) {
-        LOGGER.debug("Creates Ecs object.");
-
-        this.allComponentTypes = new ArrayList<>();
-        this.allComponentTypes.addAll(Arrays.asList(allComponentTypes));
-
-        this.entityManager = new EntityManager(this);
+        this.entityManager = new EntityManager();
         this.systemManager = new SystemManager();
     }
 
     //-------------------------------------------------
     // Getter
     //-------------------------------------------------
-
-    /**
-     * Get {@link #allComponentTypes}.
-     *
-     * @return {@link #allComponentTypes}
-     */
-    public ArrayList<Class<? extends Component>> getAllComponentTypes() {
-        return allComponentTypes;
-    }
 
     /**
      * Get {@link #entityManager}.
@@ -150,17 +114,6 @@ public class Ecs {
     //-------------------------------------------------
     // Helper
     //-------------------------------------------------
-
-    /**
-     * Returns the index in {@link #allComponentTypes} of the given {@link Component} type.
-     *
-     * @param componentType The component type.
-     *
-     * @return The index as int.
-     */
-    public int getComponentIndex(Class<? extends Component> componentType) {
-        return allComponentTypes.indexOf(componentType);
-    }
 
     /**
      * {@link BitSet} to {@link String}.

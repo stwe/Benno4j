@@ -32,11 +32,6 @@ public class Entity {
     //-------------------------------------------------
 
     /**
-     * The parent {@link EntityManager}.
-     */
-    private final EntityManager entityManager;
-
-    /**
      * Provides fast access to {@link Component} objects based on its type.
      */
     private final HashMap<Class<? extends Component>, Component> components = new HashMap<>();
@@ -44,25 +39,12 @@ public class Entity {
     /**
      * The {@link BitSet} signature for added {@link Component} objects.
      */
-    private final BitSet signature = new BitSet();
+    private final BitSet componentsBitSet = new BitSet();
 
     /**
      * A name for debug output.
      */
     public String debugName;
-
-    //-------------------------------------------------
-    // Ctors.
-    //-------------------------------------------------
-
-    /**
-     * Constructs a new {@link Entity} object.
-     *
-     * @param entityManager The parent {@link EntityManager}.
-     */
-    public Entity(EntityManager entityManager) {
-        this.entityManager = Objects.requireNonNull(entityManager, "entityManager must not be null");
-    }
 
     //-------------------------------------------------
     // Getter
@@ -78,12 +60,12 @@ public class Entity {
     }
 
     /**
-     * Get {@link #signature}.
+     * Get {@link #componentsBitSet}.
      *
-     * @return {@link #signature}
+     * @return {@link #componentsBitSet}
      */
-    public BitSet getSignatureBitSet() {
-        return signature;
+    public BitSet getComponentsBitSet() {
+        return componentsBitSet;
     }
 
     //-------------------------------------------------
@@ -137,17 +119,14 @@ public class Entity {
             return Optional.empty();
         }
 
-        // new instance
+        // new component instance
         var component = newInstance(componentClass);
 
-        // add to list
+        // add component to list
         components.put(componentClass, component);
 
-        // update entity component signature bits
-        signature.set(entityManager.getEcs().getComponentIndex(componentClass));
-
-        // add to all systems which matches signature
-        addToSystems();
+        // update component bits
+        componentsBitSet.set(EcsSettings.getComponentIndex(componentClass));
 
         // return newly created component
         return Optional.of(component);
@@ -178,57 +157,15 @@ public class Entity {
         // use getComponent() instead hasComponent(), because we need the component object for remove
         var componentOptional = getComponent(componentClass);
         if (componentOptional.isPresent()) {
-            // remove from all systems
-            removeFromSystems();
-
-            // update entity component signature bits
-            signature.clear(entityManager.getEcs().getComponentIndex(componentClass));
-
-            // remove from list
+            // remove component from list
             components.remove(componentClass);
 
-            // add to all systems which matches new signature
-            addToSystems();
+            // update component bits
+            componentsBitSet.clear(EcsSettings.getComponentIndex(componentClass));
         } else {
             LOGGER.warn("The component {} no longer exists and may have already been removed.",
                     componentClass.getSimpleName());
         }
-    }
-
-    //-------------------------------------------------
-    // Add / remove to systems
-    //-------------------------------------------------
-
-    /**
-     * Adds this {@link Entity} object to all {@link System} objects which matches signature.
-     */
-    public void addToSystems() {
-        entityManager.getEcs().getSystemManager().getSystems().forEach(
-            (k, v) -> {
-                if (matchesSignature(this, v.getSignature())) {
-                    if (!v.getEntities().contains(this)) {
-                        v.addEntity(this);
-                        LOGGER.debug("Entity {} added to System {}.", this.debugName, k.getSimpleName());
-                    } else {
-                        LOGGER.debug("Entity {} to be add is already in System {}.", this.debugName, k.getSimpleName());
-                    }
-                }
-            }
-        );
-    }
-
-    /**
-     * Removes this {@link Entity} object from all {@link System} objects.
-     */
-    public void removeFromSystems() {
-        entityManager.getEcs().getSystemManager().getSystems().forEach(
-            (k, v) -> {
-                if (v.getEntities().contains(this)) {
-                    v.removeEntity(this);
-                    LOGGER.debug("Entity {} removed from System {}.", this.debugName, k.getSimpleName());
-                }
-            }
-        );
     }
 
     //-------------------------------------------------
@@ -238,17 +175,12 @@ public class Entity {
     /**
      * Compares two signatures.
      *
-     * @param entity The {@link Entity} to get the components' signature.
-     * @param signature The {@link Signature} to get the bit set used in a {@link System} as signature.
+     * @param entity The {@link Entity} to get the components' bitset.
+     * @param signature The {@link Signature} to get the bitset used in a {@link System} as signature.
      *
      * @return <i>true</i> if match
      */
     public static boolean matchesSignature(Entity entity, Signature signature) {
-        var entityComponentBitset = new BitSet();
-        entityComponentBitset = (BitSet) entity.getSignatureBitSet().clone();
-
-        entityComponentBitset.and(signature.getSignatureBitSet());
-
-        return entityComponentBitset.equals(signature.getSignatureBitSet());
+        return entity.getComponentsBitSet().equals(signature.getSignatureBitSet());
     }
 }
