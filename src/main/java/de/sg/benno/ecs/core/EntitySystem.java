@@ -66,4 +66,14 @@ public abstract class EntitySystem implements System {
     public ArrayList<Entity> getEntities() {
         return entities;
     }
+
+    @Override
+    public void addEntity(Entity entity) {
+        entities.add(entity);
+    }
+
+    @Override
+    public void removeEntity(Entity entity) {
+        entities.remove(entity);
+    }
 }

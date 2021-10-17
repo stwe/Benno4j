@@ -26,7 +26,11 @@ import java.util.ArrayList;
 public interface System {
 
     Signature getSignature();
+
     ArrayList<Entity> getEntities();
+
+    void addEntity(Entity entity);
+    void removeEntity(Entity entity);
 
     void input();
     void update();

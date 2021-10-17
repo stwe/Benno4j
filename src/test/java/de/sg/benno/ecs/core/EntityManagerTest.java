@@ -86,10 +86,6 @@ class EntityManagerTest {
     }
 
     @Test
-    void getEcs() {
-    }
-
-    @Test
     void getAllEntities() throws Exception {
         var ecs = new Ecs();
         var em = ecs.getEntityManager();
@@ -168,22 +164,27 @@ class EntityManagerTest {
         assertEquals(3, em.getAllEntities().size());
 
         // create and add a system
+        // todo nach dem Erstellen der Entities testen und davor
         var moveSystem = new MoveSystem(Attack.class, Health.class);
         ecs.getSystemManager().addSystem(moveSystem);
 
         // check if entity e2 is in moveSystem
+        em.processEntityTodos();
         assertEquals(1, moveSystem.getEntities().size());
 
         // remove
         em.removeEntity(e1);
+        em.processEntityTodos();
         assertEquals(2, em.getAllEntities().size());
         assertEquals(1, moveSystem.getEntities().size());
 
         em.removeEntity(e2);
+        em.processEntityTodos();
         assertEquals(1, em.getAllEntities().size());
         assertEquals(0, moveSystem.getEntities().size());
 
         em.removeEntity(e0);
+        em.processEntityTodos();
         assertEquals(0, em.getAllEntities().size());
     }
 }

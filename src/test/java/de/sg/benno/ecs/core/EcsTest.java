@@ -47,12 +47,6 @@ class EcsTest {
     }
 
     @Test
-    void getAllComponentTypes() {
-        var componentTypes = EcsSettings.getAllComponentTypes();
-        assertEquals(5, componentTypes.size());
-    }
-
-    @Test
     void getEntityManager() {
         var em = ecs.getEntityManager();
         assertNotNull(em);
@@ -76,7 +70,7 @@ class EcsTest {
 
     @Test
     void update() {
-        //ecs.update();
+
     }
 
     @Test
@@ -85,13 +79,5 @@ class EcsTest {
 
     @Test
     void cleanUp() {
-    }
-
-    @Test
-    void getComponentIndex() {
-        var index2 = EcsSettings.getComponentIndex(Health.class);
-        var index4 = EcsSettings.getComponentIndex(Attack.class);
-        assertEquals(2, index2);
-        assertEquals(4, index4);
     }
 }

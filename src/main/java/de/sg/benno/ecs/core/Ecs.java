@@ -51,8 +51,8 @@ public class Ecs {
     public Ecs() {
         LOGGER.debug("Creates Ecs object.");
 
-        this.entityManager = new EntityManager();
         this.systemManager = new SystemManager();
+        this.entityManager = new EntityManager(this.systemManager);
     }
 
     //-------------------------------------------------
@@ -92,6 +92,7 @@ public class Ecs {
      * Updates the systems.
      */
     public void update() {
+        entityManager.processEntityTodos();
         systemManager.update();
     }
 
@@ -99,6 +100,7 @@ public class Ecs {
      * Renders the systems.
      */
     public void render() {
+        entityManager.processEntityTodos();
         systemManager.render();
     }
 

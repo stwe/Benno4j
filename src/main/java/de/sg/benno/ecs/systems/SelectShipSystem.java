@@ -103,11 +103,6 @@ public class SelectShipSystem extends EntitySystem {
                             }
 
                             try {
-                                // todo: die Funktion entfernt erst die Entity von allen Systemen
-                                // todo: danach wird die Entity zu allen Systemen zugefügt, bei denen
-                                // todo: die Signatur passt
-                                // todo: das muss außerhalb der Schleife gemacht werden
-                                // todo: addComponent mit Event?
                                 entity.addComponent(SelectedComponent.class);
                             } catch (Exception e) {
                                 e.printStackTrace();

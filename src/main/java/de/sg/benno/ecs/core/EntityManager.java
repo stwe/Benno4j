@@ -19,7 +19,9 @@
 package de.sg.benno.ecs.core;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
+import static de.sg.benno.ecs.core.EntityManager.EntityTodo.TodoType.REMOVE;
 import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
@@ -28,13 +30,50 @@ import static de.sg.benno.ogl.Log.LOGGER;
 public class EntityManager {
 
     //-------------------------------------------------
+    // Types
+    //-------------------------------------------------
+
+    /**
+     * Represents an EntityTodo.
+     */
+    public static class EntityTodo {
+        public enum TodoType {
+            REMOVE, UPDATE_SYSTEMS
+        }
+
+        public Entity entity;
+        public TodoType todoType;
+        public boolean pending;
+
+        public EntityTodo(Entity entity, TodoType todoType, boolean pending) {
+            this.entity = entity;
+            this.todoType = todoType;
+            this.pending = pending;
+        }
+
+        public EntityTodo(Entity entity, TodoType todoType) {
+            this(entity, todoType, true);
+        }
+    }
+
+    //-------------------------------------------------
     // Member
     //-------------------------------------------------
+
+    /**
+     * The {@link SystemManager} object.
+     */
+    private final SystemManager systemManager;
 
     /**
      * A list with <i>all</i> the {@link Entity} objects.
      */
     private final ArrayList<Entity> entities = new ArrayList<>();
+
+    /**
+     * A list of {@link EntityTodo} objects.
+     */
+    private final ArrayList<EntityTodo> entityTodos = new ArrayList<>();
 
     //-------------------------------------------------
     // Ctors.
@@ -42,9 +81,13 @@ public class EntityManager {
 
     /**
      * Constructs a new {@link EntityManager} object.
+     *
+     * @param systemManager The {@link SystemManager} object.
      */
-    public EntityManager() {
+    public EntityManager(SystemManager systemManager) {
         LOGGER.debug("Creates EntityManager object.");
+
+        this.systemManager = Objects.requireNonNull(systemManager, "systemManager must not be null");
     }
 
     //-------------------------------------------------
@@ -60,8 +103,17 @@ public class EntityManager {
         return entities;
     }
 
+    /**
+     * Get {@link #entityTodos}.
+     *
+     * @return {@link #entityTodos}
+     */
+    public ArrayList<EntityTodo> getEntityTodos() {
+        return entityTodos;
+    }
+
     //-------------------------------------------------
-    // Add / remove
+    // Add / remove entities
     //-------------------------------------------------
 
     /**
@@ -70,7 +122,7 @@ public class EntityManager {
      * @return The newly created {@link Entity}.
      */
     public Entity createEntity() {
-        var entity = new Entity();
+        var entity = new Entity(this);
         entities.add(entity);
 
         return entity;
@@ -82,7 +134,94 @@ public class EntityManager {
      * @param entity The {@link Entity} to remove.
      */
     public void removeEntity(Entity entity) {
-        entities.remove(entity);
+        // add (only) an REMOVE entityTodo
+        addEntityTodo(new EntityManager.EntityTodo(entity, REMOVE));
+    }
+
+    //-------------------------------------------------
+    // Add / remove entityTodo objects
+    //-------------------------------------------------
+
+    /**
+     * Adds an {@link EntityTodo}.
+     *
+     * @param entityTodo The {@link EntityTodo} object to add.
+     */
+    public void addEntityTodo(EntityTodo entityTodo) {
+        entityTodos.add(entityTodo);
+    }
+
+    //-------------------------------------------------
+    // Logic
+    //-------------------------------------------------
+
+    /**
+     * Process entity todos.
+     */
+    public void processEntityTodos() {
+        for (var entityTodo : entityTodos) {
+            if (entityTodo.pending) {
+                switch (entityTodo.todoType) {
+                    case REMOVE:
+                        // remove entity from all systems
+                        removeEntityFromAllSystems(entityTodo.entity);
+                        // remove entity from this manager
+                        entities.remove(entityTodo.entity);
+                        entityTodo.pending = false;
+                        break;
+                    case UPDATE_SYSTEMS:
+                        // a component was added or removed
+                        removeEntityFromAllSystems(entityTodo.entity);
+                        addEntityToSystems(entityTodo.entity);
+                        entityTodo.pending = false;
+                        break;
+                    default:
+                }
+            }
+        }
+
+        // remove job
+        entityTodos.removeIf(entityTodo -> (!entityTodo.pending));
+    }
+
+    //-------------------------------------------------
+    // Add / remove to systems
+    //-------------------------------------------------
+
+    /**
+     * Adds an {@link Entity} object to all {@link System} objects which matches system signature.
+     *
+     * @param entity An {@link Entity} object.
+     */
+    public void addEntityToSystems(Entity entity) {
+        systemManager.getSystems().forEach(
+            (k, v) -> {
+                if (Entity.matchesSignature(entity, v.getSignature())) {
+                    if (!v.getEntities().contains(entity)) {
+                        v.addEntity(entity);
+                        LOGGER.debug("Entity {} added to System {}.", entity.debugName, k.getSimpleName());
+                    } else {
+                        LOGGER.debug("Entity {} to be add is already in System {}.", entity.debugName, k.getSimpleName());
+                    }
+                }
+            }
+        );
+    }
+
+    /**
+     * Removes an {@link Entity} object from all {@link System} objects.
+     *
+     * @param entity An {@link Entity} object.
+     */
+    public void removeEntityFromAllSystems(Entity entity) {
+        systemManager.getSystems().forEach(
+            (k, v) -> {
+                if (v.getEntities().contains(entity)) { // check for debug log output
+                    v.removeEntity(entity);
+                    LOGGER.debug("Entity {} removed from System {}.", entity.debugName, k.getSimpleName());
+                }
+            }
+        );
     }
 
     //-------------------------------------------------

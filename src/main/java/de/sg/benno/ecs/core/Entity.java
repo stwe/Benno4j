@@ -20,6 +20,7 @@ package de.sg.benno.ecs.core;
 
 import java.util.*;
 
+import static de.sg.benno.ecs.core.EntityManager.EntityTodo.TodoType.UPDATE_SYSTEMS;
 import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
@@ -32,7 +33,12 @@ public class Entity {
     //-------------------------------------------------
 
     /**
-     * Provides fast access to {@link Component} objects based on its type.
+     * The parent {@link EntityManager} object.
+     */
+    private final EntityManager entityManager;
+
+    /**
+     * Provides access to {@link Component} objects based on its type.
      */
     private final HashMap<Class<? extends Component>, Component> components = new HashMap<>();
 
@@ -45,6 +51,19 @@ public class Entity {
      * A name for debug output.
      */
     public String debugName;
+
+    //-------------------------------------------------
+    // Ctors.
+    //-------------------------------------------------
+
+    /**
+     * Constructs a new {@link Entity} object.
+     *
+     * @param entityManager The parent {@link EntityManager} object.
+     */
+    public Entity(EntityManager entityManager) {
+        this.entityManager = Objects.requireNonNull(entityManager, "entityManager must not be null");
+    }
 
     //-------------------------------------------------
     // Getter
@@ -128,6 +147,9 @@ public class Entity {
         // update component bits
         componentsBitSet.set(EcsSettings.getComponentIndex(componentClass));
 
+        // add an UPDATE_SYSTEMS entityTodo
+        entityManager.addEntityTodo(new EntityManager.EntityTodo(this, UPDATE_SYSTEMS));
+
         // return newly created component
         return Optional.of(component);
     }
@@ -162,6 +184,9 @@ public class Entity {
 
             // update component bits
             componentsBitSet.clear(EcsSettings.getComponentIndex(componentClass));
+
+            // add an UPDATE_SYSTEMS entityTodo
+            entityManager.addEntityTodo(new EntityManager.EntityTodo(this, UPDATE_SYSTEMS));
         } else {
             LOGGER.warn("The component {} no longer exists and may have already been removed.",
                     componentClass.getSimpleName());
