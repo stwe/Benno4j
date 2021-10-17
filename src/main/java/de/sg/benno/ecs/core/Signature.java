@@ -34,14 +34,19 @@ public class Signature {
     //-------------------------------------------------
 
     /**
-     * The signature {@link BitSet}.
+     * A set of components the entity must have.
      */
-    private final BitSet signatureBitSet = new BitSet();
+    private final BitSet all = new BitSet();
 
     /**
-     * Stores the component types required for initializing the {@link #signatureBitSet}.
+     * A set of components of which the entity must have at least one.
      */
-    private final ArrayList<Class<? extends Component>> signatureComponentTypes = new ArrayList<>();
+    private final BitSet one = new BitSet();
+
+    /**
+     * A set of components the entity cannot have.
+     */
+    private final BitSet exclude = new BitSet();
 
     //-------------------------------------------------
     // Ctors.
@@ -49,41 +54,105 @@ public class Signature {
 
     /**
      * Constructs a new {@link Signature} object.
-     *
-     * @param signatureComponentTypes A list of component types representing this {@link Signature}.
      */
-    @SafeVarargs
-    public Signature(Class<? extends Component>... signatureComponentTypes) {
-        LOGGER.debug("Initializing Signature.");
-
-        this.signatureComponentTypes.addAll(Arrays.asList(signatureComponentTypes));
-
-        initSignatureBitSet();
+    public Signature() {
+        LOGGER.debug("Creates Signature object.");
     }
 
     //-------------------------------------------------
-    // Getter
+    // Matches
     //-------------------------------------------------
 
     /**
-     * Get {@link #signatureBitSet}.
+     * Checks whether the entity matches this signature.
      *
-     * @return {@link #signatureBitSet}
+     * @param entity The {@link Entity} to check.
+     *
+     * @return boolean
      */
-    public BitSet getSignatureBitSet() {
-        return signatureBitSet;
+    public boolean matches(Entity entity) {
+        var ec = entity.getComponentsBitSet();
+
+        if (!containsAll(ec, all)) {
+            return false;
+        }
+
+        if (!one.isEmpty()) {
+            if (!one.intersects(ec)) {
+                return false;
+            }
+        }
+
+        if (!exclude.isEmpty()) {
+            if (exclude.intersects(ec)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     //-------------------------------------------------
     // Init
     //-------------------------------------------------
 
-    /**
-     * Initializes the {@link #signatureBitSet}.
-     */
-    private void initSignatureBitSet() {
-        for (var type : signatureComponentTypes) {
-            signatureBitSet.set(EcsSettings.getComponentIndex(type));
+    @SafeVarargs
+    public final void setAll(Class<? extends Component>... allTypes) {
+        var types = new ArrayList<>(Arrays.asList(allTypes));
+        for (var type : types) {
+            all.set(EcsSettings.getComponentIndex(type));
         }
+    }
+
+    @SafeVarargs
+    public final void setOne(Class<? extends Component>... oneTypes) {
+        var types = new ArrayList<>(Arrays.asList(oneTypes));
+        for (var type : types) {
+            one.set(EcsSettings.getComponentIndex(type));
+        }
+    }
+
+    @SafeVarargs
+    public final void setExclude(Class<? extends Component>... excludeTypes) {
+        var types = new ArrayList<>(Arrays.asList(excludeTypes));
+        for (var type : types) {
+            exclude.set(EcsSettings.getComponentIndex(type));
+        }
+    }
+
+    //-------------------------------------------------
+    // Helper
+    //-------------------------------------------------
+
+    /**
+     * A containsAll method for {@link BitSet}.
+     *
+     * @param s1 A {@link BitSet}.
+     * @param s2 A {@link BitSet}.
+     *
+     * @return boolean
+     */
+    private static boolean containsAll(BitSet s1, BitSet s2) {
+        BitSet intersection = (BitSet) s1.clone();
+        intersection.and(s2);
+        return intersection.equals(s2);
+    }
+
+    /**
+     * {@link BitSet} to {@link String}.
+     *
+     * @param bits A {@link BitSet}.
+     *
+     * @return String
+     */
+    public static String getBitsString (BitSet bits) {
+        var stringBuilder = new StringBuilder();
+
+        var numBits = bits.length();
+        for (var i = 0; i < numBits; i++) {
+            stringBuilder.append(bits.get(i) ? "1" : "0");
+        }
+
+        return stringBuilder.toString();
     }
 }

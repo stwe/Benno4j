@@ -143,9 +143,8 @@ public class EntityManager {
      */
     public ArrayList<Entity> getEntitiesBySignature(Signature signature) {
         var result = new ArrayList<Entity>();
-
         for (var entity : entities) {
-            if (Entity.matchesSignature(entity, signature)) {
+            if (signature.matches(entity)) {
                 result.add(entity);
             }
         }

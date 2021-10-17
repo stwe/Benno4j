@@ -20,8 +20,8 @@ package de.sg.benno.ecs.systems;
 
 import de.sg.benno.ecs.components.GfxIndexComponent;
 import de.sg.benno.ecs.components.PositionComponent;
-import de.sg.benno.ecs.core.Component;
 import de.sg.benno.ecs.core.EntitySystem;
+import de.sg.benno.ecs.core.Signature;
 import de.sg.benno.file.BshFile;
 import de.sg.benno.input.Camera;
 import de.sg.benno.ogl.renderer.RenderUtil;
@@ -74,14 +74,13 @@ public class SpriteRenderSystem extends EntitySystem {
      * @param context The {@link Context} object.
      * @param camera The {@link Camera} object.
      * @param currentZoom The current {@link Zoom}.
-     * @param signatureComponentTypes A list of {@link Component} objects to create a Signature.
+     * @param signature A {@link Signature} object.
      * @throws IOException If an I/O error is thrown.
      */
-    @SafeVarargs
     public SpriteRenderSystem(
             Context context, Camera camera, Zoom currentZoom,
-            Class<? extends Component>... signatureComponentTypes) throws IOException {
-        super(signatureComponentTypes);
+            Signature signature) throws IOException {
+        super(signature);
 
         LOGGER.debug("Creates SpriteRenderSystem object.");
 

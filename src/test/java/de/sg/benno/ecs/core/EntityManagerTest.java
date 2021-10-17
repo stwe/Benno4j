@@ -52,9 +52,9 @@ class EntityManagerTest {
     }
 
     private static class MoveSystem extends EntitySystem {
-        @SafeVarargs
-        public MoveSystem(Class<? extends Component>... signatureComponentTypes) {
-            super(signatureComponentTypes);
+
+        public MoveSystem(Signature signature) {
+            super(signature);
         }
 
         @Override
@@ -122,7 +122,8 @@ class EntityManagerTest {
         e2.addComponent(Health.class);
         e2.addComponent(Attack.class);
 
-        var signature = new Signature(Transform.class, Velocity.class);
+        var signature = new Signature();
+        signature.setAll(Transform.class, Velocity.class);
         var entities = em.getEntitiesBySignature(signature);
 
         assertEquals(1, entities.size());
@@ -146,7 +147,9 @@ class EntityManagerTest {
         var em = ecs.getEntityManager();
 
         // create and add a system
-        var moveSystem = new MoveSystem(Attack.class, Health.class);
+        var s = new Signature();
+        s.setAll(Attack.class, Health.class);
+        var moveSystem = new MoveSystem(s);
         ecs.getSystemManager().addSystem(moveSystem);
 
         // create entities

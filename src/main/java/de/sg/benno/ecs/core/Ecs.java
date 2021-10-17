@@ -18,8 +18,6 @@
 
 package de.sg.benno.ecs.core;
 
-import java.util.BitSet;
-
 import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
@@ -155,7 +153,7 @@ public class Ecs {
     private void addEntityToSystems(Entity entity) {
         systemManager.getSystems().forEach(
             (k, v) -> {
-                if (Entity.matchesSignature(entity, v.getSignature())) {
+                if (v.getSignature().matches(entity)) {
                     if (!v.getEntities().contains(entity)) {
                         v.addEntity(entity);
                         LOGGER.debug("Entity {} added to System {}.", entity.debugName, k.getSimpleName());
@@ -181,27 +179,5 @@ public class Ecs {
                 }
             }
         );
-    }
-
-    //-------------------------------------------------
-    // Helper
-    //-------------------------------------------------
-
-    /**
-     * {@link BitSet} to {@link String}.
-     *
-     * @param bits A {@link BitSet}.
-     *
-     * @return String
-     */
-    public static String getBitsString (BitSet bits) {
-        var stringBuilder = new StringBuilder();
-
-        var numBits = bits.length();
-        for (var i = 0; i < numBits; i++) {
-            stringBuilder.append(bits.get(i) ? "1" : "0");
-        }
-
-        return stringBuilder.toString();
     }
 }

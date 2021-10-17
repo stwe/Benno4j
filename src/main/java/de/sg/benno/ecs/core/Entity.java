@@ -192,20 +192,4 @@ public class Entity {
                     componentClass.getSimpleName());
         }
     }
-
-    //-------------------------------------------------
-    // Signatures
-    //-------------------------------------------------
-
-    /**
-     * Compares two signatures.
-     *
-     * @param entity The {@link Entity} to get the components' bitset.
-     * @param signature The {@link Signature} to get the bitset used in a {@link System} as signature.
-     *
-     * @return <i>true</i> if match
-     */
-    public static boolean matchesSignature(Entity entity, Signature signature) {
-        return entity.getComponentsBitSet().equals(signature.getSignatureBitSet());
-    }
 }

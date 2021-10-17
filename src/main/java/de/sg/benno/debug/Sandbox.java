@@ -29,6 +29,7 @@ import de.sg.benno.ecs.components.PositionComponent;
 import de.sg.benno.ecs.components.SelectedComponent;
 import de.sg.benno.ecs.core.Ecs;
 import de.sg.benno.ecs.core.EcsSettings;
+import de.sg.benno.ecs.core.Signature;
 import de.sg.benno.ecs.systems.SelectShipSystem;
 import de.sg.benno.ecs.systems.SpriteRenderSystem;
 import de.sg.benno.input.Camera;
@@ -104,6 +105,7 @@ public class Sandbox {
 
         this.camera = new Camera(BennoConfig.CAMERA_START_X, BennoConfig.CAMERA_START_Y, context.engine, currentZoom);
         this.water = new Water(provider, context);
+
         EcsSettings.setAllComponentTypes(GfxIndexComponent.class, PositionComponent.class, SelectedComponent.class);
         this.ecs = new Ecs();
 
@@ -142,15 +144,14 @@ public class Sandbox {
      * @throws Exception If an error is thrown.
      */
     private void initEcs() throws Exception {
-        ecs.getSystemManager().addSystem(new SpriteRenderSystem(
-                context, camera, currentZoom,
-                GfxIndexComponent.class, PositionComponent.class)
-        );
+        var s0 = new Signature();
+        s0.setAll(GfxIndexComponent.class, PositionComponent.class);
 
-        ecs.getSystemManager().addSystem(new SelectShipSystem(
-                context, water, camera, currentZoom,
-                GfxIndexComponent.class, PositionComponent.class)
-        );
+        var s1 = new Signature();
+        s1.setAll(GfxIndexComponent.class, PositionComponent.class);
+
+        ecs.getSystemManager().addSystem(new SpriteRenderSystem(context, camera, currentZoom, s0));
+        ecs.getSystemManager().addSystem(new SelectShipSystem(context, water, camera, currentZoom, s1));
 
         createEntities();
     }

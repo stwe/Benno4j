@@ -23,8 +23,8 @@ import de.sg.benno.content.Water;
 import de.sg.benno.debug.MousePicker;
 import de.sg.benno.ecs.components.PositionComponent;
 import de.sg.benno.ecs.components.SelectedComponent;
-import de.sg.benno.ecs.core.Component;
 import de.sg.benno.ecs.core.EntitySystem;
+import de.sg.benno.ecs.core.Signature;
 import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
@@ -46,11 +46,10 @@ public class SelectShipSystem extends EntitySystem {
     // Ctors.
     //-------------------------------------------------
 
-    @SafeVarargs
     public SelectShipSystem(
             Context context, Water water, Camera camera, Zoom currentZoom,
-            Class<? extends Component>... signatureComponentTypes) throws Exception {
-        super(signatureComponentTypes);
+            Signature signature) throws Exception {
+        super(signature);
 
         this.context = context;
         this.camera = camera;

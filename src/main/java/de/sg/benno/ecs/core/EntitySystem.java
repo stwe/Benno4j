@@ -37,20 +37,19 @@ public abstract class EntitySystem implements System {
     /**
      * A list of {@link Entity} objects processed by this {@link System}.
      */
-    private ArrayList<Entity> entities = new ArrayList<>();
+    private final ArrayList<Entity> entities = new ArrayList<>();
 
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
     /**
-     * Constructs a new {@link System}.
+     * Constructs a new {@link System} object.
      *
-     * @param signatureComponentTypes A list of {@link Component} objects to create the {@link Signature}.
+     * @param signature The {@link Signature} object.
      */
-    @SafeVarargs
-    public EntitySystem(Class<? extends Component>... signatureComponentTypes) {
-        this.signature = new Signature(signatureComponentTypes);
+    public EntitySystem(Signature signature) {
+        this.signature = signature;
     }
 
     //-------------------------------------------------

@@ -21,6 +21,7 @@ package de.sg.benno.event;
 import de.sg.benno.ecs.core.Component;
 import de.sg.benno.ecs.core.Entity;
 import de.sg.benno.ecs.core.EntitySystem;
+import de.sg.benno.ecs.core.Signature;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,9 +30,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class DispatcherTest {
 
     private static class MoveSystem extends EntitySystem implements Listener {
-        @SafeVarargs
-        public MoveSystem(Class<? extends Component>... signatureComponentTypes) {
-            super(signatureComponentTypes);
+
+        public MoveSystem(Signature signature) {
+            super(signature);
         }
 
         @Override
@@ -67,7 +68,7 @@ class DispatcherTest {
 
     @BeforeEach
     void setUp() {
-        moveSystem = new MoveSystem();
+        moveSystem = new MoveSystem(new Signature());
         customEvent = new CustomEvent();
     }
 
