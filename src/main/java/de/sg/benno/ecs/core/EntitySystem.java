@@ -37,7 +37,7 @@ public abstract class EntitySystem implements System {
     /**
      * A list of {@link Entity} objects processed by this {@link System}.
      */
-    private final ArrayList<Entity> entities = new ArrayList<>();
+    private ArrayList<Entity> entities = new ArrayList<>();
 
     //-------------------------------------------------
     // Ctors.

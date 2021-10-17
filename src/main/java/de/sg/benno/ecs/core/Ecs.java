@@ -52,7 +52,7 @@ public class Ecs {
         LOGGER.debug("Creates Ecs object.");
 
         this.systemManager = new SystemManager();
-        this.entityManager = new EntityManager(this.systemManager);
+        this.entityManager = new EntityManager();
     }
 
     //-------------------------------------------------
@@ -92,7 +92,7 @@ public class Ecs {
      * Updates the systems.
      */
     public void update() {
-        entityManager.processEntityTodos();
+        processEntityTodos();
         systemManager.update();
     }
 
@@ -100,7 +100,7 @@ public class Ecs {
      * Renders the systems.
      */
     public void render() {
-        entityManager.processEntityTodos();
+        processEntityTodos();
         systemManager.render();
     }
 
@@ -111,6 +111,76 @@ public class Ecs {
         LOGGER.debug("Clean up Ecs.");
 
         systemManager.cleanUp();
+    }
+
+    /**
+     * Removes entities from the {@link EntityManager} and
+     * adds and removes entities from all {@link System} objects.
+     */
+    public void processEntityTodos() {
+        for (var entityTodo : entityManager.getEntityTodos()) {
+            if (entityTodo.pending) {
+                switch (entityTodo.todoType) {
+                    case REMOVE:
+                        // remove entity from all systems
+                        removeEntityFromAllSystems(entityTodo.entity);
+                        // remove entity from entity manager
+                        entityManager.getAllEntities().remove(entityTodo.entity);
+                        entityTodo.pending = false;
+                        break;
+                    case UPDATE_SYSTEMS:
+                        // a component was added or removed
+                        removeEntityFromAllSystems(entityTodo.entity);
+                        addEntityToSystems(entityTodo.entity);
+                        entityTodo.pending = false;
+                        break;
+                    default:
+                }
+            }
+        }
+
+        // remove all finished entityTodo objects
+        entityManager.removeFinishedEntityTodos();
+    }
+
+    //-------------------------------------------------
+    // Add / remove entities to systems
+    //-------------------------------------------------
+
+    /**
+     * Adds an {@link Entity} object to all {@link System} objects which matches system signature.
+     *
+     * @param entity The {@link Entity} object to add.
+     */
+    private void addEntityToSystems(Entity entity) {
+        systemManager.getSystems().forEach(
+            (k, v) -> {
+                if (Entity.matchesSignature(entity, v.getSignature())) {
+                    if (!v.getEntities().contains(entity)) {
+                        v.addEntity(entity);
+                        LOGGER.debug("Entity {} added to System {}.", entity.debugName, k.getSimpleName());
+                    } else {
+                        LOGGER.debug("Entity {} to be add is already in System {}.", entity.debugName, k.getSimpleName());
+                    }
+                }
+            }
+        );
+    }
+
+    /**
+     * Removes an {@link Entity} object from all {@link System} objects.
+     *
+     * @param entity The {@link Entity} object to remove.
+     */
+    private void removeEntityFromAllSystems(Entity entity) {
+        systemManager.getSystems().forEach(
+            (k, v) -> {
+                if (v.getEntities().contains(entity)) { // check for debug log output
+                    v.removeEntity(entity);
+                    LOGGER.debug("Entity {} removed from System {}.", entity.debugName, k.getSimpleName());
+                }
+            }
+        );
     }
 
     //-------------------------------------------------

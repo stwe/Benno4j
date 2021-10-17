@@ -20,7 +20,7 @@ package de.sg.benno.ecs.core;
 
 import java.util.*;
 
-import static de.sg.benno.ecs.core.EntityManager.EntityTodo.TodoType.UPDATE_SYSTEMS;
+import static de.sg.benno.ecs.core.EntityTodo.TodoType.UPDATE_SYSTEMS;
 import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
@@ -148,7 +148,7 @@ public class Entity {
         componentsBitSet.set(EcsSettings.getComponentIndex(componentClass));
 
         // add an UPDATE_SYSTEMS entityTodo
-        entityManager.addEntityTodo(new EntityManager.EntityTodo(this, UPDATE_SYSTEMS));
+        entityManager.addEntityTodo(new EntityTodo(this, UPDATE_SYSTEMS));
 
         // return newly created component
         return Optional.of(component);
@@ -186,7 +186,7 @@ public class Entity {
             componentsBitSet.clear(EcsSettings.getComponentIndex(componentClass));
 
             // add an UPDATE_SYSTEMS entityTodo
-            entityManager.addEntityTodo(new EntityManager.EntityTodo(this, UPDATE_SYSTEMS));
+            entityManager.addEntityTodo(new EntityTodo(this, UPDATE_SYSTEMS));
         } else {
             LOGGER.warn("The component {} no longer exists and may have already been removed.",
                     componentClass.getSimpleName());
