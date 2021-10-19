@@ -27,9 +27,11 @@ import de.sg.benno.chunk.WorldData;
 import de.sg.benno.ecs.components.GfxIndexComponent;
 import de.sg.benno.ecs.components.PositionComponent;
 import de.sg.benno.ecs.components.SelectedComponent;
+import de.sg.benno.ecs.components.TargetComponent;
 import de.sg.benno.ecs.core.Ecs;
 import de.sg.benno.ecs.core.EcsSettings;
 import de.sg.benno.ecs.core.Signature;
+import de.sg.benno.ecs.systems.FindPathSystem;
 import de.sg.benno.ecs.systems.SelectShipSystem;
 import de.sg.benno.ecs.systems.SpriteRenderSystem;
 import de.sg.benno.input.Camera;
@@ -106,7 +108,12 @@ public class Sandbox {
         this.camera = new Camera(BennoConfig.CAMERA_START_X, BennoConfig.CAMERA_START_Y, context.engine, currentZoom);
         this.water = new Water(provider, context);
 
-        EcsSettings.setAllComponentTypes(GfxIndexComponent.class, PositionComponent.class, SelectedComponent.class);
+        EcsSettings.setAllComponentTypes(
+                GfxIndexComponent.class,
+                PositionComponent.class,
+                SelectedComponent.class,
+                TargetComponent.class
+        );
         this.ecs = new Ecs();
 
         initEcs();
@@ -144,14 +151,17 @@ public class Sandbox {
      * @throws Exception If an error is thrown.
      */
     private void initEcs() throws Exception {
-        var s0 = new Signature();
-        s0.setAll(GfxIndexComponent.class, PositionComponent.class);
+        var renderSignature = new Signature();
+        renderSignature.setAll(GfxIndexComponent.class, PositionComponent.class);
+        ecs.getSystemManager().addSystem(new SpriteRenderSystem(context, camera, currentZoom, renderSignature));
 
-        var s1 = new Signature();
-        s1.setAll(GfxIndexComponent.class, PositionComponent.class);
+        var selectSignature = new Signature();
+        selectSignature.setAll(GfxIndexComponent.class, PositionComponent.class);
+        ecs.getSystemManager().addSystem(new SelectShipSystem(context, water, camera, currentZoom, selectSignature));
 
-        ecs.getSystemManager().addSystem(new SpriteRenderSystem(context, camera, currentZoom, s0));
-        ecs.getSystemManager().addSystem(new SelectShipSystem(context, water, camera, currentZoom, s1));
+        var pathSignature = new Signature();
+        pathSignature.setAll(PositionComponent.class, SelectedComponent.class);
+        ecs.getSystemManager().addSystem(new FindPathSystem(context, water, camera, currentZoom, pathSignature));
 
         createEntities();
     }

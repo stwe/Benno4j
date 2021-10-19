@@ -18,20 +18,26 @@
 
 package de.sg.benno.ecs.systems;
 
+import de.sg.benno.ai.Astar;
+import de.sg.benno.ai.Node;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.content.Water;
 import de.sg.benno.debug.MousePicker;
 import de.sg.benno.ecs.components.PositionComponent;
-import de.sg.benno.ecs.components.SelectedComponent;
+import de.sg.benno.ecs.components.TargetComponent;
 import de.sg.benno.ecs.core.EntitySystem;
 import de.sg.benno.ecs.core.Signature;
 import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Optional;
+
 import static de.sg.benno.ogl.Log.LOGGER;
 
-public class SelectShipSystem extends EntitySystem {
+public class FindPathSystem extends EntitySystem {
 
     //-------------------------------------------------
     // Member
@@ -46,7 +52,7 @@ public class SelectShipSystem extends EntitySystem {
     // Ctors.
     //-------------------------------------------------
 
-    public SelectShipSystem(Context context, Water water, Camera camera, Zoom currentZoom, Signature signature) throws Exception {
+    public FindPathSystem(Context context, Water water, Camera camera, Zoom currentZoom, Signature signature) throws Exception {
         super(signature);
 
         this.context = context;
@@ -81,31 +87,30 @@ public class SelectShipSystem extends EntitySystem {
     public void update() {
         var mouseInput = context.engine.getMouseInput();
         if (mouseInput.isInWindow()) {
-            if (mouseInput.isLeftButtonPressed()) {
+            if (mouseInput.isRightButtonPressed()) {
                 for (var entity : getEntities()) {
-                    var shipPositionOptional = entity.getComponent(PositionComponent.class);
-                    if (shipPositionOptional.isPresent()) {
-                        // get ship position in world space
-                        var shipPosition = shipPositionOptional.get().worldPosition;
+                    LOGGER.debug("ship in path system");
 
-                        // get world position of the tile under mouse
-                        var selectedPosition = mousePicker.getTileUnderMouse(camera, currentZoom);
+                    var target = mousePicker.getTileUnderMouse(camera, currentZoom);
+                    var positionOptional = entity.getComponent(PositionComponent.class);
+                    var data = new Byte[500*350];
+                    Arrays.fill(data, Byte.valueOf((byte)0));
+                    var obst = new ArrayList<Byte>(Arrays.asList(data));
 
-                        // compare
-                        if (shipPosition.equals(selectedPosition)) {
-                            LOGGER.debug("ship selected");
+                    var path = Astar.findPathToTarget(
+                            new Node(positionOptional.get().worldPosition).position,
+                            target,
+                            obst
+                    );
 
-                            if (entity.hasComponent(SelectedComponent.class)) {
-                                return;
-                            }
-
-                            try {
-                                entity.addComponent(SelectedComponent.class);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
+                    Optional<TargetComponent> targetComponent = null;
+                    try {
+                        targetComponent = entity.addComponent(TargetComponent.class);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
+                    targetComponent.get().path = path;
+                    targetComponent.get().target = target;
                 }
             }
         }
@@ -113,7 +118,7 @@ public class SelectShipSystem extends EntitySystem {
 
     @Override
     public void render() {
-        mousePicker.render(camera, currentZoom);
+
     }
 
     @Override
