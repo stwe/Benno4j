@@ -33,30 +33,60 @@ import de.sg.benno.state.Context;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Optional;
+import java.util.Objects;
 
 import static de.sg.benno.ogl.Log.LOGGER;
 
+/**
+ * Represents a FindPathSystem.
+ */
 public class FindPathSystem extends EntitySystem {
 
     //-------------------------------------------------
     // Member
     //-------------------------------------------------
 
+    /**
+     * The {@link Context} object.
+     */
     private final Context context;
+
+    /**
+     * The {@link Camera} object.
+     */
     private final Camera camera;
+
+    /**
+     * The current {@link Zoom}.
+     */
     private Zoom currentZoom;
+
+    /**
+     * A {@link MousePicker} object.
+     */
     private final MousePicker mousePicker;
 
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
+    /**
+     * Constructs a new {@link FindPathSystem} object.
+     *
+     * @param context The {@link Context} object.
+     * @param water The {@link Water} object.
+     * @param camera The {@link Camera} object.
+     * @param currentZoom The current {@link Zoom}.
+     * @param signature A {@link Signature} object.
+     * @throws Exception If an error is thrown.
+     */
     public FindPathSystem(Context context, Water water, Camera camera, Zoom currentZoom, Signature signature) throws Exception {
         super(signature);
 
-        this.context = context;
-        this.camera = camera;
+        LOGGER.debug("Creates FindPathSystem object.");
+
+        this.context = Objects.requireNonNull(context, "context must not be null");;
+        this.camera = Objects.requireNonNull(camera, "camera must not be null");;
         this.currentZoom = currentZoom;
         this.mousePicker = new MousePicker(context, water, TileGraphic.TileHeight.SEA_LEVEL);
     }
@@ -89,28 +119,53 @@ public class FindPathSystem extends EntitySystem {
         if (mouseInput.isInWindow()) {
             if (mouseInput.isRightButtonPressed()) {
                 for (var entity : getEntities()) {
-                    LOGGER.debug("ship in path system");
+                    var shipPositionOptional = entity.getComponent(PositionComponent.class);
+                    if (shipPositionOptional.isPresent()) {
+                        // get ship position in world space
+                        var shipPosition = shipPositionOptional.get().worldPosition;
 
-                    var target = mousePicker.getTileUnderMouse(camera, currentZoom);
-                    var positionOptional = entity.getComponent(PositionComponent.class);
-                    var data = new Byte[500*350];
-                    Arrays.fill(data, Byte.valueOf((byte)0));
-                    var obst = new ArrayList<Byte>(Arrays.asList(data));
+                        // get target position in world space
+                        var targetPosition = mousePicker.getTileUnderMouse(camera, currentZoom);
 
-                    var path = Astar.findPathToTarget(
-                            new Node(positionOptional.get().worldPosition).position,
-                            target,
-                            obst
-                    );
+                        // dummy obstacles
+                        var data = new Byte[500 * 350];
+                        Arrays.fill(data, (byte) 0);
+                        var obst = new ArrayList<>(Arrays.asList(data));
 
-                    Optional<TargetComponent> targetComponent = null;
-                    try {
-                        targetComponent = entity.addComponent(TargetComponent.class);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        // get path to target
+                        var path = Astar.findPathToTarget(
+                                new Node(shipPosition).position,
+                                targetPosition,
+                                obst
+                        );
+
+                        // change or add target position and path
+                        if (entity.hasComponent(TargetComponent.class)) {
+                            // change
+                            var targetComponentOptional = entity.getComponent(TargetComponent.class);
+                            if (targetComponentOptional.isPresent()) {
+                                var targetComponent = targetComponentOptional.get();
+                                targetComponent.targetWorldPosition = targetPosition;
+                                targetComponent.path = path;
+
+                                LOGGER.debug("Change Ship target to x: {}, y: {}.", targetComponent.targetWorldPosition.x, targetComponent.targetWorldPosition.y);
+                            }
+                        } else {
+                            // add
+                            try {
+                                var targetComponentOptional = entity.addComponent(TargetComponent.class);
+                                if (targetComponentOptional.isPresent()) {
+                                    var targetComponent = targetComponentOptional.get();
+                                    targetComponent.targetWorldPosition = targetPosition;
+                                    targetComponent.path = path;
+
+                                    LOGGER.debug("Add new Ship target x: {}, y: {}.", targetComponent.targetWorldPosition.x, targetComponent.targetWorldPosition.y);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
                     }
-                    targetComponent.get().path = path;
-                    targetComponent.get().target = target;
                 }
             }
         }

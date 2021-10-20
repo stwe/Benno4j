@@ -33,6 +33,13 @@ public class TargetComponent implements Component {
     // Member
     //-------------------------------------------------
 
-    public Vector2i target;
+    /**
+     * The target position in world space.
+     */
+    public Vector2i targetWorldPosition;
+
+    /**
+     * The path to the {@link #targetWorldPosition}.
+     */
     public ArrayList<Node> path;
 }

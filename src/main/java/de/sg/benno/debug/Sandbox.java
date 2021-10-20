@@ -151,14 +151,17 @@ public class Sandbox {
      * @throws Exception If an error is thrown.
      */
     private void initEcs() throws Exception {
+        // render Ship objects
         var renderSignature = new Signature();
         renderSignature.setAll(GfxIndexComponent.class, PositionComponent.class);
         ecs.getSystemManager().addSystem(new SpriteRenderSystem(context, camera, currentZoom, renderSignature));
 
+        // left mouse button: add && remove SelectedComponent (select / deselect ship)
         var selectSignature = new Signature();
         selectSignature.setAll(GfxIndexComponent.class, PositionComponent.class);
         ecs.getSystemManager().addSystem(new SelectShipSystem(context, water, camera, currentZoom, selectSignature));
 
+        // right mouse button: add && remove TargetComponent (target position + path to target)
         var pathSignature = new Signature();
         pathSignature.setAll(PositionComponent.class, SelectedComponent.class);
         ecs.getSystemManager().addSystem(new FindPathSystem(context, water, camera, currentZoom, pathSignature));

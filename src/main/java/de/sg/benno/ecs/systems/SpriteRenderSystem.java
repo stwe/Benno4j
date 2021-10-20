@@ -69,7 +69,7 @@ public class SpriteRenderSystem extends EntitySystem {
     //-------------------------------------------------
 
     /**
-     * Constructs a new {@link System}.
+     * Constructs a new {@link SpriteRenderSystem} object.
      *
      * @param context The {@link Context} object.
      * @param camera The {@link Camera} object.
@@ -126,15 +126,20 @@ public class SpriteRenderSystem extends EntitySystem {
     public void render() {
         for (var entity : getEntities()) {
             var gfxIndexOptional = entity.getComponent(GfxIndexComponent.class);
-            var gfxIndex = gfxIndexOptional.get().gfxIndex;
-
             var positionOptional = entity.getComponent(PositionComponent.class);
-            var screenPosition = positionOptional.get().screenPositions.get(currentZoom);
-            var size = positionOptional.get().sizes.get(currentZoom);
-            var modelMatrix = RenderUtil.createModelMatrix(screenPosition, size);
+            if (gfxIndexOptional.isPresent() && positionOptional.isPresent()) {
+                var gfxIndexComponent = gfxIndexOptional.get();
+                var positionComponent = positionOptional.get();
 
-            var bshTexture = shipBshFiles.get(currentZoom).getBshTextures().get(gfxIndex);
-            spriteRenderer.render(camera.getViewMatrix(), bshTexture.getTexture(), modelMatrix);
+                var gfxIndex = gfxIndexComponent.gfxIndex;
+
+                var screenPosition = positionComponent.screenPositions.get(currentZoom);
+                var size = positionComponent.sizes.get(currentZoom);
+                var modelMatrix = RenderUtil.createModelMatrix(screenPosition, size);
+
+                var bshTexture = shipBshFiles.get(currentZoom).getBshTextures().get(gfxIndex);
+                spriteRenderer.render(camera.getViewMatrix(), bshTexture.getTexture(), modelMatrix);
+            }
         }
     }
 

@@ -29,28 +29,62 @@ import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
 
+import java.util.Objects;
+
 import static de.sg.benno.ogl.Log.LOGGER;
 
+/**
+ * Represents a SelectShipSystem.
+ */
 public class SelectShipSystem extends EntitySystem {
 
     //-------------------------------------------------
     // Member
     //-------------------------------------------------
 
+    /**
+     * The {@link Context} object.
+     */
     private final Context context;
+
+    /**
+     * The {@link Camera} object.
+     */
     private final Camera camera;
+
+    /**
+     * The current {@link Zoom}.
+     */
     private Zoom currentZoom;
+
+    /**
+     * A {@link MousePicker} object.
+     */
     private final MousePicker mousePicker;
 
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
-    public SelectShipSystem(Context context, Water water, Camera camera, Zoom currentZoom, Signature signature) throws Exception {
+    /**
+     * Constructs a new {@link SelectShipSystem} object.
+     *
+     * @param context The {@link Context} object.
+     * @param water The {@link Water} object.
+     * @param camera The {@link Camera} object.
+     * @param currentZoom The current {@link Zoom}.
+     * @param signature A {@link Signature} object.
+     * @throws Exception If an error is thrown.
+     */
+    public SelectShipSystem(
+            Context context, Water water, Camera camera, Zoom currentZoom,
+            Signature signature) throws Exception {
         super(signature);
 
-        this.context = context;
-        this.camera = camera;
+        LOGGER.debug("Creates SelectShipSystem object.");
+
+        this.context = Objects.requireNonNull(context, "context must not be null");
+        this.camera = Objects.requireNonNull(camera, "camera must not be null");
         this.currentZoom = currentZoom;
         this.mousePicker = new MousePicker(context, water, TileGraphic.TileHeight.SEA_LEVEL);
     }
@@ -91,18 +125,20 @@ public class SelectShipSystem extends EntitySystem {
                         // get world position of the tile under mouse
                         var selectedPosition = mousePicker.getTileUnderMouse(camera, currentZoom);
 
-                        // compare
+                        // compare both positions
                         if (shipPosition.equals(selectedPosition)) {
-                            LOGGER.debug("ship selected");
-
                             if (entity.hasComponent(SelectedComponent.class)) {
-                                return;
-                            }
-
-                            try {
-                                entity.addComponent(SelectedComponent.class);
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                                // deselect
+                                entity.removeComponent(SelectedComponent.class);
+                                LOGGER.debug("Ship {} is now deselected.", entity.debugName);
+                            } else {
+                                // select
+                                try {
+                                    entity.addComponent(SelectedComponent.class);
+                                    LOGGER.debug("Ship {} is now selected.", entity.debugName);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }
                     }
