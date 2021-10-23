@@ -19,6 +19,9 @@
 package de.sg.benno.debug;
 
 import de.sg.benno.chunk.Ship4;
+import de.sg.benno.ecs.components.PositionComponent;
+import de.sg.benno.ecs.components.Ship4Component;
+import de.sg.benno.ecs.components.TargetComponent;
 import de.sg.benno.ogl.Config;
 import de.sg.benno.state.Context;
 import imgui.ImColor;
@@ -101,11 +104,7 @@ public class DebugUi {
 
         cameraPosition();
         screenSpacePosition();
-
-        //worldSpacePosition();
-        //currentShip();
-        //targetWorldSpacePosition();
-        //targetDirection();
+        entityInfo();
 
         ImGui.end();
     }
@@ -118,7 +117,9 @@ public class DebugUi {
      * Shows current position.
      */
     private void cameraPosition() {
+        ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
         ImGui.text("Camera position");
+        ImGui.popStyleColor();
         ImGui.text("Camera screen space x: " + sandboxState.getSandbox().getCamera().position.x + " (" + sandboxState.getSandbox().getCamera().positionInTileUnits.x+")");
         ImGui.text("Camera screen space y: " + sandboxState.getSandbox().getCamera().position.y + " (" + sandboxState.getSandbox().getCamera().positionInTileUnits.y+")");
     }
@@ -139,85 +140,64 @@ public class DebugUi {
     }
 
     /**
-     * Shows the current mouse position in world space.
+     * Shows entity components.
      */
-    private void worldSpacePosition() {
-        /*
-        var selTile = sandboxState.getSandbox().getMousePicker().getTileUnderMouse(
-                sandboxState.getSandbox().getCamera(),
-                sandboxState.getSandbox().getCurrentZoom()
-        );
-
+    private void entityInfo() {
         ImGui.separator();
+        for (var entity : sandboxState.getSandbox().getEcs().getEntityManager().getAllEntities()) {
+            // entity
+            ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
+            ImGui.text("Entity");
+            ImGui.popStyleColor();
+            ImGui.text("Debug name: " + entity.debugName);
 
-        ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
-        ImGui.text("Mouse position in world space");
-        ImGui.popStyleColor();
+            // components
+            ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
+            ImGui.text("Components");
+            ImGui.popStyleColor();
+            for (var component : entity.getComponents()) {
+                ImGui.text("Component: " + component.getClass().getSimpleName());
+            }
 
-        ImGui.text("Tile x: " + selTile.x);
-        ImGui.text("Tile y: " + selTile.y);
-        */
-    }
+            // position component
+            ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
+            ImGui.text("Position component data");
+            ImGui.popStyleColor();
+            var positionComponentOptional = entity.getComponent(PositionComponent.class);
+            positionComponentOptional.ifPresent(
+                    positionComponent -> {
+                        ImGui.text("World position x: " + positionComponent.worldPosition.x);
+                        ImGui.text("World position y: " + positionComponent.worldPosition.y);
+                    }
+            );
 
-    /**
-     * Shows info about the current ship.
-     */
-    private void currentShip() {
-        /*
-        ImGui.separator();
+            // target component
+            var targetComponentOptional = entity.getComponent(TargetComponent.class);
+            targetComponentOptional.ifPresent(
+                    targetComponent -> {
+                        ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
+                        ImGui.text("Target component data");
+                        ImGui.popStyleColor();
+                        ImGui.text("Target world position x: " + targetComponent.targetWorldPosition.x);
+                        ImGui.text("Target world position y: " + targetComponent.targetWorldPosition.y);
+                    }
+            );
 
-        ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
-        ImGui.text("Current ship");
-        ImGui.popStyleColor();
-
-        // a ship was clicked with the left mouse button
-        var currentShip = sandboxState.getSandbox().getShipping().getCurrentShip();
-        if (currentShip != null) {
-            ImGui.text("Name: " + currentShip.name);
-            ImGui.text("X: " + currentShip.xPos);
-            ImGui.text("Y: " + currentShip.yPos);
-            ImGui.text("Health: " + currentShip.health);
-            ImGui.text("Cannons: " + currentShip.numberOfCannons);
-            ImGui.text("Type: " + Ship4.ShipType.valueOfType(currentShip.type));
-            ImGui.text("Direction: " + currentShip.direction);
-        } else {
-            ImGui.text("Ship: none");
+            // ship4 component
+            ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
+            ImGui.text("Ship4 component data");
+            ImGui.popStyleColor();
+            var shipComponentOptional = entity.getComponent(Ship4Component.class);
+            if (shipComponentOptional.isPresent()) {
+                var ship = shipComponentOptional.get().ship4;
+                ImGui.text("Name: " + ship.name);
+                ImGui.text("X: " + ship.xPos);
+                ImGui.text("Y: " + ship.yPos);
+                ImGui.text("Health: " + ship.health);
+                ImGui.text("Cannons: " + ship.numberOfCannons);
+                ImGui.text("Type: " + Ship4.ShipType.valueOfType(ship.type));
+                ImGui.text("Direction: " + ship.direction);
+            }
         }
-        */
-    }
-
-    /**
-     * The current target position in world space.
-     */
-    private void targetWorldSpacePosition() {
-        /*
-        ImGui.separator();
-
-        ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
-        ImGui.text("Current target");
-        ImGui.popStyleColor();
-
-        // a target was selected with the right mouse button
-        var target = sandboxState.getSandbox().getShipping().getTarget();
-        if (target != null) {
-            ImGui.text("Target x: " + target.x);
-            ImGui.text("Target y: " + target.y);
-        } else {
-            ImGui.text("Target: none");
-        }
-        */
-    }
-
-    /**
-     * The current direction and angle to the target.
-     */
-    private void targetDirection() {
-        /*
-        var d = sandboxState.getSandbox().getShipping().getCurrentTargetDirection();
-        if (d != null) {
-            ImGui.text("dir x: " + d.x + " dir y: " + d.y);
-            ImGui.text("angle: " + d.z);
-        }
-        */
     }
 }

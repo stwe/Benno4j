@@ -32,14 +32,25 @@ public class SandboxState extends ApplicationState {
     // Member
     //-------------------------------------------------
 
+    /**
+     * The game world.
+     */
     private Sandbox sandbox;
 
+    /**
+     * ImGui to show some debug output.
+     */
     private DebugUi debugUi;
 
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
+    /**
+     * Constructs a new {@link SandboxState} object.
+     *
+     * @param stateMachine The parent {@link StateMachine}.
+     */
     public SandboxState(StateMachine stateMachine) {
         super(stateMachine);
 
@@ -50,6 +61,11 @@ public class SandboxState extends ApplicationState {
     // Getter
     //-------------------------------------------------
 
+    /**
+     * Get {@link #sandbox}.
+     *
+     * @return {@link #sandbox}
+     */
     public Sandbox getSandbox() {
         return sandbox;
     }

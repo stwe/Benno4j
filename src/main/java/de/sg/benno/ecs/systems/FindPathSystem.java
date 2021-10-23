@@ -66,6 +66,11 @@ public class FindPathSystem extends EntitySystem {
      */
     private final MousePicker mousePicker;
 
+    /**
+     * Prevent multiple handling of the same event.
+     */
+    private boolean inputWasDone = false;
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -110,14 +115,17 @@ public class FindPathSystem extends EntitySystem {
 
     @Override
     public void input() {
-
-    }
-
-    @Override
-    public void update() {
         var mouseInput = context.engine.getMouseInput();
         if (mouseInput.isInWindow()) {
-            if (mouseInput.isRightButtonPressed()) {
+            // button release event
+            if (!mouseInput.isRightButtonPressed()) {
+                inputWasDone = false;
+            }
+
+            // button press event
+            if (mouseInput.isRightButtonPressed()  && !inputWasDone) {
+                inputWasDone = true;
+
                 for (var entity : getEntities()) {
                     var shipPositionOptional = entity.getComponent(PositionComponent.class);
                     if (shipPositionOptional.isPresent()) {
@@ -169,6 +177,11 @@ public class FindPathSystem extends EntitySystem {
                 }
             }
         }
+    }
+
+    @Override
+    public void update() {
+
     }
 
     @Override

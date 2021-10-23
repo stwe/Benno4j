@@ -83,6 +83,7 @@ public class Ecs {
      * Handle input for all the systems.
      */
     public void input() {
+        processEntityTodos();
         systemManager.input();
     }
 

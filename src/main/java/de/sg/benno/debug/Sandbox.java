@@ -24,10 +24,7 @@ import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.content.Water;
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.WorldData;
-import de.sg.benno.ecs.components.GfxIndexComponent;
-import de.sg.benno.ecs.components.PositionComponent;
-import de.sg.benno.ecs.components.SelectedComponent;
-import de.sg.benno.ecs.components.TargetComponent;
+import de.sg.benno.ecs.components.*;
 import de.sg.benno.ecs.core.Ecs;
 import de.sg.benno.ecs.core.EcsSettings;
 import de.sg.benno.ecs.core.Signature;
@@ -112,7 +109,8 @@ public class Sandbox {
                 GfxIndexComponent.class,
                 PositionComponent.class,
                 SelectedComponent.class,
-                TargetComponent.class
+                TargetComponent.class,
+                Ship4Component.class
         );
         this.ecs = new Ecs();
 
@@ -124,6 +122,15 @@ public class Sandbox {
     //-------------------------------------------------
 
     /**
+     * Get {@link #camera}.
+     *
+     * @return {@link #camera}
+     */
+    public Camera getCamera() {
+        return camera;
+    }
+
+    /**
      * Get {@link #currentZoom}.
      *
      * @return {@link #currentZoom}
@@ -133,12 +140,12 @@ public class Sandbox {
     }
 
     /**
-     * Get {@link #camera}.
+     * Get {@link #ecs}.
      *
-     * @return {@link #camera}
+     * @return {@link #ecs}.
      */
-    public Camera getCamera() {
-        return camera;
+    public Ecs getEcs() {
+        return ecs;
     }
 
     //-------------------------------------------------
@@ -181,6 +188,13 @@ public class Sandbox {
 
             // set a debug name
             entity.debugName = ship.name;
+
+            // add ship component
+            var shipComponentOptional = entity.addComponent(Ship4Component.class);
+            if (shipComponentOptional.isEmpty()) {
+                throw new BennoRuntimeException("Ship4Component missing.");
+            }
+            shipComponentOptional.get().ship4 = ship;
 
             // add gfx index component
             var gfxIndexComponentOptional = entity.addComponent(GfxIndexComponent.class);
@@ -227,9 +241,11 @@ public class Sandbox {
     //-------------------------------------------------
 
     /**
-     * Nothing
+     * Input sandbox.
      */
-    public void input() {}
+    public void input() {
+        ecs.input();
+    }
 
     /**
      * Update sandbox.
@@ -275,8 +291,12 @@ public class Sandbox {
         // todo: -> Event
         var spriteRenderSystemOptional = ecs.getSystemManager().getSystem(SpriteRenderSystem.class);
         spriteRenderSystemOptional.ifPresent(spriteRenderSystem -> spriteRenderSystem.setCurrentZoom(currentZoom));
+
         var selectShipSystemOptional = ecs.getSystemManager().getSystem(SelectShipSystem.class);
         selectShipSystemOptional.ifPresent(selectShipSystem -> selectShipSystem.setCurrentZoom(currentZoom));
+
+        var findPathSystemOptional = ecs.getSystemManager().getSystem(FindPathSystem.class);
+        findPathSystemOptional.ifPresent(findPathSystem -> findPathSystem.setCurrentZoom(currentZoom));
     }
 
     //-------------------------------------------------

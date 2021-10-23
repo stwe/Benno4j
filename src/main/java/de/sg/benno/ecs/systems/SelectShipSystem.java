@@ -23,6 +23,7 @@ import de.sg.benno.content.Water;
 import de.sg.benno.debug.MousePicker;
 import de.sg.benno.ecs.components.PositionComponent;
 import de.sg.benno.ecs.components.SelectedComponent;
+import de.sg.benno.ecs.components.TargetComponent;
 import de.sg.benno.ecs.core.EntitySystem;
 import de.sg.benno.ecs.core.Signature;
 import de.sg.benno.input.Camera;
@@ -61,6 +62,11 @@ public class SelectShipSystem extends EntitySystem {
      * A {@link MousePicker} object.
      */
     private final MousePicker mousePicker;
+
+    /**
+     * Prevent multiple handling of the same event.
+     */
+    private boolean inputWasDone = false;
 
     //-------------------------------------------------
     // Ctors.
@@ -108,14 +114,17 @@ public class SelectShipSystem extends EntitySystem {
 
     @Override
     public void input() {
-
-    }
-
-    @Override
-    public void update() {
         var mouseInput = context.engine.getMouseInput();
         if (mouseInput.isInWindow()) {
-            if (mouseInput.isLeftButtonPressed()) {
+            // button release event
+            if (!mouseInput.isLeftButtonPressed()) {
+                inputWasDone = false;
+            }
+
+            // button press event
+            if (mouseInput.isLeftButtonPressed() && !inputWasDone) {
+                inputWasDone = true;
+
                 for (var entity : getEntities()) {
                     var shipPositionOptional = entity.getComponent(PositionComponent.class);
                     if (shipPositionOptional.isPresent()) {
@@ -130,6 +139,7 @@ public class SelectShipSystem extends EntitySystem {
                             if (entity.hasComponent(SelectedComponent.class)) {
                                 // deselect
                                 entity.removeComponent(SelectedComponent.class);
+                                entity.removeComponent(TargetComponent.class);
                                 LOGGER.debug("Ship {} is now deselected.", entity.debugName);
                             } else {
                                 // select
@@ -145,6 +155,11 @@ public class SelectShipSystem extends EntitySystem {
                 }
             }
         }
+    }
+
+    @Override
+    public void update() {
+
     }
 
     @Override
