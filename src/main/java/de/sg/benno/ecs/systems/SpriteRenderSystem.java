@@ -37,6 +37,8 @@ import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * Represents a SpriteRenderSystem.
+ * This system iterates over all entities with the {@link GfxIndexComponent} and the {@link PositionComponent}.
+ * Renders the entities.
  */
 public class SpriteRenderSystem extends EntitySystem {
 
@@ -77,9 +79,7 @@ public class SpriteRenderSystem extends EntitySystem {
      * @param signature A {@link Signature} object.
      * @throws IOException If an I/O error is thrown.
      */
-    public SpriteRenderSystem(
-            Context context, Camera camera, Zoom currentZoom,
-            Signature signature) throws IOException {
+    public SpriteRenderSystem(Context context, Camera camera, Zoom currentZoom, Signature signature) throws IOException {
         super(signature);
 
         LOGGER.debug("Creates SpriteRenderSystem object.");
@@ -88,11 +88,24 @@ public class SpriteRenderSystem extends EntitySystem {
 
         this.camera = Objects.requireNonNull(camera, "camera must not be null");
         this.spriteRenderer = new SpriteRenderer(context.engine);
-        this.currentZoom = currentZoom;
+        this.currentZoom = Objects.requireNonNull(currentZoom, "currentZoom must not be null");
 
         for (var zoom : Zoom.values()) {
             this.shipBshFiles.put(zoom, context.bennoFiles.getShipBshFile(zoom));
         }
+    }
+
+    /**
+     * Constructs a new {@link SpriteRenderSystem} object.
+     *
+     * @param context The {@link Context} object.
+     * @param camera The {@link Camera} object.
+     * @param currentZoom The current {@link Zoom}.
+     * @throws IOException If an I/O error is thrown.
+     */
+    public SpriteRenderSystem(Context context, Camera camera, Zoom currentZoom) throws IOException {
+        this(context, camera, currentZoom, new Signature());
+        getSignature().setAll(GfxIndexComponent.class, PositionComponent.class);
     }
 
     //-------------------------------------------------

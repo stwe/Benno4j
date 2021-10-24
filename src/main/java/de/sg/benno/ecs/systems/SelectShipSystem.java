@@ -21,6 +21,7 @@ package de.sg.benno.ecs.systems;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.content.Water;
 import de.sg.benno.debug.MousePicker;
+import de.sg.benno.ecs.components.GfxIndexComponent;
 import de.sg.benno.ecs.components.PositionComponent;
 import de.sg.benno.ecs.components.SelectedComponent;
 import de.sg.benno.ecs.components.TargetComponent;
@@ -36,6 +37,9 @@ import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * Represents a SelectShipSystem.
+ * This system iterates over all entities with the {@link GfxIndexComponent} and the {@link PositionComponent}.
+ * With the left mouse button the {@link SelectedComponent} is added to the entity if there is a ship at the position.
+ * Another click removes the {@link SelectedComponent} and the possibly existing {@link TargetComponent}.
  */
 public class SelectShipSystem extends EntitySystem {
 
@@ -82,17 +86,29 @@ public class SelectShipSystem extends EntitySystem {
      * @param signature A {@link Signature} object.
      * @throws Exception If an error is thrown.
      */
-    public SelectShipSystem(
-            Context context, Water water, Camera camera, Zoom currentZoom,
-            Signature signature) throws Exception {
+    public SelectShipSystem(Context context, Water water, Camera camera, Zoom currentZoom, Signature signature) throws Exception {
         super(signature);
 
         LOGGER.debug("Creates SelectShipSystem object.");
 
         this.context = Objects.requireNonNull(context, "context must not be null");
         this.camera = Objects.requireNonNull(camera, "camera must not be null");
-        this.currentZoom = currentZoom;
+        this.currentZoom = Objects.requireNonNull(currentZoom, "currentZoom must not be null");
         this.mousePicker = new MousePicker(context, water, TileGraphic.TileHeight.SEA_LEVEL);
+    }
+
+    /**
+     * Constructs a new {@link SelectShipSystem} object.
+     *
+     * @param context The {@link Context} object.
+     * @param water The {@link Water} object.
+     * @param camera The {@link Camera} object.
+     * @param currentZoom The current {@link Zoom}.
+     * @throws Exception If an error is thrown.
+     */
+    public SelectShipSystem(Context context, Water water, Camera camera, Zoom currentZoom) throws Exception {
+        this(context, water, camera, currentZoom, new Signature());
+        getSignature().setAll(GfxIndexComponent.class, PositionComponent.class);
     }
 
     //-------------------------------------------------
@@ -139,7 +155,9 @@ public class SelectShipSystem extends EntitySystem {
                             if (entity.hasComponent(SelectedComponent.class)) {
                                 // deselect
                                 entity.removeComponent(SelectedComponent.class);
-                                entity.removeComponent(TargetComponent.class);
+                                if (entity.hasComponent(TargetComponent.class)) {
+                                    entity.removeComponent(TargetComponent.class);
+                                }
                                 LOGGER.debug("Ship {} is now deselected.", entity.debugName);
                             } else {
                                 // select

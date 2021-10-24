@@ -19,6 +19,7 @@
 package de.sg.benno.debug;
 
 import de.sg.benno.chunk.Ship4;
+import de.sg.benno.ecs.components.GfxIndexComponent;
 import de.sg.benno.ecs.components.PositionComponent;
 import de.sg.benno.ecs.components.Ship4Component;
 import de.sg.benno.ecs.components.TargetComponent;
@@ -145,19 +146,28 @@ public class DebugUi {
     private void entityInfo() {
         ImGui.separator();
         for (var entity : sandboxState.getSandbox().getEcs().getEntityManager().getAllEntities()) {
-            // entity
+            // entity debug name
             ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
             ImGui.text("Entity");
             ImGui.popStyleColor();
             ImGui.text("Debug name: " + entity.debugName);
 
-            // components
+            // list components
             ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
             ImGui.text("Components");
             ImGui.popStyleColor();
             for (var component : entity.getComponents()) {
                 ImGui.text("Component: " + component.getClass().getSimpleName());
             }
+
+            // gfx componenent
+            ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
+            ImGui.text("Gfx component data");
+            ImGui.popStyleColor();
+            var gfxIndexComponentOptional = entity.getComponent(GfxIndexComponent.class);
+            gfxIndexComponentOptional.ifPresent(
+                    gfxIndexComponent -> ImGui.text("Gfx index: " + gfxIndexComponent.gfxIndex)
+            );
 
             // position component
             ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));

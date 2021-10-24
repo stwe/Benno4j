@@ -27,7 +27,6 @@ import de.sg.benno.chunk.WorldData;
 import de.sg.benno.ecs.components.*;
 import de.sg.benno.ecs.core.Ecs;
 import de.sg.benno.ecs.core.EcsSettings;
-import de.sg.benno.ecs.core.Signature;
 import de.sg.benno.ecs.systems.FindPathSystem;
 import de.sg.benno.ecs.systems.SelectShipSystem;
 import de.sg.benno.ecs.systems.SpriteRenderSystem;
@@ -158,20 +157,14 @@ public class Sandbox {
      * @throws Exception If an error is thrown.
      */
     private void initEcs() throws Exception {
-        // render Ship objects
-        var renderSignature = new Signature();
-        renderSignature.setAll(GfxIndexComponent.class, PositionComponent.class);
-        ecs.getSystemManager().addSystem(new SpriteRenderSystem(context, camera, currentZoom, renderSignature));
+        // render entities (ships)
+        ecs.getSystemManager().addSystem(new SpriteRenderSystem(context, camera, currentZoom));
 
-        // left mouse button: add && remove SelectedComponent (select / deselect ship)
-        var selectSignature = new Signature();
-        selectSignature.setAll(GfxIndexComponent.class, PositionComponent.class);
-        ecs.getSystemManager().addSystem(new SelectShipSystem(context, water, camera, currentZoom, selectSignature));
+        // left mouse button clicks on a ship
+        ecs.getSystemManager().addSystem(new SelectShipSystem(context, water, camera, currentZoom));
 
-        // right mouse button: add && remove TargetComponent (target position + path to target)
-        var pathSignature = new Signature();
-        pathSignature.setAll(PositionComponent.class, SelectedComponent.class);
-        ecs.getSystemManager().addSystem(new FindPathSystem(context, water, camera, currentZoom, pathSignature));
+        // handle right mouse button clicks to find a target for a selected ship
+        ecs.getSystemManager().addSystem(new FindPathSystem(context, water, camera, currentZoom));
 
         createEntities();
     }
