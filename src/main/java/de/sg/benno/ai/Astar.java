@@ -28,6 +28,7 @@ import java.util.Stack;
 import static de.sg.benno.World.WORLD_HEIGHT;
 import static de.sg.benno.World.WORLD_WIDTH;
 import static de.sg.benno.ogl.Log.LOGGER;
+import static org.joml.Math.sqrt;
 
 /**
  * Represents the A* algorithm.
@@ -239,20 +240,17 @@ public class Astar {
      * Tells us how close we are to the goal.
      * @see <a href="https://theory.stanford.edu/~amitp/GameProgramming/Heuristics.html">Amit's Notes on A* Heuristics</a>
      *
-     * @param x A x position in world space.
+     * @param x An x position in world space.
      * @param y A y position in world space.
      * @param endNode The {@link Node} representing the target position in world space.
      *
      * @return The distance to the goal.
      */
     private static float calculateHeuristic(int x, int y, Node endNode) {
-        var d = 1; // cost for moving from one space to an adjacent space
-        var d2 = 1; // the cost of moving diagonally
+        var xd = endNode.position.x - x;
+        var yd = endNode.position.y - y;
 
-        var dx = Math.abs(x - endNode.position.x);
-        var dy = Math.abs(y - endNode.position.y);
-
-        return d * (dx + dy) + (d2 - 2 * d) * Math.min(dx, dy);
+        return sqrt(xd * xd + yd * yd);
     }
 
     //-------------------------------------------------
