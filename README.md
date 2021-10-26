@@ -6,6 +6,16 @@ This project is under heavy development and will receive frequent updates with n
 
 <img src="https://github.com/stwe/Benno4j/blob/master/devLog/28-08-2021.png" width="409" height="316" />
 
+## New - Pathfinding
+
+- A single ship can be activated and deactivated with the mouse.
+- The A * algorithm finds the shortest path to a target. Islands are obstacles.
+- The ship moves to the target. You can switch back and forth between the zoom levels.
+
+<img src="https://github.com/stwe/Benno4j/blob/master/devLog/26-10-2021 (1).png" width="409" height="316" />
+
+<img src="https://github.com/stwe/Benno4j/blob/master/devLog/26-10-2021 (0)" width="409" height="316" />
+
 ## Supported versions
 
 Due to copyright law, I cannot include the original graphics.
@@ -27,7 +37,7 @@ The file `benno.properties` must be edited. Enter the correct path to the savega
 
 ## Third Party Licenses
 
-*Benno4j* uses some third party libraries because it is better to reuse well written code from others instead of reinventing the wheel:
+*Benno4j* uses some third party libraries:
 
 - [Log4j](http://logging.apache.org/log4j/2.x/index.html) which is licensed under the Apache 2.0 license
 - [LWJGL](https://www.lwjgl.org/) is licensed under BSD

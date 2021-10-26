@@ -8,7 +8,6 @@ TODO
 
 - Schiffe laden und anzeigen
 - Schiffe animieren
-- Schiffe von a nach b bewegen (A* Path Finding)
 - Alle Schiffe auf der Minimap anzeigen
 
 - Animation der Bebauung
