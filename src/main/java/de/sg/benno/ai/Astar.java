@@ -37,6 +37,20 @@ import static org.joml.Math.sqrt;
 public class Astar {
 
     //-------------------------------------------------
+    // Constants
+    //-------------------------------------------------
+
+    /**
+     * There is no obstacle at this point.
+     */
+    public static final int PASSABLE = 0;
+
+    /**
+     * An obstacle.
+     */
+    public static final int OBSTACLE = 1;
+
+    //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
 
@@ -59,7 +73,7 @@ public class Astar {
      *
      * @return A {@link ArrayList} with zero or multiple {@link Node} objects.
      */
-    public static ArrayList<Node> findPathToTarget(Vector2i start, Vector2i end, ArrayList<Byte> obstacles) {
+    public static ArrayList<Node> findPathToTarget(Vector2i start, Vector2i end, ArrayList<Integer> obstacles) {
         return findPathToTarget(new Node(start), new Node(end), obstacles);
     }
 
@@ -72,7 +86,7 @@ public class Astar {
      *
      * @return A {@link ArrayList} with zero or multiple {@link Node} objects.
      */
-    public static ArrayList<Node> findPathToTarget(Ship4 ship4, Vector2i end, ArrayList<Byte> obstacles) {
+    public static ArrayList<Node> findPathToTarget(Ship4 ship4, Vector2i end, ArrayList<Integer> obstacles) {
         return findPathToTarget(new Node(ship4.getPosition()), new Node(end), obstacles);
     }
 
@@ -85,7 +99,7 @@ public class Astar {
      *
      * @return A {@link ArrayList} with zero or multiple {@link Node} objects.
      */
-    public static ArrayList<Node> findPathToTarget(Node startNode, Node endNode, ArrayList<Byte> obstacles) {
+    public static ArrayList<Node> findPathToTarget(Node startNode, Node endNode, ArrayList<Integer> obstacles) {
         var empty = new ArrayList<Node>();
 
         if (!isValid(endNode, obstacles)) {
@@ -266,12 +280,12 @@ public class Astar {
      *
      * @return boolean
      */
-    private static boolean isValid(int x, int y, ArrayList<Byte> obstacles) {
+    private static boolean isValid(int x, int y, ArrayList<Integer> obstacles) {
         if (x < 0 || y < 0 || x >= WORLD_WIDTH || y >= WORLD_HEIGHT) {
             return false;
         }
 
-        return obstacles.get(TileUtil.getIndexFrom2D(x, y)) != 1;
+        return obstacles.get(TileUtil.getIndexFrom2D(x, y)) == PASSABLE;
     }
 
     /**
@@ -282,7 +296,7 @@ public class Astar {
      *
      * @return boolean
      */
-    private static boolean isValid(Node node, ArrayList<Byte> obstacles) {
+    private static boolean isValid(Node node, ArrayList<Integer> obstacles) {
         return isValid(node.position.x, node.position.y, obstacles);
     }
 

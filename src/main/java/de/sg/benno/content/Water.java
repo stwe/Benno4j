@@ -19,6 +19,7 @@
 package de.sg.benno.content;
 
 import de.sg.benno.BennoConfig;
+import de.sg.benno.ai.Astar;
 import de.sg.benno.chunk.*;
 import de.sg.benno.util.TileUtil;
 import de.sg.benno.data.Building;
@@ -87,6 +88,11 @@ public class Water {
     private ArrayList<Integer> waterInstancesIndex;
 
     /**
+     * Stores a 0 for every position in the world if it is passable for a ship, otherwise a 1.
+     */
+    private ArrayList<Integer> passableArea;
+
+    /**
      * To store the gfx start index. Animations do not always start with the first gfx.
      * 0 = use first texture, 1 = use second texture, etc.
      */
@@ -123,6 +129,15 @@ public class Water {
     //-------------------------------------------------
     // Getter
     //-------------------------------------------------
+
+    /**
+     * Get {@link #passableArea}.
+     *
+     * @return {@link #passableArea}
+     */
+    public ArrayList<Integer> getPassableArea() {
+        return passableArea;
+    }
 
     /**
      * Get a {@link TileGraphic} by a given world space position.
@@ -258,6 +273,12 @@ public class Water {
             var values = new Integer[WORLD_HEIGHT * WORLD_WIDTH];
             Arrays.fill(values, NO_WATER);
             waterInstancesIndex = new ArrayList<>(Arrays.asList(values));
+
+            // each position in the world is passable by a ship by default
+            var passable = new Integer[WORLD_HEIGHT * WORLD_WIDTH];
+            Arrays.fill(passable, Astar.PASSABLE);
+            passableArea = new ArrayList<>(Arrays.asList(passable));
+
             addInstanceInfo = true;
         }
 
@@ -305,6 +326,9 @@ public class Water {
                             waterInstancesIndex[3] -> -1 = no water
                         */
                     }
+                } else {
+                    // 1 = not passable for a ship (island)
+                    passableArea.set(TileUtil.getIndexFrom2D(x, y), Astar.OBSTACLE);
                 }
             }
         }

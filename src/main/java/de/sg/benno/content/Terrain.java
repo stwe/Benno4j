@@ -92,7 +92,7 @@ public class Terrain {
     /**
      * Stores a 1 for the non-passable area; otherwise a 0.
      */
-    private ArrayList<Byte> passableArea;
+    private ArrayList<Integer> passableArea;
 
     //-------------------------------------------------
     // Ctors.
@@ -155,7 +155,7 @@ public class Terrain {
      *
      * @return {@link #passableArea}
      */
-    public ArrayList<Byte> getPassableArea() {
+    public ArrayList<Integer> getPassableArea() {
         return passableArea;
     }
 
@@ -241,8 +241,8 @@ public class Terrain {
     private void init() throws Exception {
         LOGGER.debug("Start init Terrain...");
 
-        var values = new Byte[WORLD_HEIGHT * WORLD_WIDTH];
-        Arrays.fill(values, (byte)0);
+        var values = new Integer[WORLD_HEIGHT * WORLD_WIDTH];
+        Arrays.fill(values, 0);
         passableArea = new ArrayList<>(Arrays.asList(values));
 
         for (var island5 : provider.getIsland5List()) {
@@ -340,7 +340,7 @@ public class Terrain {
 
                         // todo: use graphicId
                         if (tileGraphic.gfxIndex < 680 || tileGraphic.gfxIndex > 1051) {
-                            passableArea.set(TileUtil.getIndexFrom2D(x, y), (byte)1);
+                            passableArea.set(TileUtil.getIndexFrom2D(x, y), 1);
                         }
                     }
                 } else {

@@ -177,16 +177,11 @@ public class FindPathSystem extends EntitySystem {
                         // get target position in world space
                         var targetPosition = mousePicker.getTileUnderMouse(camera, currentZoom);
 
-                        // dummy obstacles
-                        var data = new Byte[500 * 350];
-                        Arrays.fill(data, (byte) 0);
-                        var obst = new ArrayList<>(Arrays.asList(data));
-
                         // get path to target
                         var path = Astar.findPathToTarget(
                                 new Node(shipPosition).position,
                                 targetPosition,
-                                obst
+                                water.getPassableArea()
                         );
 
                         // create waypoints

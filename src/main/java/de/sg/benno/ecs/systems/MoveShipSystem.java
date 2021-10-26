@@ -147,9 +147,9 @@ public class MoveShipSystem extends EntitySystem {
                     // update position component
                     positionComponentOptional.get().worldPosition.x = ship.xPos;
                     positionComponentOptional.get().worldPosition.y = ship.yPos;
-                    positionComponentOptional.get().screenPositions.put(Zoom.GFX, targetComponent.waypoints.get(Zoom.GFX).get(targetComponent.path.size()-1));
-                    positionComponentOptional.get().screenPositions.put(Zoom.MGFX, targetComponent.waypoints.get(Zoom.MGFX).get(targetComponent.path.size()-1));
-                    positionComponentOptional.get().screenPositions.put(Zoom.SGFX, targetComponent.waypoints.get(Zoom.SGFX).get(targetComponent.path.size()-1));
+                    positionComponentOptional.get().screenPositions.put(Zoom.GFX, targetComponent.waypoints.get(Zoom.GFX).get(targetComponent.path.size() - 1));
+                    positionComponentOptional.get().screenPositions.put(Zoom.MGFX, targetComponent.waypoints.get(Zoom.MGFX).get(targetComponent.path.size() - 1));
+                    positionComponentOptional.get().screenPositions.put(Zoom.SGFX, targetComponent.waypoints.get(Zoom.SGFX).get(targetComponent.path.size() - 1));
 
                     // remove target component
                     if (entity.hasComponent(TargetComponent.class)) {
