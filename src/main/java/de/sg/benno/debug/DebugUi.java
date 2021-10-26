@@ -53,7 +53,7 @@ public class DebugUi {
     /**
      * The menu height.
      */
-    private static final int HEIGHT = 550;
+    private static final int HEIGHT = 590;
 
     //-------------------------------------------------
     // Member
@@ -104,6 +104,7 @@ public class DebugUi {
         ImGui.begin("Debug", windowFlags);
 
         cameraPosition();
+        currentZoom();
         screenSpacePosition();
         entityInfo();
 
@@ -123,6 +124,18 @@ public class DebugUi {
         ImGui.popStyleColor();
         ImGui.text("Camera screen space x: " + sandboxState.getSandbox().getCamera().position.x + " (" + sandboxState.getSandbox().getCamera().positionInTileUnits.x+")");
         ImGui.text("Camera screen space y: " + sandboxState.getSandbox().getCamera().position.y + " (" + sandboxState.getSandbox().getCamera().positionInTileUnits.y+")");
+    }
+
+    /**
+     * Shows current zoom.
+     */
+    private void currentZoom() {
+        ImGui.separator();
+
+        ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
+        ImGui.text("Zoom");
+        ImGui.popStyleColor();
+        ImGui.text("Zoom: " + sandboxState.getSandbox().getCurrentZoom());
     }
 
     /**

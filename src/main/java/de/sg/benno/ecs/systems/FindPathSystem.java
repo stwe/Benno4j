@@ -21,6 +21,7 @@ package de.sg.benno.ecs.systems;
 import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.ai.Astar;
 import de.sg.benno.ai.Node;
+import de.sg.benno.chunk.Ship4;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.content.Water;
 import de.sg.benno.debug.MousePicker;
@@ -33,14 +34,11 @@ import de.sg.benno.ogl.renderer.SpriteRenderer;
 import de.sg.benno.ogl.resource.Texture;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
-import de.sg.benno.util.TileUtil;
 import org.joml.Vector2f;
 
 import java.io.IOException;
 import java.util.*;
 
-import static de.sg.benno.chunk.Ship4.getShipDirection;
-import static de.sg.benno.chunk.Ship4.getTargetDirectionVector;
 import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
@@ -199,7 +197,8 @@ public class FindPathSystem extends EntitySystem {
 
                             for (var node : path) {
                                 try {
-                                    waypoints.add(createWaypoint(node.position.x, node.position.y, gfxIndex, zoom));
+                                    var waypoint = Ship4.createWaypoint(node.position.x, node.position.y, context, gfxIndex, zoom);
+                                    waypoints.add(new Vector2f(waypoint.x, waypoint.y));
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -290,41 +289,13 @@ public class FindPathSystem extends EntitySystem {
             var ship = ship4ComponentOptional.get().ship4;
 
             // get direction and angle to the target
-            var targetDirection = getTargetDirectionVector(target, ship.getPosition());
+            var targetDirection = Ship4.getTargetDirectionVector(target, ship.getPosition());
 
             // set new ship direction by angle for calculation the right gfx index
-            ship.direction = getShipDirection(targetDirection.z);
+            ship.direction = Ship4.getShipDirection(targetDirection.z);
 
             // set the new gfx index
             gfxIndexComponentOptional.get().gfxIndex = ship.getCurrentGfxIndex();
         }
-    }
-
-    /**
-     * Calculates the screen coordinates of a ship for a tile at one position in the world.
-     *
-     * @param x The x position of a ship in world space.
-     * @param y The y position of a ship in world space.
-     * @param gfxIndex The current gfx index of a ship to get the texture width and height.
-     * @param zoom A {@link Zoom}.
-     * @return The waypoint in screen space.
-     * @throws IOException If an I/O error is thrown.
-     */
-    private Vector2f createWaypoint(int x, int y, int gfxIndex, Zoom zoom) throws IOException {
-        var xWorldPos = x + 1; // correction for rendering
-        var yWorldPos = y - 1; // correction for rendering
-
-        var shipBshFile = context.bennoFiles.getShipBshFile(zoom);
-        var shipBshTexture = shipBshFile.getBshTextures().get(gfxIndex);
-
-        var screenPosition = TileUtil.worldToScreen(xWorldPos, yWorldPos, zoom.getTileWidthHalf(), zoom.getTileHeightHalf());
-        var adjustHeight = TileUtil.adjustHeight(zoom.getTileHeightHalf(), TileGraphic.TileHeight.SEA_LEVEL.value, zoom.getElevation());
-        screenPosition.y += adjustHeight;
-        screenPosition.x -= shipBshTexture.getWidth();
-        screenPosition.y -= shipBshTexture.getHeight();
-        screenPosition.x -= zoom.getTileWidthHalf() * 0.5f;
-        screenPosition.y -= zoom.getTileHeightHalf() * 0.5f;
-
-        return new Vector2f(screenPosition);
     }
 }

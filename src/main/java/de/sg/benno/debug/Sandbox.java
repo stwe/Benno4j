@@ -20,7 +20,7 @@ package de.sg.benno.debug;
 
 import de.sg.benno.BennoConfig;
 import de.sg.benno.BennoRuntimeException;
-import de.sg.benno.chunk.TileGraphic;
+import de.sg.benno.chunk.Ship4;
 import de.sg.benno.content.Water;
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.WorldData;
@@ -34,7 +34,6 @@ import de.sg.benno.ecs.systems.SpriteRenderSystem;
 import de.sg.benno.input.Camera;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
-import de.sg.benno.util.TileUtil;
 import org.joml.Vector2f;
 
 import java.util.Objects;
@@ -122,21 +121,21 @@ public class Sandbox {
     //-------------------------------------------------
 
     /**
-     * Get {@link #camera}.
-     *
-     * @return {@link #camera}
-     */
-    public Camera getCamera() {
-        return camera;
-    }
-
-    /**
      * Get {@link #currentZoom}.
      *
      * @return {@link #currentZoom}
      */
     public Zoom getCurrentZoom() {
         return currentZoom;
+    }
+
+    /**
+     * Get {@link #camera}.
+     *
+     * @return {@link #camera}
+     */
+    public Camera getCamera() {
+        return camera;
     }
 
     /**
@@ -211,24 +210,11 @@ public class Sandbox {
             positionComponent.worldPosition.x = ship.xPos;
             positionComponent.worldPosition.y = ship.yPos;
 
-            // set a screen position and a size for each zoom
+            // set screen positions
             for (var zoom : Zoom.values()) {
-                var xWorldPos = ship.xPos + 1; // correction for rendering
-                var yWorldPos = ship.yPos - 1; // correction for rendering
-
-                var shipBshFile = context.bennoFiles.getShipBshFile(zoom);
-                var shipBshTexture = shipBshFile.getBshTextures().get(ship.getCurrentGfxIndex());
-
-                var screenPosition = TileUtil.worldToScreen(xWorldPos, yWorldPos, zoom.getTileWidthHalf(), zoom.getTileHeightHalf());
-                var adjustHeight = TileUtil.adjustHeight(zoom.getTileHeightHalf(), TileGraphic.TileHeight.SEA_LEVEL.value, zoom.getElevation());
-                screenPosition.y += adjustHeight;
-                screenPosition.x -= shipBshTexture.getWidth();
-                screenPosition.y -= shipBshTexture.getHeight();
-                screenPosition.x -= zoom.getTileWidthHalf() * 0.5f;
-                screenPosition.y -= zoom.getTileHeightHalf() * 0.5f;
-
-                positionComponent.screenPositions.put(zoom, new Vector2f(screenPosition.x, screenPosition.y));
-                positionComponent.sizes.put(zoom, new Vector2f(shipBshTexture.getWidth(), shipBshTexture.getHeight()));
+                var waypoint = Ship4.createWaypoint(ship.xPos, ship.yPos, context, ship.getCurrentGfxIndex(), zoom);
+                positionComponent.screenPositions.put(zoom, new Vector2f(waypoint.x, waypoint.y));
+                positionComponent.sizes.put(zoom, new Vector2f(waypoint.z, waypoint.w));
             }
         }
     }
@@ -265,7 +251,7 @@ public class Sandbox {
     }
 
     /**
-     * Renders the sandbox.
+     * Render sandbox.
      */
     public void render() {
         water.render(camera, false, currentZoom);

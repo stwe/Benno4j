@@ -18,10 +18,15 @@
 
 package de.sg.benno.chunk;
 
+import de.sg.benno.renderer.Zoom;
+import de.sg.benno.state.Context;
+import de.sg.benno.util.TileUtil;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -279,6 +284,35 @@ public class Ship4 {
     //-------------------------------------------------
     // Helper
     //-------------------------------------------------
+
+    /**
+     * Calculates the screen coordinates of a ship for a tile at one position in the world.
+     *
+     * @param x The x position of a ship in world space.
+     * @param y The y position of a ship in world space.
+     * @param context The {@link Context} object.
+     * @param gfxIndex The current gfx index of a ship to get the texture width and height.
+     * @param zoom A {@link Zoom}.
+     * @return The waypoint in screen space in xy, the texture width and height in zw.
+     * @throws IOException If an I/O error is thrown.
+     */
+    public static Vector4f createWaypoint(int x, int y, Context context, int gfxIndex, Zoom zoom) throws IOException {
+        var xWorldPos = x + 1; // correction for rendering
+        var yWorldPos = y - 1; // correction for rendering
+
+        var shipBshFile = context.bennoFiles.getShipBshFile(zoom);
+        var shipBshTexture = shipBshFile.getBshTextures().get(gfxIndex);
+
+        var screenPosition = TileUtil.worldToScreen(xWorldPos, yWorldPos, zoom.getTileWidthHalf(), zoom.getTileHeightHalf());
+        var adjustHeight = TileUtil.adjustHeight(zoom.getTileHeightHalf(), TileGraphic.TileHeight.SEA_LEVEL.value, zoom.getElevation());
+        screenPosition.y += adjustHeight;
+        screenPosition.x -= shipBshTexture.getWidth();
+        screenPosition.y -= shipBshTexture.getHeight();
+        screenPosition.x -= zoom.getTileWidthHalf() * 0.5f;
+        screenPosition.y -= zoom.getTileHeightHalf() * 0.5f;
+
+        return new Vector4f(screenPosition.x, screenPosition.y, shipBshTexture.getWidth(), shipBshTexture.getHeight());
+    }
 
     /**
      * Get the direction vector and angle to a target position in the world.
