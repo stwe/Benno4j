@@ -33,13 +33,12 @@ import de.sg.benno.ogl.renderer.SpriteRenderer;
 import de.sg.benno.ogl.resource.Texture;
 import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
+import de.sg.benno.util.TileUtil;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Optional;
+import java.io.IOException;
+import java.util.*;
 
 import static de.sg.benno.ogl.Log.LOGGER;
 
@@ -176,8 +175,9 @@ public class FindPathSystem extends EntitySystem {
                 inputWasDone = true;
 
                 for (var entity : getEntities()) {
+                    var gfxIndexComponentOptional = entity.getComponent(GfxIndexComponent.class);
                     var shipPositionOptional = entity.getComponent(PositionComponent.class);
-                    if (shipPositionOptional.isPresent()) {
+                    if (gfxIndexComponentOptional.isPresent() && shipPositionOptional.isPresent()) {
                         // get ship position in world space
                         var shipPosition = shipPositionOptional.get().worldPosition;
 
@@ -196,6 +196,23 @@ public class FindPathSystem extends EntitySystem {
                                 obst
                         );
 
+                        // create waypoints
+                        var gfxIndex = gfxIndexComponentOptional.get().gfxIndex;
+                        var waypointMap = new HashMap<Zoom, ArrayList<Vector2f>>();
+                        for (var zoom : Zoom.values()) {
+                            var waypoints = new ArrayList<Vector2f>();
+
+                            for (var node : path) {
+                                try {
+                                    waypoints.add(createWaypoint(node.position.x, node.position.y, gfxIndex, zoom));
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+                            waypointMap.put(zoom, waypoints);
+                        }
+
                         // change or add target component
                         Optional<TargetComponent> targetComponentOptional;
                         targetComponentOptional = entity.getComponent(TargetComponent.class);
@@ -203,6 +220,7 @@ public class FindPathSystem extends EntitySystem {
                             var targetComponent = targetComponentOptional.get();
                             targetComponent.targetWorldPosition = targetPosition;
                             targetComponent.path = path;
+                            targetComponent.waypoints = waypointMap;
 
                             updateDirection(entity);
 
@@ -214,6 +232,7 @@ public class FindPathSystem extends EntitySystem {
                                     var targetComponent = targetComponentOptional.get();
                                     targetComponent.targetWorldPosition = targetPosition;
                                     targetComponent.path = path;
+                                    targetComponent.waypoints = waypointMap;
 
                                     updateDirection(entity);
 
@@ -349,5 +368,23 @@ public class FindPathSystem extends EntitySystem {
         }
 
         return 0;
+    }
+
+    private Vector2f createWaypoint(int x, int y, int gfxIndex, Zoom zoom) throws IOException {
+        var xWorldPos = x + 1; // correction for rendering
+        var yWorldPos = y - 1; // correction for rendering
+
+        var shipBshFile = context.bennoFiles.getShipBshFile(zoom);
+        var shipBshTexture = shipBshFile.getBshTextures().get(gfxIndex);
+
+        var screenPosition = TileUtil.worldToScreen(xWorldPos, yWorldPos, zoom.getTileWidthHalf(), zoom.getTileHeightHalf());
+        var adjustHeight = TileUtil.adjustHeight(zoom.getTileHeightHalf(), TileGraphic.TileHeight.SEA_LEVEL.value, zoom.getElevation());
+        screenPosition.y += adjustHeight;
+        screenPosition.x -= shipBshTexture.getWidth();
+        screenPosition.y -= shipBshTexture.getHeight();
+        screenPosition.x -= zoom.getTileWidthHalf() * 0.5f;
+        screenPosition.y -= zoom.getTileHeightHalf() * 0.5f;
+
+        return new Vector2f(screenPosition);
     }
 }

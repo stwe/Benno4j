@@ -20,9 +20,12 @@ package de.sg.benno.ecs.components;
 
 import de.sg.benno.ai.Node;
 import de.sg.benno.ecs.core.Component;
+import de.sg.benno.renderer.Zoom;
+import org.joml.Vector2f;
 import org.joml.Vector2i;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Represents a TargetComponent.
@@ -44,7 +47,13 @@ public class TargetComponent implements Component {
     public ArrayList<Node> path;
 
     /**
-     * Current waypoint (index) in {@link #path}.
+     * A screen position for each path entry.
+     * This allows a sprite to be moved along the {@link #path}.
      */
-    public int currentNodeIndex = 1;
+    public HashMap<Zoom, ArrayList<Vector2f>> waypoints;
+
+    /**
+     * Next waypoint (index) in {@link #path} and {@link #waypoints}.
+     */
+    public int nodeIndex = 1;
 }

@@ -102,18 +102,17 @@ public class MoveShipSystem extends EntitySystem {
             if (positionComponentOptional.isPresent() && targetComponentOptional.isPresent() &&
                     ship4ComponentOptional.isPresent() && gfxIndexComponentOptional.isPresent()) {
 
-                var currentWorldPosition = positionComponentOptional.get().worldPosition;
                 var currentShipScreenPosition = positionComponentOptional.get().screenPositions.get(currentZoom);
                 var targetComponent = targetComponentOptional.get();
                 var ship = ship4ComponentOptional.get().ship4;
 
-                if (!targetComponent.path.isEmpty() && targetComponent.currentNodeIndex < targetComponent.path.size()) {
+                if (!targetComponent.path.isEmpty() && targetComponent.nodeIndex < targetComponent.path.size()) {
                     // current tile/node
-                    var currentWaypoint = targetComponent.path.get(targetComponent.currentNodeIndex - 1);
+                    var currentWaypoint = targetComponent.path.get(targetComponent.nodeIndex - 1);
                     var currentTileScreenPosition = water.getWaterTileGraphic(currentZoom, currentWaypoint.position.x, currentWaypoint.position.y).get().screenPosition;
 
                     // next node/tile
-                    var nextWaypoint = targetComponent.path.get(targetComponent.currentNodeIndex);
+                    var nextWaypoint = targetComponent.path.get(targetComponent.nodeIndex);
                     var nextTileScreenPosition = water.getWaterTileGraphic(currentZoom, nextWaypoint.position.x, nextWaypoint.position.y).get().screenPosition;
 
                     // get direction to the next waypoint
@@ -122,6 +121,29 @@ public class MoveShipSystem extends EntitySystem {
 
                     // add direction to ship screen position
                     currentShipScreenPosition.add(d);
+
+                    // next waypoint
+                    var v = new Vector2f(targetComponent.waypoints.get(currentZoom).get(targetComponent.nodeIndex)).sub(currentShipScreenPosition);
+                    var l = v.length();
+                    if (l < 1) {
+                        targetComponent.nodeIndex++;
+                    }
+                } else {
+                    // update ship object
+                    ship.xPos = targetComponent.targetWorldPosition.x;
+                    ship.yPos = targetComponent.targetWorldPosition.y;
+
+                    // update position component
+                    positionComponentOptional.get().worldPosition.x = ship.xPos;
+                    positionComponentOptional.get().worldPosition.y = ship.yPos;
+                    positionComponentOptional.get().screenPositions.put(Zoom.GFX, targetComponent.waypoints.get(Zoom.GFX).get(targetComponent.path.size()-1));
+                    positionComponentOptional.get().screenPositions.put(Zoom.MGFX, targetComponent.waypoints.get(Zoom.MGFX).get(targetComponent.path.size()-1));
+                    positionComponentOptional.get().screenPositions.put(Zoom.SGFX, targetComponent.waypoints.get(Zoom.SGFX).get(targetComponent.path.size()-1));
+
+                    // remove target component
+                    if (entity.hasComponent(TargetComponent.class)) {
+                        entity.removeComponent(TargetComponent.class);
+                    }
                 }
             }
         }
