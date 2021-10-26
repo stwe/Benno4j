@@ -14,7 +14,7 @@ This project is under heavy development and will receive frequent updates with n
 
 <img src="https://github.com/stwe/Benno4j/blob/master/devLog/26-10-2021 (1).png" width="409" height="316" />
 
-<img src="https://github.com/stwe/Benno4j/blob/master/devLog/26-10-2021 (0)" width="409" height="316" />
+<img src="https://github.com/stwe/Benno4j/blob/master/devLog/26-10-2021 (0).png" width="409" height="316" />
 
 ## Supported versions
 
