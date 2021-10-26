@@ -42,4 +42,9 @@ public class TargetComponent implements Component {
      * The path to the {@link #targetWorldPosition}.
      */
     public ArrayList<Node> path;
+
+    /**
+     * Current waypoint (index) in {@link #path}.
+     */
+    public int currentNodeIndex = 1;
 }

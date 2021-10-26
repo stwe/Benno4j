@@ -28,6 +28,7 @@ import de.sg.benno.ecs.components.*;
 import de.sg.benno.ecs.core.Ecs;
 import de.sg.benno.ecs.core.EcsSettings;
 import de.sg.benno.ecs.systems.FindPathSystem;
+import de.sg.benno.ecs.systems.MoveShipSystem;
 import de.sg.benno.ecs.systems.SelectShipSystem;
 import de.sg.benno.ecs.systems.SpriteRenderSystem;
 import de.sg.benno.input.Camera;
@@ -160,11 +161,14 @@ public class Sandbox {
         // render entities (ships)
         ecs.getSystemManager().addSystem(new SpriteRenderSystem(context, camera, currentZoom));
 
-        // left mouse button clicks on a ship
+        // left mouse button clicks on a ship to select
         ecs.getSystemManager().addSystem(new SelectShipSystem(context, water, camera, currentZoom));
 
         // handle right mouse button clicks to find a target for a selected ship
         ecs.getSystemManager().addSystem(new FindPathSystem(context, water, camera, currentZoom));
+
+        // move ships to target
+        ecs.getSystemManager().addSystem(new MoveShipSystem(water, currentZoom));
 
         createEntities();
     }
@@ -290,6 +294,9 @@ public class Sandbox {
 
         var findPathSystemOptional = ecs.getSystemManager().getSystem(FindPathSystem.class);
         findPathSystemOptional.ifPresent(findPathSystem -> findPathSystem.setCurrentZoom(currentZoom));
+
+        var moveShipSystemOptional = ecs.getSystemManager().getSystem(MoveShipSystem.class);
+        moveShipSystemOptional.ifPresent(moveShipSystem -> moveShipSystem.setCurrentZoom(currentZoom));
     }
 
     //-------------------------------------------------
