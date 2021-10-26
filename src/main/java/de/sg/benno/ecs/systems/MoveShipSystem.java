@@ -25,6 +25,8 @@ import de.sg.benno.ecs.core.Signature;
 import de.sg.benno.renderer.Zoom;
 import org.joml.Vector2f;
 
+import static de.sg.benno.chunk.Ship4.getShipDirection;
+import static de.sg.benno.chunk.Ship4.getTargetDirectionVector;
 import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
@@ -107,19 +109,28 @@ public class MoveShipSystem extends EntitySystem {
                 var ship = ship4ComponentOptional.get().ship4;
 
                 if (!targetComponent.path.isEmpty() && targetComponent.nodeIndex < targetComponent.path.size()) {
-                    // current tile/node
-                    var currentWaypoint = targetComponent.path.get(targetComponent.nodeIndex - 1);
-                    var currentTileScreenPosition = water.getWaterTileGraphic(currentZoom, currentWaypoint.position.x, currentWaypoint.position.y).get().screenPosition;
+                    // current tile
+                    var currentWorldSpacePosition = targetComponent.path.get(targetComponent.nodeIndex - 1).position;
+                    var currentScreenSpacePosition = water.getWaterTileGraphic(currentZoom, currentWorldSpacePosition.x, currentWorldSpacePosition.y).get().screenPosition;
 
-                    // next node/tile
-                    var nextWaypoint = targetComponent.path.get(targetComponent.nodeIndex);
-                    var nextTileScreenPosition = water.getWaterTileGraphic(currentZoom, nextWaypoint.position.x, nextWaypoint.position.y).get().screenPosition;
+                    // next tile
+                    var nextWorldSpacePosition = targetComponent.path.get(targetComponent.nodeIndex).position;
+                    var nextScreenSpacePosition = water.getWaterTileGraphic(currentZoom, nextWorldSpacePosition.x, nextWorldSpacePosition.y).get().screenPosition;
 
-                    // get direction to the next waypoint
-                    var d = new Vector2f(nextTileScreenPosition).sub(new Vector2f(currentTileScreenPosition));
+                    // get direction to the next tile in screen space
+                    var d = new Vector2f(nextScreenSpacePosition).sub(new Vector2f(currentScreenSpacePosition));
                     d.normalize();
 
-                    // add direction to ship screen position
+                    // get direction and angle to the next tile in world space
+                    var targetDirection = getTargetDirectionVector(nextWorldSpacePosition, currentWorldSpacePosition);
+
+                    // set new ship direction by angle for calculation the right gfx index
+                    ship.direction = getShipDirection(targetDirection.z);
+
+                    // set the new gfx index
+                    gfxIndexComponentOptional.get().gfxIndex = ship.getCurrentGfxIndex();
+
+                    // add direction to ship screen space position (move)
                     currentShipScreenPosition.add(d);
 
                     // next waypoint

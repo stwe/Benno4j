@@ -18,7 +18,9 @@
 
 package de.sg.benno.chunk;
 
+import org.joml.Vector2f;
 import org.joml.Vector2i;
+import org.joml.Vector3f;
 
 import java.util.HashMap;
 import java.util.Objects;
@@ -65,6 +67,12 @@ import static de.sg.benno.ogl.Log.LOGGER;
  * </pre>
  */
 public class Ship4 {
+
+    //-------------------------------------------------
+    // Constants
+    //-------------------------------------------------
+
+    private static final float HALF_ANGLE = 22.5f;
 
     //-------------------------------------------------
     // Types
@@ -266,5 +274,89 @@ public class Ship4 {
         direction = shortToInt(chunk.getData().getShort());
 
         LOGGER.debug("Ship4 data read successfully.");
+    }
+
+    //-------------------------------------------------
+    // Helper
+    //-------------------------------------------------
+
+    /**
+     * Get the direction vector and angle to a target position in the world.
+     *
+     * @param target The target position in world space.
+     * @param shipPosition The current position in world space.
+     *
+     * @return The (normalized) direction in x and y and the angle in z.
+     */
+    public static Vector3f getTargetDirectionVector(Vector2i target, Vector2i shipPosition) {
+        var d = new Vector2f(target).sub(new Vector2f(shipPosition));
+        d.normalize();
+
+        var targetDirection = new Vector3f();
+
+        // direction vector
+        targetDirection.x = d.x;
+        targetDirection.y = d.y;
+
+        // store angle in z
+        var angle = Math.atan2(targetDirection.y, targetDirection.x);
+        var angleDeg = Math.toDegrees(angle) + 180.0;
+        targetDirection.z = (float)angleDeg;
+
+        return targetDirection;
+    }
+
+    /**
+     * Get a new {@link #direction} for calculating the gfx index.
+     *
+     * @param angleDeg An angle in degrees.
+     */
+    public static int getShipDirection(float angleDeg) {
+        // 67.5 ... 112.5
+        if (angleDeg >= 45 + HALF_ANGLE && angleDeg <= 90 + HALF_ANGLE) {
+            return 0;
+        }
+
+        // 112.5 ... 157.5
+        if (angleDeg >= 90 + HALF_ANGLE && angleDeg <= 135 + HALF_ANGLE) {
+            return 1;
+        }
+
+        // 157.5 ... 202.5
+        if (angleDeg >= 135 + HALF_ANGLE && angleDeg <= 180 + HALF_ANGLE) {
+            return 2;
+        }
+
+        // 202.5 ... 247.5
+        if (angleDeg >= 180 + HALF_ANGLE && angleDeg <= 225 + HALF_ANGLE) {
+            return 3;
+        }
+
+        // 247.5 ... 292.5
+        if (angleDeg >= 225 + HALF_ANGLE && angleDeg <= 270 + HALF_ANGLE) {
+            return 4;
+        }
+
+        // 292.5 ... 337.5
+        if (angleDeg >= 270 + HALF_ANGLE && angleDeg <= 315 + HALF_ANGLE) {
+            return 5;
+        }
+
+        // 337.5 ... 360
+        if (angleDeg >= 315 + HALF_ANGLE && angleDeg <= 360) {
+            return 6;
+        }
+
+        // 0 ... 22.5
+        if (angleDeg >= 0 && angleDeg <= HALF_ANGLE) {
+            return 6;
+        }
+
+        // 22.5 ... 67.5
+        if (angleDeg >= HALF_ANGLE && angleDeg <= 45 + HALF_ANGLE) {
+            return 7;
+        }
+
+        return 0;
     }
 }

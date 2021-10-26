@@ -35,11 +35,12 @@ import de.sg.benno.renderer.Zoom;
 import de.sg.benno.state.Context;
 import de.sg.benno.util.TileUtil;
 import org.joml.Vector2f;
-import org.joml.Vector3f;
 
 import java.io.IOException;
 import java.util.*;
 
+import static de.sg.benno.chunk.Ship4.getShipDirection;
+import static de.sg.benno.chunk.Ship4.getTargetDirectionVector;
 import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
@@ -51,12 +52,6 @@ import static de.sg.benno.ogl.Log.LOGGER;
  * The {@link GfxIndexComponent} is changed when the target changes.
  */
 public class FindPathSystem extends EntitySystem {
-
-    //-------------------------------------------------
-    // Constants
-    //-------------------------------------------------
-
-    private static final float HALF_ANGLE = 22.5f;
 
     //-------------------------------------------------
     // Member
@@ -294,82 +289,27 @@ public class FindPathSystem extends EntitySystem {
             var target = targetComponentOptional.get().targetWorldPosition;
             var ship = ship4ComponentOptional.get().ship4;
 
-            var d = new Vector2f(target).sub(new Vector2f(ship.getPosition()));
-            d.normalize();
+            // get direction and angle to the target
+            var targetDirection = getTargetDirectionVector(target, ship.getPosition());
 
-            var targetDirection = new Vector3f();
-
-            // direction vector
-            targetDirection.x = d.x;
-            targetDirection.y = d.y;
-
-            // store angle in z
-            var angle = Math.atan2(targetDirection.y, targetDirection.x);
-            var angleDeg = Math.toDegrees(angle) + 180.0;
-            targetDirection.z = (float)angleDeg;
-
-            // set new ship direction
+            // set new ship direction by angle for calculation the right gfx index
             ship.direction = getShipDirection(targetDirection.z);
 
-            // set new gfx index
+            // set the new gfx index
             gfxIndexComponentOptional.get().gfxIndex = ship.getCurrentGfxIndex();
         }
     }
 
     /**
-     * Get a new ship direction.
+     * Calculates the screen coordinates of a ship for a tile at one position in the world.
      *
-     * @param angleDeg An angle in degrees.
+     * @param x The x position of a ship in world space.
+     * @param y The y position of a ship in world space.
+     * @param gfxIndex The current gfx index of a ship to get the texture width and height.
+     * @param zoom A {@link Zoom}.
+     * @return The waypoint in screen space.
+     * @throws IOException If an I/O error is thrown.
      */
-    private int getShipDirection(float angleDeg) {
-        // 67.5 ... 112.5
-        if (angleDeg >= 45 + HALF_ANGLE && angleDeg <= 90 + HALF_ANGLE) {
-            return 0;
-        }
-
-        // 112.5 ... 157.5
-        if (angleDeg >= 90 + HALF_ANGLE && angleDeg <= 135 + HALF_ANGLE) {
-            return 1;
-        }
-
-        // 157.5 ... 202.5
-        if (angleDeg >= 135 + HALF_ANGLE && angleDeg <= 180 + HALF_ANGLE) {
-            return 2;
-        }
-
-        // 202.5 ... 247.5
-        if (angleDeg >= 180 + HALF_ANGLE && angleDeg <= 225 + HALF_ANGLE) {
-            return 3;
-        }
-
-        // 247.5 ... 292.5
-        if (angleDeg >= 225 + HALF_ANGLE && angleDeg <= 270 + HALF_ANGLE) {
-            return 4;
-        }
-
-        // 292.5 ... 337.5
-        if (angleDeg >= 270 + HALF_ANGLE && angleDeg <= 315 + HALF_ANGLE) {
-            return 5;
-        }
-
-        // 337.5 ... 360
-        if (angleDeg >= 315 + HALF_ANGLE && angleDeg <= 360) {
-            return 6;
-        }
-
-        // 0 ... 22.5
-        if (angleDeg >= 0 && angleDeg <= HALF_ANGLE) {
-            return 6;
-        }
-
-        // 22.5 ... 67.5
-        if (angleDeg >= HALF_ANGLE && angleDeg <= 45 + HALF_ANGLE) {
-            return 7;
-        }
-
-        return 0;
-    }
-
     private Vector2f createWaypoint(int x, int y, int gfxIndex, Zoom zoom) throws IOException {
         var xWorldPos = x + 1; // correction for rendering
         var yWorldPos = y - 1; // correction for rendering
