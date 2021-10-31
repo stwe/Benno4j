@@ -48,7 +48,7 @@ public class Util {
     //-------------------------------------------------
 
     /**
-     * Get a file from the resources folder.
+     * Get a file from the resources' folder.
      * Works everywhere, IDEA, unit test and JAR file.
      *
      * @param filePath The file path.

@@ -26,7 +26,6 @@ import de.sg.benno.ogl.OglApplication;
 import de.sg.benno.ogl.state.ApplicationState;
 import de.sg.benno.ogl.state.StateMachine;
 import de.sg.benno.state.Context;
-import de.sg.benno.state.GameState;
 import de.sg.benno.util.Util;
 
 import java.io.IOException;
@@ -141,10 +140,6 @@ public class GameApp extends OglApplication {
      */
     private void addGameState() {
         ApplicationState state = null;
-
-        if (GAME_STATE_NAME.equals("game")) {
-            state = new GameState(stateMachine);
-        }
 
         if (GAME_STATE_NAME.equals("sandbox")) {
             state = new SandboxState(stateMachine);
