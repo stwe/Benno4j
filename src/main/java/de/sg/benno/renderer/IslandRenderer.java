@@ -19,7 +19,7 @@
 package de.sg.benno.renderer;
 
 import de.sg.benno.BennoConfig;
-import de.sg.benno.TileAtlas;
+import de.sg.benno.util.TileAtlas;
 import de.sg.benno.chunk.IslandTile;
 import de.sg.benno.chunk.TileGraphic;
 import de.sg.benno.input.Camera;
@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import static de.sg.benno.TileAtlas.*;
+import static de.sg.benno.util.TileAtlas.*;
 import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;

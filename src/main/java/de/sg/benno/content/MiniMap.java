@@ -36,8 +36,8 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static de.sg.benno.World.WORLD_HEIGHT;
-import static de.sg.benno.World.WORLD_WIDTH;
+import static de.sg.benno.content.World.WORLD_HEIGHT;
+import static de.sg.benno.content.World.WORLD_WIDTH;
 import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL11.*;
 

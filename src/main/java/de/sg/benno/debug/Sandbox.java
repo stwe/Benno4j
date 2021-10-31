@@ -21,6 +21,8 @@ package de.sg.benno.debug;
 import de.sg.benno.BennoConfig;
 import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.chunk.Ship4;
+import de.sg.benno.content.MiniMap;
+import de.sg.benno.content.Terrain;
 import de.sg.benno.content.Water;
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.WorldData;
@@ -76,6 +78,16 @@ public class Sandbox {
     private final Water water;
 
     /**
+     * The {@link Terrain} object contains all islands.
+     */
+    private final Terrain terrain;
+
+    /**
+     * The {@link MiniMap} of this world.
+     */
+    private final MiniMap miniMap;
+
+    /**
      * A {@link Ecs} - an Entity Component System.
      */
     private final Ecs ecs;
@@ -103,6 +115,8 @@ public class Sandbox {
 
         this.camera = new Camera(BennoConfig.CAMERA_START_X, BennoConfig.CAMERA_START_Y, context.engine, currentZoom);
         this.water = new Water(provider, context);
+        this.terrain = new Terrain(provider, context);
+        this.miniMap = new MiniMap(provider, context, camera, currentZoom);
 
         EcsSettings.setAllComponentTypes(
                 GfxIndexComponent.class,
@@ -247,6 +261,8 @@ public class Sandbox {
         }
 
         camera.update(context.engine.getWindow(), context.engine.getMouseInput(), currentZoom);
+        terrain.update();
+        miniMap.update(currentZoom);
         ecs.update();
     }
 
@@ -255,6 +271,8 @@ public class Sandbox {
      */
     public void render() {
         water.render(camera, false, currentZoom);
+        terrain.render(camera, false, currentZoom);
+        miniMap.render(new Vector2f(0.55f, -0.95f), new Vector2f(0.4f));
         ecs.render();
     }
 
@@ -297,6 +315,8 @@ public class Sandbox {
 
         camera.cleanUp();
         water.cleanUp();
+        terrain.cleanUp();
+        miniMap.cleanUp();
         ecs.cleanUp();
     }
 }

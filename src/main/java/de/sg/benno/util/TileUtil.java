@@ -18,8 +18,9 @@
 
 package de.sg.benno.util;
 
-import de.sg.benno.World;
 import org.joml.Vector2i;
+
+import static de.sg.benno.content.World.WORLD_WIDTH;
 
 public class TileUtil {
 
@@ -48,6 +49,6 @@ public class TileUtil {
     }
 
     public static int getIndexFrom2D(int worldX, int worldY) {
-        return worldY * World.WORLD_WIDTH + worldX;
+        return worldY * WORLD_WIDTH + worldX;
     }
 }

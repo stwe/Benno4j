@@ -16,8 +16,9 @@
  * limitations under the License.
  */
 
-package de.sg.benno;
+package de.sg.benno.util;
 
+import de.sg.benno.BennoConfig;
 import de.sg.benno.file.ImageFile;
 import de.sg.benno.ogl.resource.Texture;
 import org.joml.Vector2f;

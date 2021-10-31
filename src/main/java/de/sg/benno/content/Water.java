@@ -34,8 +34,8 @@ import org.joml.Vector3f;
 
 import java.util.*;
 
-import static de.sg.benno.World.WORLD_HEIGHT;
-import static de.sg.benno.World.WORLD_WIDTH;
+import static de.sg.benno.content.World.WORLD_HEIGHT;
+import static de.sg.benno.content.World.WORLD_WIDTH;
 import static de.sg.benno.ogl.Log.LOGGER;
 
 /**

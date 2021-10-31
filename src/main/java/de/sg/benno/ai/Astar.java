@@ -25,8 +25,8 @@ import org.joml.Vector2i;
 import java.util.ArrayList;
 import java.util.Stack;
 
-import static de.sg.benno.World.WORLD_HEIGHT;
-import static de.sg.benno.World.WORLD_WIDTH;
+import static de.sg.benno.content.World.WORLD_HEIGHT;
+import static de.sg.benno.content.World.WORLD_WIDTH;
 import static de.sg.benno.ogl.Log.LOGGER;
 import static org.joml.Math.sqrt;
 
