@@ -317,12 +317,12 @@ public class Ship4 {
     /**
      * Get the direction vector and angle to a target position in the world.
      *
-     * @param target The target position in world space.
      * @param shipPosition The current position in world space.
+     * @param target The target position in world space.
      *
      * @return The (normalized) direction in x and y and the angle in z.
      */
-    public static Vector3f getTargetDirectionVector(Vector2i target, Vector2i shipPosition) {
+    public static Vector3f getTargetDirectionVector(Vector2i shipPosition, Vector2i target) {
         var d = new Vector2f(target).sub(new Vector2f(shipPosition));
         d.normalize();
 

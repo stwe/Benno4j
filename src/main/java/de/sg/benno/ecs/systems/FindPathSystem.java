@@ -134,7 +134,7 @@ public class FindPathSystem extends EntitySystem {
      */
     public FindPathSystem(Context context, Water water, Camera camera, Zoom currentZoom) throws Exception {
         this(context, water, camera, currentZoom, new Signature());
-        getSignature().setAll(PositionComponent.class, SelectedComponent.class, GfxIndexComponent.class, Ship4Component.class);
+        getSignature().setAll(GfxIndexComponent.class, PositionComponent.class, Ship4Component.class, SelectedComponent.class);
     }
 
     //-------------------------------------------------
@@ -270,7 +270,7 @@ public class FindPathSystem extends EntitySystem {
     //-------------------------------------------------
 
     /**
-     * Changes the ship's gfx index depending on the direction.
+     * Changes the ship's gfx index depending on the direction to the target.
      *
      * @param entity An {@link Entity} object.
      */
@@ -284,7 +284,7 @@ public class FindPathSystem extends EntitySystem {
             var ship = ship4ComponentOptional.get().ship4;
 
             // get direction and angle to the target
-            var targetDirection = Ship4.getTargetDirectionVector(target, ship.getPosition());
+            var targetDirection = Ship4.getTargetDirectionVector(ship.getPosition(), target);
 
             // set new ship direction by angle for calculation the right gfx index
             ship.direction = Ship4.getShipDirection(targetDirection.z);

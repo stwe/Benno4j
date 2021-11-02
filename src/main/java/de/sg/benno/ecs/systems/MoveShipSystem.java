@@ -18,15 +18,16 @@
 
 package de.sg.benno.ecs.systems;
 
+import de.sg.benno.BennoRuntimeException;
+import de.sg.benno.chunk.Ship4;
 import de.sg.benno.content.Water;
 import de.sg.benno.ecs.components.*;
 import de.sg.benno.ecs.core.EntitySystem;
 import de.sg.benno.ecs.core.Signature;
 import de.sg.benno.renderer.Zoom;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 
-import static de.sg.benno.chunk.Ship4.getShipDirection;
-import static de.sg.benno.chunk.Ship4.getTargetDirectionVector;
 import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
@@ -58,10 +59,10 @@ public class MoveShipSystem extends EntitySystem {
     public MoveShipSystem(Water water, Zoom currentZoom) {
         super(new Signature());
         getSignature().setAll(
-                PositionComponent.class,
-                SelectedComponent.class,
                 GfxIndexComponent.class,
+                PositionComponent.class,
                 Ship4Component.class,
+                SelectedComponent.class,
                 TargetComponent.class
         );
 
@@ -96,65 +97,61 @@ public class MoveShipSystem extends EntitySystem {
     @Override
     public void update() {
         for (var entity : getEntities()) {
-            var positionComponentOptional = entity.getComponent(PositionComponent.class);
-            var targetComponentOptional = entity.getComponent(TargetComponent.class);
-            var ship4ComponentOptional = entity.getComponent(Ship4Component.class);
             var gfxIndexComponentOptional = entity.getComponent(GfxIndexComponent.class);
+            var positionComponentOptional = entity.getComponent(PositionComponent.class);
+            var ship4ComponentOptional = entity.getComponent(Ship4Component.class);
+            var targetComponentOptional = entity.getComponent(TargetComponent.class);
 
-            if (positionComponentOptional.isPresent() && targetComponentOptional.isPresent() &&
-                    ship4ComponentOptional.isPresent() && gfxIndexComponentOptional.isPresent()) {
+            if (gfxIndexComponentOptional.isPresent() && positionComponentOptional.isPresent() &&
+                    ship4ComponentOptional.isPresent() && targetComponentOptional.isPresent()) {
 
-                var currentShipScreenPosition = positionComponentOptional.get().screenPositions.get(currentZoom);
+                // get components
+                var gfxIndexComponent = gfxIndexComponentOptional.get();
+                var positionComponent = positionComponentOptional.get();
+                var shipComponent = ship4ComponentOptional.get();
                 var targetComponent = targetComponentOptional.get();
-                var ship = ship4ComponentOptional.get().ship4;
 
                 if (!targetComponent.path.isEmpty() && targetComponent.nodeIndex < targetComponent.path.size()) {
-                    // current tile
+                    // start: get current path tile positions (world && screen space)
                     var currentWorldSpacePosition = targetComponent.path.get(targetComponent.nodeIndex - 1).position;
-                    var currentScreenSpacePosition = water.getWaterTileGraphic(currentZoom, currentWorldSpacePosition.x, currentWorldSpacePosition.y).get().screenPosition;
+                    Vector2f currentScreenSpacePosition;
+                    var currentTileGraphicOptional = water.getWaterTileGraphic(currentZoom, currentWorldSpacePosition.x, currentWorldSpacePosition.y);
+                    if (currentTileGraphicOptional.isPresent()) {
+                        currentScreenSpacePosition = currentTileGraphicOptional.get().screenPosition;
+                    } else {
+                        throw new BennoRuntimeException("No water tile graphic found.");
+                    }
 
-                    // next tile
+                    // next target: get next path tile positions (world && screen space)
                     var nextWorldSpacePosition = targetComponent.path.get(targetComponent.nodeIndex).position;
-                    var nextScreenSpacePosition = water.getWaterTileGraphic(currentZoom, nextWorldSpacePosition.x, nextWorldSpacePosition.y).get().screenPosition;
+                    Vector2f nextScreenSpacePosition;
+                    var nextTileGraphicOptional = water.getWaterTileGraphic(currentZoom, nextWorldSpacePosition.x, nextWorldSpacePosition.y);
+                    if (nextTileGraphicOptional.isPresent()) {
+                        nextScreenSpacePosition = nextTileGraphicOptional.get().screenPosition;
+                    } else {
+                        throw new BennoRuntimeException("No water tile graphic found.");
+                    }
 
-                    // get direction to the next tile in screen space
+                    // set a gfx toward the next target
+                    updateShipDirection(shipComponent, currentWorldSpacePosition, nextWorldSpacePosition, gfxIndexComponent);
+
+                    // get direction vector to the next target in screen space
                     var d = new Vector2f(nextScreenSpacePosition).sub(new Vector2f(currentScreenSpacePosition));
                     d.normalize();
 
-                    // get direction and angle to the next tile in world space
-                    var targetDirection = getTargetDirectionVector(nextWorldSpacePosition, currentWorldSpacePosition);
+                    // add direction vector to the *ship* screen space position (moves the ship)
+                    var currentShipScreenPosition = positionComponent.screenPositions.get(currentZoom);
+                    currentShipScreenPosition.add(d); // todo d * velocity
 
-                    // set new ship direction by angle for calculation the right gfx index
-                    ship.direction = getShipDirection(targetDirection.z);
-
-                    // set the new gfx index
-                    gfxIndexComponentOptional.get().gfxIndex = ship.getCurrentGfxIndex();
-
-                    // add direction to ship screen space position (move)
-                    currentShipScreenPosition.add(d);
-
-                    // next waypoint
-                    var v = new Vector2f(targetComponent.waypoints.get(currentZoom).get(targetComponent.nodeIndex)).sub(currentShipScreenPosition);
-                    var l = v.length();
-                    if (l < 1) {
+                    // update components if next target reached
+                    if (isTargetReached(currentShipScreenPosition, targetComponent)) {
+                        targetReachedUpdate(shipComponent, positionComponent, targetComponent);
                         targetComponent.nodeIndex++;
                     }
                 } else {
-                    // update ship object
-                    ship.xPos = targetComponent.targetWorldPosition.x;
-                    ship.yPos = targetComponent.targetWorldPosition.y;
-
-                    // update position component
-                    positionComponentOptional.get().worldPosition.x = ship.xPos;
-                    positionComponentOptional.get().worldPosition.y = ship.yPos;
-                    positionComponentOptional.get().screenPositions.put(Zoom.GFX, targetComponent.waypoints.get(Zoom.GFX).get(targetComponent.path.size() - 1));
-                    positionComponentOptional.get().screenPositions.put(Zoom.MGFX, targetComponent.waypoints.get(Zoom.MGFX).get(targetComponent.path.size() - 1));
-                    positionComponentOptional.get().screenPositions.put(Zoom.SGFX, targetComponent.waypoints.get(Zoom.SGFX).get(targetComponent.path.size() - 1));
-
-                    // remove target component
-                    if (entity.hasComponent(TargetComponent.class)) {
-                        entity.removeComponent(TargetComponent.class);
-                    }
+                    // the ship has reached its destination
+                    targetReachedUpdate(shipComponent, positionComponent, targetComponent);
+                    entity.removeComponent(TargetComponent.class);
                 }
             }
         }
@@ -168,5 +165,74 @@ public class MoveShipSystem extends EntitySystem {
     @Override
     public void cleanUp() {
 
+    }
+
+    //-------------------------------------------------
+    // Helper
+    //-------------------------------------------------
+
+    /**
+     * Depending on the destination, the gfx of the ship changes.
+     *
+     * @param ship4Component The {@link Ship4Component} to update.
+     * @param currentPosition The current ship position on world space.
+     * @param nextPosition The target ship position in world space.
+     * @param gfxIndexComponent The {@link GfxIndexComponent} to update.
+     */
+    private void updateShipDirection(
+            Ship4Component ship4Component,
+            Vector2i currentPosition,
+            Vector2i nextPosition,
+            GfxIndexComponent gfxIndexComponent
+    ) {
+        // get direction and angle to the next tile in world space
+        var targetDirection = Ship4.getTargetDirectionVector(currentPosition, nextPosition);
+
+        // set new ship direction by angle for calculation the right gfx index
+        ship4Component.ship4.direction = Ship4.getShipDirection(targetDirection.z);
+
+        // set the new gfx index
+        gfxIndexComponent.gfxIndex = ship4Component.ship4.getCurrentGfxIndex();
+    }
+
+    /**
+     * Checks whether the ship has reached the next target/waypoint.
+     *
+     * @param currentShipPosition The current position of the ship in screen space.
+     * @param targetComponent The {@link TargetComponent} object.
+     *
+     * @return boolean
+     */
+    private boolean isTargetReached(Vector2f currentShipPosition, TargetComponent targetComponent) {
+        var v = new Vector2f(targetComponent.waypoints.get(currentZoom).get(targetComponent.nodeIndex)).sub(currentShipPosition);
+        return v.length() < 1;
+    }
+
+    /**
+     * Updates the world and screen position if a new target was reached.
+     *
+     * @param ship4Component The {@link Ship4Component} to update.
+     * @param positionComponent The {@link PositionComponent} to update.
+     * @param targetComponent The {@link TargetComponent} to update.
+     */
+    private void targetReachedUpdate(
+            Ship4Component ship4Component,
+            PositionComponent positionComponent,
+            TargetComponent targetComponent
+    ) {
+        // set the new world position of the ship in Ship4Component
+        ship4Component.ship4.xPos = targetComponent.targetWorldPosition.x;
+        ship4Component.ship4.yPos = targetComponent.targetWorldPosition.y;
+
+        // update the new world and screen positions of the ship in PositionComponent
+        positionComponent.worldPosition.x = ship4Component.ship4.xPos;
+        positionComponent.worldPosition.y = ship4Component.ship4.yPos;
+        var index = targetComponent.nodeIndex;
+        if (index == targetComponent.path.size()) {
+            index--;
+        }
+        positionComponent.screenPositions.put(Zoom.GFX, targetComponent.waypoints.get(Zoom.GFX).get(index));
+        positionComponent.screenPositions.put(Zoom.MGFX, targetComponent.waypoints.get(Zoom.MGFX).get(index));
+        positionComponent.screenPositions.put(Zoom.SGFX, targetComponent.waypoints.get(Zoom.SGFX).get(index));
     }
 }

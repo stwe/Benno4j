@@ -24,7 +24,7 @@ import de.sg.benno.debug.MousePicker;
 import de.sg.benno.ecs.components.GfxIndexComponent;
 import de.sg.benno.ecs.components.PositionComponent;
 import de.sg.benno.ecs.components.SelectedComponent;
-import de.sg.benno.ecs.components.TargetComponent;
+import de.sg.benno.ecs.components.Ship4Component;
 import de.sg.benno.ecs.core.EntitySystem;
 import de.sg.benno.ecs.core.Signature;
 import de.sg.benno.input.Camera;
@@ -39,7 +39,7 @@ import static de.sg.benno.ogl.Log.LOGGER;
  * Represents a SelectShipSystem.
  * This system iterates over all entities with the {@link GfxIndexComponent} and the {@link PositionComponent}.
  * With the left mouse button the {@link SelectedComponent} is added to the entity if there is a ship at the position.
- * Another click removes the {@link SelectedComponent} and the possibly existing {@link TargetComponent}.
+ * Another click removes the {@link SelectedComponent}.
  */
 public class SelectShipSystem extends EntitySystem {
 
@@ -108,7 +108,7 @@ public class SelectShipSystem extends EntitySystem {
      */
     public SelectShipSystem(Context context, Water water, Camera camera, Zoom currentZoom) throws Exception {
         this(context, water, camera, currentZoom, new Signature());
-        getSignature().setAll(GfxIndexComponent.class, PositionComponent.class);
+        getSignature().setAll(GfxIndexComponent.class, PositionComponent.class, Ship4Component.class);
     }
 
     //-------------------------------------------------
@@ -155,9 +155,6 @@ public class SelectShipSystem extends EntitySystem {
                             if (entity.hasComponent(SelectedComponent.class)) {
                                 // deselect
                                 entity.removeComponent(SelectedComponent.class);
-                                if (entity.hasComponent(TargetComponent.class)) {
-                                    entity.removeComponent(TargetComponent.class);
-                                }
                                 LOGGER.debug("Ship {} is now deselected.", entity.debugName);
                             } else {
                                 // select
