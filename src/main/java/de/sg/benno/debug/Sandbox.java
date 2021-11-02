@@ -237,7 +237,7 @@ public class Sandbox {
             if (velocityComponentOptional.isEmpty()) {
                 throw new BennoRuntimeException("VelocityComponent missing.");
             }
-            velocityComponentOptional.get().velocity = 0.5f;
+            velocityComponentOptional.get().velocity = 1.0f;
         }
     }
 

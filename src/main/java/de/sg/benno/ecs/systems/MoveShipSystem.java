@@ -108,7 +108,7 @@ public class MoveShipSystem extends EntitySystem {
                 // get components
                 var gfxIndexComponent = gfxIndexComponentOptional.get();
                 var positionComponent = positionComponentOptional.get();
-                var shipComponent = ship4ComponentOptional.get();
+                var ship4Component = ship4ComponentOptional.get();
                 var targetComponent = targetComponentOptional.get();
 
                 if (!targetComponent.path.isEmpty() && targetComponent.nodeIndex < targetComponent.path.size()) {
@@ -133,7 +133,7 @@ public class MoveShipSystem extends EntitySystem {
                     }
 
                     // set a gfx toward the next target
-                    updateShipDirection(shipComponent, currentWorldSpacePosition, nextWorldSpacePosition, gfxIndexComponent);
+                    updateShipDirection(ship4Component, currentWorldSpacePosition, nextWorldSpacePosition, gfxIndexComponent);
 
                     // get direction vector to the next target in screen space
                     var d = new Vector2f(nextScreenSpacePosition).sub(new Vector2f(currentScreenSpacePosition));
@@ -147,12 +147,12 @@ public class MoveShipSystem extends EntitySystem {
 
                     // update components if next target reached
                     if (isTargetReached(currentShipScreenPosition, targetComponent)) {
-                        targetReachedUpdate(shipComponent, positionComponent, targetComponent);
+                        targetReachedUpdate(ship4Component, positionComponent, targetComponent);
                         targetComponent.nodeIndex++;
                     }
                 } else {
                     // the ship has reached its destination
-                    targetReachedUpdate(shipComponent, positionComponent, targetComponent);
+                    targetReachedUpdate(ship4Component, positionComponent, targetComponent);
                     entity.removeComponent(TargetComponent.class);
                 }
             }
@@ -222,17 +222,23 @@ public class MoveShipSystem extends EntitySystem {
             PositionComponent positionComponent,
             TargetComponent targetComponent
     ) {
-        // set the new world position of the ship in Ship4Component
-        ship4Component.ship4.xPos = targetComponent.targetWorldPosition.x;
-        ship4Component.ship4.yPos = targetComponent.targetWorldPosition.y;
+        var index = targetComponent.nodeIndex;
 
-        // update the new world and screen positions of the ship in PositionComponent
+        if (index == targetComponent.path.size()) {
+            // set last target as position in world space
+            ship4Component.ship4.xPos = targetComponent.targetWorldPosition.x;
+            ship4Component.ship4.yPos = targetComponent.targetWorldPosition.y;
+            index--;
+        } else {
+            // set current node as position in world space
+            ship4Component.ship4.xPos = targetComponent.path.get(index).position.x;
+            ship4Component.ship4.yPos = targetComponent.path.get(index).position.y;
+        }
+
+        // update the new world and screen positions in PositionComponent
         positionComponent.worldPosition.x = ship4Component.ship4.xPos;
         positionComponent.worldPosition.y = ship4Component.ship4.yPos;
-        var index = targetComponent.nodeIndex;
-        if (index == targetComponent.path.size()) {
-            index--;
-        }
+
         positionComponent.screenPositions.put(Zoom.GFX, targetComponent.waypoints.get(Zoom.GFX).get(index));
         positionComponent.screenPositions.put(Zoom.MGFX, targetComponent.waypoints.get(Zoom.MGFX).get(index));
         positionComponent.screenPositions.put(Zoom.SGFX, targetComponent.waypoints.get(Zoom.SGFX).get(index));

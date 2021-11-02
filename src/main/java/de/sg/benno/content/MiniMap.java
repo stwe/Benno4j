@@ -211,8 +211,7 @@ public class MiniMap {
     public void update(Zoom zoom) {
         this.zoom = zoom;
 
-        // todo: handle ships update
-
+        createShipsLayer();
         createCameraLayer();
     }
 

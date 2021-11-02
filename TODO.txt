@@ -5,6 +5,5 @@ TODO
 - Klick in die Minimap soll die Kameraposition ändern
 - Minimap ist momentan absolut statisch - ändern
 - Schiffe animieren
-- Alle Schiffe auf der Minimap anzeigen und bewegen
 - Animation der Bebauung
 
