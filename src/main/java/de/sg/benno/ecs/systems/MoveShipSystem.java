@@ -141,7 +141,9 @@ public class MoveShipSystem extends EntitySystem {
 
                     // add direction vector to the *ship* screen space position (moves the ship)
                     var currentShipScreenPosition = positionComponent.screenPositions.get(currentZoom);
-                    currentShipScreenPosition.add(d); // todo d * velocity
+                    var velocityComponentOptional = entity.getComponent(VelocityComponent.class);
+                    velocityComponentOptional.ifPresent(velocityComponent -> d.mul(velocityComponent.velocity));
+                    currentShipScreenPosition.add(d);
 
                     // update components if next target reached
                     if (isTargetReached(currentShipScreenPosition, targetComponent)) {

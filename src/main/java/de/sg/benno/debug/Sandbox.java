@@ -123,7 +123,8 @@ public class Sandbox {
                 PositionComponent.class,
                 SelectedComponent.class,
                 TargetComponent.class,
-                Ship4Component.class
+                Ship4Component.class,
+                VelocityComponent.class
         );
         this.ecs = new Ecs();
 
@@ -230,6 +231,13 @@ public class Sandbox {
                 positionComponent.screenPositions.put(zoom, new Vector2f(waypoint.x, waypoint.y));
                 positionComponent.sizes.put(zoom, new Vector2f(waypoint.z, waypoint.w));
             }
+
+            // add velocity component
+            var velocityComponentOptional = entity.addComponent(VelocityComponent.class);
+            if (velocityComponentOptional.isEmpty()) {
+                throw new BennoRuntimeException("VelocityComponent missing.");
+            }
+            velocityComponentOptional.get().velocity = 0.5f;
         }
     }
 
