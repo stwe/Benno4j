@@ -20,7 +20,7 @@ package de.sg.benno.ecs.systems;
 
 import de.sg.benno.BennoRuntimeException;
 import de.sg.benno.chunk.Ship4;
-import de.sg.benno.content.Water;
+import de.sg.benno.content.World;
 import de.sg.benno.ecs.components.*;
 import de.sg.benno.ecs.core.EntitySystem;
 import de.sg.benno.ecs.core.Signature;
@@ -40,9 +40,9 @@ public class MoveShipSystem extends EntitySystem {
     //-------------------------------------------------
 
     /**
-     * The {@link Water} object.
+     * The {@link World} object.
      */
-    private final Water water;
+    private final World world;
 
     /**
      * The current {@link Zoom}.
@@ -55,8 +55,11 @@ public class MoveShipSystem extends EntitySystem {
 
     /**
      * Constructs a new {@link MoveShipSystem} object.
+     *
+     * @param world The {@link World} object.
+     * @param currentZoom The current {@link Zoom}.
      */
-    public MoveShipSystem(Water water, Zoom currentZoom) {
+    public MoveShipSystem(World world, Zoom currentZoom) {
         super(new Signature());
         getSignature().setAll(
                 GfxIndexComponent.class,
@@ -68,7 +71,7 @@ public class MoveShipSystem extends EntitySystem {
 
         LOGGER.debug("Creates MoveShipSystem object.");
 
-        this.water = water;
+        this.world = world;
         this.currentZoom = currentZoom;
     }
 
@@ -115,7 +118,7 @@ public class MoveShipSystem extends EntitySystem {
                     // start: get current path tile positions (world && screen space)
                     var currentWorldSpacePosition = targetComponent.path.get(targetComponent.nodeIndex - 1).position;
                     Vector2f currentScreenSpacePosition;
-                    var currentTileGraphicOptional = water.getWaterTileGraphic(currentZoom, currentWorldSpacePosition.x, currentWorldSpacePosition.y);
+                    var currentTileGraphicOptional = world.getTileGraphic(currentZoom, currentWorldSpacePosition.x, currentWorldSpacePosition.y);
                     if (currentTileGraphicOptional.isPresent()) {
                         currentScreenSpacePosition = currentTileGraphicOptional.get().screenPosition;
                     } else {
@@ -125,7 +128,7 @@ public class MoveShipSystem extends EntitySystem {
                     // next target: get next path tile positions (world && screen space)
                     var nextWorldSpacePosition = targetComponent.path.get(targetComponent.nodeIndex).position;
                     Vector2f nextScreenSpacePosition;
-                    var nextTileGraphicOptional = water.getWaterTileGraphic(currentZoom, nextWorldSpacePosition.x, nextWorldSpacePosition.y);
+                    var nextTileGraphicOptional = world.getTileGraphic(currentZoom, nextWorldSpacePosition.x, nextWorldSpacePosition.y);
                     if (nextTileGraphicOptional.isPresent()) {
                         nextScreenSpacePosition = nextTileGraphicOptional.get().screenPosition;
                     } else {

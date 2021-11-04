@@ -23,7 +23,7 @@ import de.sg.benno.ai.Astar;
 import de.sg.benno.ai.Node;
 import de.sg.benno.chunk.Ship4;
 import de.sg.benno.chunk.TileGraphic;
-import de.sg.benno.content.Water;
+import de.sg.benno.content.World;
 import de.sg.benno.debug.MousePicker;
 import de.sg.benno.ecs.components.*;
 import de.sg.benno.ecs.core.Entity;
@@ -43,8 +43,6 @@ import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * Represents a FindPathSystem.
- * This system iterates over all entities with the {@link PositionComponent}, the {@link SelectedComponent},
- * the {@link GfxIndexComponent} and {@link Ship4Component}.
  * The {@link TargetComponent} is added to the entity with the right mouse button.
  * If the {@link TargetComponent} exists, the path to the target is highlighted in color.
  * The {@link GfxIndexComponent} is changed when the target changes.
@@ -61,9 +59,9 @@ public class FindPathSystem extends EntitySystem {
     private final Context context;
 
     /**
-     * The {@link Water} object.
+     * The {@link World} object.
      */
-    private final Water water;
+    private final World world;
 
     /**
      * The {@link Camera} object.
@@ -103,22 +101,28 @@ public class FindPathSystem extends EntitySystem {
      * Constructs a new {@link FindPathSystem} object.
      *
      * @param context The {@link Context} object.
-     * @param water The {@link Water} object.
+     * @param world {@link World} object
      * @param camera The {@link Camera} object.
      * @param currentZoom The current {@link Zoom}.
      * @param signature A {@link Signature} object.
      * @throws Exception If an error is thrown.
      */
-    public FindPathSystem(Context context, Water water, Camera camera, Zoom currentZoom, Signature signature) throws Exception {
+    public FindPathSystem(
+            Context context,
+            World world,
+            Camera camera,
+            Zoom currentZoom,
+            Signature signature
+    ) throws Exception {
         super(Objects.requireNonNull(signature, "signature must not be null"));
 
         LOGGER.debug("Creates FindPathSystem object.");
 
         this.context = Objects.requireNonNull(context, "context must not be null");
-        this.water = Objects.requireNonNull(water, "water must not be null");
+        this.world = Objects.requireNonNull(world, "world must not be null");
         this.camera = Objects.requireNonNull(camera, "camera must not be null");
         this.currentZoom = Objects.requireNonNull(currentZoom, "currentZoom must not be null");
-        this.mousePicker = new MousePicker(context, water, TileGraphic.TileHeight.SEA_LEVEL);
+        this.mousePicker = new MousePicker(context, world.getWater(), TileGraphic.TileHeight.SEA_LEVEL);
         this.highlightTexture = context.engine.getResourceManager().getTextureResource("/debug/full.png");
         this.spriteRenderer = new SpriteRenderer(context.engine);
     }
@@ -127,13 +131,13 @@ public class FindPathSystem extends EntitySystem {
      * Constructs a new {@link FindPathSystem} object.
      *
      * @param context The {@link Context} object.
-     * @param water The {@link Water} object.
+     * @param world {@link World} object
      * @param camera The {@link Camera} object.
      * @param currentZoom The current {@link Zoom}.
      * @throws Exception If an error is thrown.
      */
-    public FindPathSystem(Context context, Water water, Camera camera, Zoom currentZoom) throws Exception {
-        this(context, water, camera, currentZoom, new Signature());
+    public FindPathSystem(Context context, World world, Camera camera, Zoom currentZoom) throws Exception {
+        this(context, world, camera, currentZoom, new Signature());
         getSignature().setAll(GfxIndexComponent.class, PositionComponent.class, Ship4Component.class, SelectedComponent.class);
     }
 
@@ -176,12 +180,16 @@ public class FindPathSystem extends EntitySystem {
 
                         // get target position in world space
                         var targetPosition = mousePicker.getTileUnderMouse(camera, currentZoom);
+                        if (world.getTerrain().isNotPassableByShip(targetPosition.x, targetPosition.y)) {
+                            LOGGER.debug("No valid target for ship {}.", entity.debugName);
+                            return;
+                        }
 
                         // get path to target
                         var path = Astar.findPathToTarget(
                                 new Node(shipPosition).position,
                                 targetPosition,
-                                water.getPassableArea()
+                                world.getTerrain().getShipPassableArea()
                         );
 
                         // create waypoints
@@ -251,7 +259,7 @@ public class FindPathSystem extends EntitySystem {
             if (targetComponentOptional.isPresent()) {
                 var targetComponent = targetComponentOptional.get();
                 for (var node : targetComponent.path) {
-                    var tileGraphicOptional = water.getWaterTileGraphic(currentZoom, node.position.x, node.position.y);
+                    var tileGraphicOptional = world.getTileGraphic(currentZoom, node.position.x, node.position.y);
                     tileGraphicOptional.ifPresent(tileGraphic -> spriteRenderer.render(camera.getViewMatrix(), highlightTexture, tileGraphic.getModelMatrix()));
                 }
             }

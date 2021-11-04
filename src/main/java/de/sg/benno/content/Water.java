@@ -88,7 +88,7 @@ public class Water {
     private ArrayList<Integer> waterInstancesIndex;
 
     /**
-     * Stores a 0 for every position in the world if it is passable for a ship, otherwise a 1.
+     * Stores a 0 for every position in the world if it is passable for a ship (water), otherwise a 1 (island).
      */
     private ArrayList<Integer> passableArea;
 

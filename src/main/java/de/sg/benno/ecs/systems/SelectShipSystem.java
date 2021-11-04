@@ -37,7 +37,6 @@ import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
  * Represents a SelectShipSystem.
- * This system iterates over all entities with the {@link GfxIndexComponent} and the {@link PositionComponent}.
  * With the left mouse button the {@link SelectedComponent} is added to the entity if there is a ship at the position.
  * Another click removes the {@link SelectedComponent}.
  */

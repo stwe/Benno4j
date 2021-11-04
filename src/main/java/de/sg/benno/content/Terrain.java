@@ -20,6 +20,7 @@ package de.sg.benno.content;
 
 import de.sg.benno.BennoConfig;
 import de.sg.benno.BennoRuntimeException;
+import de.sg.benno.ai.Astar;
 import de.sg.benno.util.TileUtil;
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.TileGraphic;
@@ -85,14 +86,14 @@ public class Terrain {
 
     /**
      * Stores the instance number for every position in the world if there is an island5 tile there.
-     * Otherwise there is a value of -1 {@link #NO_ISLAND}.
+     * Otherwise, there is a value of -1 {@link #NO_ISLAND}.
      */
     private final HashMap<Island5, ArrayList<Integer>> islandInstancesIndex = new HashMap<>();
 
     /**
-     * Stores a 1 for the non-passable area; otherwise a 0.
+     * Stores a 0 for every position in the world if it is passable for a ship (water), otherwise a 1 (island).
      */
-    private ArrayList<Integer> passableArea;
+    private ArrayList<Integer> shipPassableArea;
 
     //-------------------------------------------------
     // Ctors.
@@ -151,12 +152,24 @@ public class Terrain {
     }
 
     /**
-     * Get {@link #passableArea}.
+     * Get {@link #shipPassableArea}.
      *
-     * @return {@link #passableArea}
+     * @return {@link #shipPassableArea}
      */
-    public ArrayList<Integer> getPassableArea() {
-        return passableArea;
+    public ArrayList<Integer> getShipPassableArea() {
+        return shipPassableArea;
+    }
+
+    /**
+     * Checks whether there is land at the specified position.
+     *
+     * @param x The x position in world space.
+     * @param y The y position in world space.
+     *
+     * @return boolean
+     */
+    public boolean isNotPassableByShip(int x, int y) {
+        return shipPassableArea.get(TileUtil.getIndexFrom2D(x, y)) == Astar.OBSTACLE;
     }
 
     //-------------------------------------------------
@@ -241,9 +254,10 @@ public class Terrain {
     private void init() throws Exception {
         LOGGER.debug("Start init Terrain...");
 
-        var values = new Integer[WORLD_HEIGHT * WORLD_WIDTH];
-        Arrays.fill(values, 0);
-        passableArea = new ArrayList<>(Arrays.asList(values));
+        // each position in the world is passable by a ship by default
+        var passable = new Integer[WORLD_HEIGHT * WORLD_WIDTH];
+        Arrays.fill(passable, Astar.PASSABLE);
+        shipPassableArea = new ArrayList<>(Arrays.asList(passable));
 
         for (var island5 : provider.getIsland5List()) {
             var zoomTiles = new HashMap<Zoom, ArrayList<TileGraphic>>();
@@ -339,8 +353,9 @@ public class Terrain {
                         instancesIndex.set(TileUtil.getIndexFrom2D(x, y), tiles.size() - 1);
 
                         // todo: use graphicId
+                        // 1 = not passable for a ship (island)
                         if (tileGraphic.gfxIndex < 680 || tileGraphic.gfxIndex > 1051) {
-                            passableArea.set(TileUtil.getIndexFrom2D(x, y), 1);
+                            shipPassableArea.set(TileUtil.getIndexFrom2D(x, y), Astar.OBSTACLE);
                         }
                     }
                 } else {

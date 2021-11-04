@@ -26,6 +26,7 @@ import de.sg.benno.content.Terrain;
 import de.sg.benno.content.Water;
 import de.sg.benno.chunk.Island5;
 import de.sg.benno.chunk.WorldData;
+import de.sg.benno.content.World;
 import de.sg.benno.ecs.components.*;
 import de.sg.benno.ecs.core.Ecs;
 import de.sg.benno.ecs.core.EcsSettings;
@@ -83,6 +84,11 @@ public class Sandbox {
     private final Terrain terrain;
 
     /**
+     * The {@link World} object.
+     */
+    private final World world;
+
+    /**
      * The {@link MiniMap} of this world.
      */
     private final MiniMap miniMap;
@@ -116,6 +122,7 @@ public class Sandbox {
         this.camera = new Camera(BennoConfig.CAMERA_START_X, BennoConfig.CAMERA_START_Y, context.engine, currentZoom);
         this.water = new Water(provider, context);
         this.terrain = new Terrain(provider, context);
+        this.world = new World(water, terrain);
         this.miniMap = new MiniMap(provider, context, camera, currentZoom);
 
         EcsSettings.setAllComponentTypes(
@@ -179,10 +186,10 @@ public class Sandbox {
         ecs.getSystemManager().addSystem(new SelectShipSystem(context, water, camera, currentZoom));
 
         // handle right mouse button clicks to find a target for a selected ship
-        ecs.getSystemManager().addSystem(new FindPathSystem(context, water, camera, currentZoom));
+        ecs.getSystemManager().addSystem(new FindPathSystem(context, world, camera, currentZoom));
 
         // move ships to target
-        ecs.getSystemManager().addSystem(new MoveShipSystem(water, currentZoom));
+        ecs.getSystemManager().addSystem(new MoveShipSystem(world, currentZoom));
 
         createEntities();
     }
