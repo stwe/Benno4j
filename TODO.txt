@@ -3,7 +3,6 @@ TODO
 
 - Karte bzw Content drehen
 - Klick in die Minimap soll die Kameraposition ändern
-- Minimap ist momentan absolut statisch - ändern
 - Schiffe animieren
 - Animation der Bebauung
 

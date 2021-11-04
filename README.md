@@ -9,12 +9,11 @@ This project is under heavy development and will receive frequent updates with n
 ## New - Pathfinding
 
 - A single ship can be activated and deactivated with the mouse.
-- The A * algorithm finds the shortest path to a target. Islands are obstacles.
+- The A* algorithm finds the shortest path to a target. Islands are obstacles.
 - The ship moves to the target. You can switch back and forth between the zoom levels.
+- The movement of the ship can be followed in the mini map.
 
-<img src="https://github.com/stwe/Benno4j/blob/master/devLog/26-10-2021 (1).png" width="409" height="316" />
-
-<img src="https://github.com/stwe/Benno4j/blob/master/devLog/26-10-2021 (0).png" width="409" height="316" />
+<img src="https://github.com/stwe/Benno4j/blob/master/devLog/04-11-2021 (1).png" width="409" height="316" />
 
 ## Supported versions
 
