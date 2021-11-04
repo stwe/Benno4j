@@ -28,6 +28,8 @@ import de.sg.benno.renderer.Zoom;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
+import java.util.Objects;
+
 import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
@@ -71,8 +73,8 @@ public class MoveShipSystem extends EntitySystem {
 
         LOGGER.debug("Creates MoveShipSystem object.");
 
-        this.world = world;
-        this.currentZoom = currentZoom;
+        this.world = Objects.requireNonNull(world, "world must not be null");
+        this.currentZoom = Objects.requireNonNull(currentZoom, "currentZoom must not be null");
     }
 
     //-------------------------------------------------

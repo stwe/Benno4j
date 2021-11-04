@@ -214,14 +214,17 @@ public class FindPathSystem extends EntitySystem {
                         Optional<TargetComponent> targetComponentOptional;
                         targetComponentOptional = entity.getComponent(TargetComponent.class);
                         if (targetComponentOptional.isPresent()) {
+                            /*
                             var targetComponent = targetComponentOptional.get();
                             targetComponent.targetWorldPosition = targetPosition;
                             targetComponent.path = path;
                             targetComponent.waypoints = waypointMap;
+                            targetComponent.nodeIndex = 1;
 
                             updateDirection(entity);
 
                             LOGGER.debug("Change Ship target to x: {}, y: {}.", targetComponent.targetWorldPosition.x, targetComponent.targetWorldPosition.y);
+                            */
                         } else {
                             try {
                                 targetComponentOptional = entity.addComponent(TargetComponent.class);
