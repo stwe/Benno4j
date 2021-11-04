@@ -19,10 +19,7 @@
 package de.sg.benno.debug;
 
 import de.sg.benno.chunk.Ship4;
-import de.sg.benno.ecs.components.GfxIndexComponent;
-import de.sg.benno.ecs.components.PositionComponent;
-import de.sg.benno.ecs.components.Ship4Component;
-import de.sg.benno.ecs.components.TargetComponent;
+import de.sg.benno.ecs.components.*;
 import de.sg.benno.ogl.Config;
 import de.sg.benno.state.Context;
 import imgui.ImColor;
@@ -103,10 +100,72 @@ public class DebugUi {
 
         ImGui.begin("Debug", windowFlags);
 
+        /*
+        ImGui::Begin("test");
+        if (ImGui::TreeNode("Loxel Entities"))
+        {
+            if (ImGui::TreeNode("Base"))
+            {
+                ImGui::Indent();
+                ImGui::Text("Num Slots");
+                ImGui::Text("Count");
+                ImGui::Unindent();
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNode("Slots"))
+            {
+                ImGui::TreePop();
+            }
+            ImGui::TreePop();
+        }
+        ImGui::Indent();
+        ImGui::Text("Previous Modifications");
+        ImGui::Text("Debug Ticks");
+        ImGui::Unindent();
+        ImGui::End();
+        */
+
+        if (ImGui.treeNode("Entities")) {
+            for (var entity : sandboxState.getSandbox().getEcs().getEntityManager().getAllEntities()) {
+                if (ImGui.treeNode(entity.debugName)) {
+                    if (ImGui.treeNode("Components")) {
+                        ImGui.indent();
+                        for (var component : entity.getComponents()) {
+                            ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
+                            ImGui.text(component.getClass().getSimpleName());
+                            ImGui.popStyleColor();
+                            if (component.getClass() == Ship4Component.class) {
+                                ship4Data((Ship4Component) component);
+                            }
+                            if (component.getClass() == TargetComponent.class) {
+                                targetData((TargetComponent) component);
+                            }
+                            if (component.getClass() == VelocityComponent.class) {
+                                velocityData((VelocityComponent) component);
+                            }
+                            if (component.getClass() == GfxIndexComponent.class) {
+                                gfxData((GfxIndexComponent) component);
+                            }
+                            if (component.getClass() == PositionComponent.class) {
+                                positionData((PositionComponent) component);
+                            }
+                        }
+                        ImGui.unindent();
+                        ImGui.treePop();
+                    }
+
+                    ImGui.treePop();
+                }
+            }
+
+            ImGui.treePop();
+        }
+
+        /*
         cameraPosition();
         currentZoom();
         screenSpacePosition();
-        entityInfo();
+        */
 
         ImGui.end();
     }
@@ -153,74 +212,38 @@ public class DebugUi {
         ImGui.text("Screen y: " + context.engine.getMouseInput().getY());
     }
 
-    /**
-     * Shows entity components.
-     */
-    private void entityInfo() {
-        ImGui.separator();
-        for (var entity : sandboxState.getSandbox().getEcs().getEntityManager().getAllEntities()) {
-            // entity debug name
-            ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
-            ImGui.text("Entity");
-            ImGui.popStyleColor();
-            ImGui.text("Debug name: " + entity.debugName);
+    //-------------------------------------------------
+    // Component data info
+    //-------------------------------------------------
 
-            // list components
-            ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
-            ImGui.text("Components");
-            ImGui.popStyleColor();
-            for (var component : entity.getComponents()) {
-                ImGui.text("Component: " + component.getClass().getSimpleName());
-            }
+    private void ship4Data(Ship4Component ship4Component) {
+        var ship = ship4Component.ship4;
+        ImGui.bulletText("Name: " + ship.name);
+        ImGui.bulletText("X: " + ship.xPos);
+        ImGui.bulletText("Y: " + ship.yPos);
+        ImGui.bulletText("Health: " + ship.health);
+        ImGui.bulletText("Cannons: " + ship.numberOfCannons);
+        ImGui.bulletText("Type: " + Ship4.ShipType.valueOfType(ship.type));
+        ImGui.bulletText("Direction: " + ship.direction);
+    }
 
-            // gfx componenent
-            ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
-            ImGui.text("Gfx component data");
-            ImGui.popStyleColor();
-            var gfxIndexComponentOptional = entity.getComponent(GfxIndexComponent.class);
-            gfxIndexComponentOptional.ifPresent(
-                    gfxIndexComponent -> ImGui.text("Gfx index: " + gfxIndexComponent.gfxIndex)
-            );
+    private void velocityData(VelocityComponent velocityComponent) {
+        ImGui.bulletText("Velocity: " + velocityComponent.velocity);
+    }
 
-            // position component
-            ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
-            ImGui.text("Position component data");
-            ImGui.popStyleColor();
-            var positionComponentOptional = entity.getComponent(PositionComponent.class);
-            positionComponentOptional.ifPresent(
-                    positionComponent -> {
-                        ImGui.text("World position x: " + positionComponent.worldPosition.x);
-                        ImGui.text("World position y: " + positionComponent.worldPosition.y);
-                    }
-            );
+    private void targetData(TargetComponent targetComponent) {
+        ImGui.bulletText("Target world position x: " + targetComponent.targetWorldPosition.x);
+        ImGui.bulletText("Target world position y: " + targetComponent.targetWorldPosition.y);
+        ImGui.bulletText("Target path size: " + targetComponent.path.size());
+        ImGui.bulletText("Target index: " + targetComponent.nodeIndex);
+    }
 
-            // target component
-            var targetComponentOptional = entity.getComponent(TargetComponent.class);
-            targetComponentOptional.ifPresent(
-                    targetComponent -> {
-                        ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
-                        ImGui.text("Target component data");
-                        ImGui.popStyleColor();
-                        ImGui.text("Target world position x: " + targetComponent.targetWorldPosition.x);
-                        ImGui.text("Target world position y: " + targetComponent.targetWorldPosition.y);
-                    }
-            );
+    private void gfxData(GfxIndexComponent gfxIndexComponent) {
+        ImGui.bulletText("Gfx index: " + gfxIndexComponent.gfxIndex);
+    }
 
-            // ship4 component
-            ImGui.pushStyleColor(ImGuiCol.Text, ImColor.intToColor(0 ,255, 0));
-            ImGui.text("Ship4 component data");
-            ImGui.popStyleColor();
-            var shipComponentOptional = entity.getComponent(Ship4Component.class);
-            if (shipComponentOptional.isPresent()) {
-                var ship = shipComponentOptional.get().ship4;
-                ImGui.text("Name: " + ship.name);
-                ImGui.text("X: " + ship.xPos);
-                ImGui.text("Y: " + ship.yPos);
-                ImGui.text("Health: " + ship.health);
-                ImGui.text("Cannons: " + ship.numberOfCannons);
-                ImGui.text("Type: " + Ship4.ShipType.valueOfType(ship.type));
-                ImGui.text("Direction: " + ship.direction);
-            }
-        }
+    private void positionData(PositionComponent positionComponent) {
+        ImGui.bulletText("World position x: " + positionComponent.worldPosition.x);
+        ImGui.bulletText("World position y: " + positionComponent.worldPosition.y);
     }
 }
