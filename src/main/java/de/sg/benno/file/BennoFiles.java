@@ -424,8 +424,8 @@ public class BennoFiles {
         LOGGER.debug("Preload palette file.");
         paletteFile = new PaletteFile(getFilePath(FileName.PALETTE_COL));
 
-        //loadBshFile(InterfaceBshFileName.BAUHAUS);
-        //loadBshFile(InterfaceBshFileName.EDITOR); // 950
+        loadBshFile(getFilePath(FileName.BAUHAUS_BSH));
+        //loadBshFile(getFilePath(FileName.EDITOR_BSH));
 
         //LOGGER.debug("Preload main menu graphics.");
         //loadBshFile(getFilePath(FileName.START_BSH));

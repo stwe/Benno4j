@@ -578,6 +578,9 @@ public class BshFile extends BinaryFile {
         // check values
         if (placeholder.width <= 0 || placeholder.height <= 0) {
             throw new BennoRuntimeException("Invalid width or height.");
+            // todo: dummy values must be set to load Editor.bsh
+            //placeholder.width = 1;
+            //placeholder.height = 1;
         }
 
         // create a width x height pixel image with support for transparency
