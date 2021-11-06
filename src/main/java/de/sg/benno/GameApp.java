@@ -19,6 +19,7 @@
 package de.sg.benno;
 
 import de.sg.benno.debug.SandboxState;
+import de.sg.benno.editor.EditorState;
 import de.sg.benno.file.BennoFiles;
 import de.sg.benno.file.GamFile;
 import de.sg.benno.ogl.ConfigLoader;
@@ -143,6 +144,10 @@ public class GameApp extends OglApplication {
 
         if (GAME_STATE_NAME.equals("sandbox")) {
             state = new SandboxState(stateMachine);
+        }
+
+        if (GAME_STATE_NAME.equals("editor")) {
+            state = new EditorState(stateMachine);
         }
 
         if (state != null) {
