@@ -39,7 +39,7 @@ import static de.sg.benno.content.World.WORLD_WIDTH;
 import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
- * Represents Water.
+ * This class represents the deep water area of the world, which is loaded by a savegame (GAM file).
  */
 public class Water {
 

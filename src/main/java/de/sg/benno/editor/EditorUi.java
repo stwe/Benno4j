@@ -31,7 +31,7 @@ import java.util.Objects;
 import static de.sg.benno.ogl.Log.LOGGER;
 
 /**
- * ImGui stuff.
+ * Editor ImGui stuff.
  */
 public class EditorUi {
 

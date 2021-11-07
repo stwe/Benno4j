@@ -190,14 +190,17 @@ public class WaterRenderer {
      *
      * @param camera {@link Camera}
      * @param wireframe True if a wireframe is to be rendered.
+     * @param animated To toggle the animation on and off.
      */
-    public void render(Camera camera, boolean wireframe) {
-        var now = System.currentTimeMillis();
-        var delta = now - last;
-        if (delta >= building.animTime) {
-            frame = (frame + 1) % building.animAnz;
-            updateGfxStartIndexVbo();
-            last = now;
+    public void render(Camera camera, boolean wireframe, boolean animated) {
+        if (animated) {
+            var now = System.currentTimeMillis();
+            var delta = now - last;
+            if (delta >= building.animTime) {
+                frame = (frame + 1) % building.animAnz;
+                updateGfxStartIndexVbo();
+                last = now;
+            }
         }
 
         if (!wireframe) {
@@ -225,6 +228,16 @@ public class WaterRenderer {
         } else {
             OpenGL.disableWireframeMode();
         }
+    }
+
+    /**
+     * Renders the whole water area.
+     *
+     * @param camera {@link Camera}
+     * @param wireframe True if a wireframe is to be rendered.
+     */
+    public void render(Camera camera, boolean wireframe) {
+        render(camera, wireframe, true);
     }
 
     //-------------------------------------------------

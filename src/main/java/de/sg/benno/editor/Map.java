@@ -52,6 +52,11 @@ public class Map {
      */
     private final Camera camera;
 
+    /**
+     * The {@link Ocean} object represents the deep water area.
+     */
+    private final Ocean ocean;
+
     //-------------------------------------------------
     // Ctors.
     //-------------------------------------------------
@@ -72,6 +77,7 @@ public class Map {
         }
 
         this.camera = new Camera(BennoConfig.CAMERA_START_X, BennoConfig.CAMERA_START_Y, context.engine, currentZoom);
+        this.ocean = new Ocean(context);
     }
 
     //-------------------------------------------------
@@ -128,7 +134,9 @@ public class Map {
     /**
      * Render map.
      */
-    public void render() {}
+    public void render() {
+        ocean.render(camera, false, currentZoom);
+    }
 
     //-------------------------------------------------
     // Helper
@@ -151,5 +159,6 @@ public class Map {
         LOGGER.debug("Start clean up for the Map.");
 
         camera.cleanUp();
+        ocean.cleanUp();
     }
 }
