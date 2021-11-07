@@ -164,14 +164,13 @@ public class Water {
     //-------------------------------------------------
 
     /**
-     * Renders the water.
+     * Renders the water (animated).
      *
      * @param camera The {@link Camera} object.
-     * @param wireframe True for wireframe rendering.
      * @param zoom The current {@link Zoom}.
      */
-    public void render(Camera camera, boolean wireframe, Zoom zoom) {
-        waterRenderers.get(zoom).render(camera, wireframe);
+    public void render(Camera camera, Zoom zoom) {
+        waterRenderers.get(zoom).render(camera, true);
     }
 
     /**

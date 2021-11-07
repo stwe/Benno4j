@@ -20,6 +20,7 @@ package de.sg.benno.renderer;
 
 import de.sg.benno.BennoConfig;
 import de.sg.benno.BennoRuntimeException;
+import de.sg.benno.file.ImageFile;
 import de.sg.benno.input.Camera;
 import de.sg.benno.data.Building;
 import de.sg.benno.file.BshFile;
@@ -32,8 +33,11 @@ import de.sg.benno.state.Context;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 import static de.sg.benno.ogl.Log.LOGGER;
 import static org.lwjgl.opengl.GL15.*;
@@ -123,6 +127,11 @@ public class WaterRenderer {
     private Texture textureArray;
 
     /**
+     * The grid texture array.
+     */
+    private Texture gridTextureArray;
+
+    /**
      * The {@link Vbo} for texture index data.
      */
     private Vbo textureVbo;
@@ -164,10 +173,12 @@ public class WaterRenderer {
             Context context,
             Zoom zoom
     ) throws Exception {
-        this.waterGfxStartIndex = waterGfxStartIndex;
-        this.building = building;
-        this.context = context;
-        this.zoom = zoom;
+        Objects.requireNonNull(modelMatrices, "modelMatrices must not be null");
+
+        this.waterGfxStartIndex = Objects.requireNonNull(waterGfxStartIndex, "waterGfxStartIndex must not be null");
+        this.building = Objects.requireNonNull(building, "building must not be null");
+        this.context = Objects.requireNonNull(context, "context must not be null");
+        this.zoom = Objects.requireNonNull(zoom, "zoom must not be null");
 
         this.shaderProgram = context.engine.getResourceManager().getShaderProgramResource(SHADER_NAME);
 
@@ -186,13 +197,37 @@ public class WaterRenderer {
     //-------------------------------------------------
 
     /**
+     * Renders a grid over the entire water area.
+     *
+     * @param camera The {@link Camera} object.
+     */
+    public void renderGrid(Camera camera) {
+        //OpenGL.enableAlphaBlending();
+
+        shaderProgram.bind();
+
+        Texture.bindForReading(gridTextureArray.getId(), GL_TEXTURE0, GL_TEXTURE_2D_ARRAY);
+
+        shaderProgram.setUniform("projection", context.engine.getWindow().getOrthographicProjectionMatrix());
+        shaderProgram.setUniform("view", camera.getViewMatrix());
+        shaderProgram.setUniform("sampler", 0);
+
+        vao.bind();
+        vao.drawInstanced(GL_TRIANGLES, instances);
+        vao.unbind();
+
+        ShaderProgram.unbind();
+
+        //OpenGL.disableBlending();
+    }
+
+    /**
      * Renders the whole water area.
      *
-     * @param camera {@link Camera}
-     * @param wireframe True if a wireframe is to be rendered.
+     * @param camera The {@link Camera} object.
      * @param animated To toggle the animation on and off.
      */
-    public void render(Camera camera, boolean wireframe, boolean animated) {
+    public void render(Camera camera, boolean animated) {
         if (animated) {
             var now = System.currentTimeMillis();
             var delta = now - last;
@@ -203,11 +238,7 @@ public class WaterRenderer {
             }
         }
 
-        if (!wireframe) {
-            OpenGL.enableAlphaBlending();
-        } else {
-            OpenGL.enableWireframeMode();
-        }
+        OpenGL.enableAlphaBlending();
 
         shaderProgram.bind();
 
@@ -223,21 +254,7 @@ public class WaterRenderer {
 
         ShaderProgram.unbind();
 
-        if (!wireframe) {
-            OpenGL.disableBlending();
-        } else {
-            OpenGL.disableWireframeMode();
-        }
-    }
-
-    /**
-     * Renders the whole water area.
-     *
-     * @param camera {@link Camera}
-     * @param wireframe True if a wireframe is to be rendered.
-     */
-    public void render(Camera camera, boolean wireframe) {
-        render(camera, wireframe, true);
+        OpenGL.disableBlending();
     }
 
     //-------------------------------------------------
@@ -248,8 +265,9 @@ public class WaterRenderer {
      * Setup {@link #vao}.
      *
      * @param modelMatrices The model matrices to store.
+     * @throws IOException If an I/O error is thrown.
      */
-    private void initVao(ArrayList<Matrix4f> modelMatrices) {
+    private void initVao(ArrayList<Matrix4f> modelMatrices) throws IOException {
         vao = new Vao();
         vao.add2DQuadVbo();
 
@@ -260,6 +278,7 @@ public class WaterRenderer {
         addSelectedVbo();
 
         createTextureArray();
+        createGridTextureArray();
     }
 
     /**
@@ -396,11 +415,48 @@ public class WaterRenderer {
                 throw new BennoRuntimeException("Invalid texture size.");
             }
 
-            // store texture
+            // store as texture
             Texture.bufferedImageToTextureArray(textureArray.getId(), currentTexture.getBufferedImage(), zOffset);
 
             zOffset++;
         }
+    }
+
+    /**
+     * Creates a texture array to show an iso grid.
+     *
+     * @throws IOException If an I/O error is thrown.
+     */
+    private void createGridTextureArray() throws IOException {
+        // it's just one texture in texture array
+        var gfxCount = 1;
+
+        // new texture
+        gridTextureArray = new Texture();
+
+        // specify texture array storage requirements
+        Texture.textureArrayStorageRequirements(gridTextureArray.getId(), textureWidth, textureHeight, gfxCount);
+
+        // store texture in texture array
+        var zOffset = 0;
+
+        // create buffered image
+        var gridImageFile = new ImageFile("debug/red.png");
+        var gridBufferedImage = ImageFile.resizeImage(
+                gridImageFile.getImage(),
+                textureWidth, textureHeight
+        );
+
+        var converted = new BufferedImage(textureWidth, textureHeight, BufferedImage.TYPE_INT_RGB);
+        converted.getGraphics().drawImage(gridBufferedImage, 0, 0, null);
+
+        // store as texture
+        Texture.bufferedImageToTextureArray(gridTextureArray.getId(), converted, zOffset);
+
+        // clean up
+        gridImageFile.cleanUp();
+        gridBufferedImage.getGraphics().dispose();
+        converted.getGraphics().dispose();
     }
 
     //-------------------------------------------------
@@ -415,5 +471,6 @@ public class WaterRenderer {
 
         vao.cleanUp();
         textureArray.cleanUp();
+        gridTextureArray.cleanUp();
     }
 }

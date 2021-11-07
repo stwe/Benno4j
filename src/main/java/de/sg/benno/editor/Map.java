@@ -135,7 +135,7 @@ public class Map {
      * Render map.
      */
     public void render() {
-        ocean.render(camera, false, currentZoom);
+        ocean.render(camera, currentZoom);
     }
 
     //-------------------------------------------------

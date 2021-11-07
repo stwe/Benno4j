@@ -107,11 +107,14 @@ public class Ocean {
      * Renders a non-animated ocean.
      *
      * @param camera The {@link Camera} object.
-     * @param wireframe True for wireframe rendering.
      * @param zoom The current {@link Zoom}.
      */
-    public void render(Camera camera, boolean wireframe, Zoom zoom) {
-        waterRenderers.get(zoom).render(camera, wireframe, false);
+    public void render(Camera camera, Zoom zoom) {
+        // render non-animated water
+        //waterRenderers.get(zoom).render(camera, false);
+
+        // render grid
+        waterRenderers.get(zoom).renderGrid(camera);
     }
 
     //-------------------------------------------------

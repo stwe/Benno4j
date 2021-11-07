@@ -285,7 +285,7 @@ public class Sandbox {
      * Render sandbox.
      */
     public void render() {
-        water.render(camera, false, currentZoom);
+        water.render(camera, currentZoom);
         terrain.render(camera, false, currentZoom);
         miniMap.render(new Vector2f(0.55f, -0.95f), new Vector2f(0.4f));
         ecs.render();
