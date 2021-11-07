@@ -202,7 +202,7 @@ public class WaterRenderer {
      * @param camera The {@link Camera} object.
      */
     public void renderGrid(Camera camera) {
-        //OpenGL.enableAlphaBlending();
+        OpenGL.enableAlphaBlending();
 
         shaderProgram.bind();
 
@@ -218,7 +218,7 @@ public class WaterRenderer {
 
         ShaderProgram.unbind();
 
-        //OpenGL.disableBlending();
+        OpenGL.disableBlending();
     }
 
     /**
@@ -447,7 +447,7 @@ public class WaterRenderer {
                 textureWidth, textureHeight
         );
 
-        var converted = new BufferedImage(textureWidth, textureHeight, BufferedImage.TYPE_INT_RGB);
+        var converted = new BufferedImage(textureWidth, textureHeight, BufferedImage.TYPE_INT_ARGB);
         converted.getGraphics().drawImage(gridBufferedImage, 0, 0, null);
 
         // store as texture

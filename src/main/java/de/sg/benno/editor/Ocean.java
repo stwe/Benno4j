@@ -111,7 +111,7 @@ public class Ocean {
      */
     public void render(Camera camera, Zoom zoom) {
         // render non-animated water
-        //waterRenderers.get(zoom).render(camera, false);
+        waterRenderers.get(zoom).render(camera, false);
 
         // render grid
         waterRenderers.get(zoom).renderGrid(camera);
