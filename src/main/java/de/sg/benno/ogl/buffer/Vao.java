@@ -263,6 +263,6 @@ public class Vao implements Buffer {
      * Draws primitives using the currently active shader.
      */
     public void drawPrimitives() {
-        drawPrimitives(GL_TRIANGLES, 0);
+        drawPrimitives(GL_TRIANGLES);
     }
 }
