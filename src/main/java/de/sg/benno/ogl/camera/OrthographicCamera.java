@@ -117,8 +117,7 @@ public class OrthographicCamera {
         Matrix4f transformMatrix = new Matrix4f();
         transformMatrix
                 .identity()
-                .translate(new Vector3f(position, 0.0f))
-                .scale(new Vector3f(1.0f));
+                .translate(new Vector3f(position, 0.0f));
 
         return transformMatrix.invert();
     }
